@@ -1,56 +1,53 @@
-# ZHA Network Topology Visualizer
+# Home Assistant ZHA Topology Add-on Repository
 
-Home Assistant add-on for visualizing your Zigbee mesh network topology.
+This repository contains the ZHA Network Topology Visualizer add-on for Home Assistant.
 
-![Zigbee Topology](https://img.shields.io/badge/Zigbee-Topology-blue)
-![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5)
+## Add-ons
 
-## About
+### ZHA Network Topology Visualizer
 
-This add-on creates an interactive visualization of your ZHA (Zigbee Home Automation) network, showing:
+Interactive visualization of your Zigbee mesh network.
 
-- All Zigbee devices and their connections
-- Signal quality (LQI) between devices
-- Mesh network relationships
-- Device types (coordinator, routers, end devices)
+![Supports aarch64 Architecture](https://img.shields.io/badge/aarch64-yes-green)
+![Supports amd64 Architecture](https://img.shields.io/badge/amd64-yes-green)
+![Supports armv7 Architecture](https://img.shields.io/badge/armv7-yes-green)
+![Supports i386 Architecture](https://img.shields.io/badge/i386-yes-green)
 
-## Features
-
-- **Interactive D3.js visualization** with draggable nodes
-- **Real-time signal quality** indicators
-- **Neighbor table inspection** for any device
-- **Configurable auto-refresh** (optional)
-- **Position persistence** - your layout is saved
-- **Filter options** by device type and activity
+**Features:**
+- Interactive D3.js network visualization
+- Signal quality (LQI) indicators
+- Device connection mapping
+- Neighbor table inspection
+- Configurable auto-refresh
+- Draggable nodes with position saving
 
 ## Installation
 
-Add this repository to your Home Assistant Add-on Store:
+1. Add this repository to your Home Assistant Add-on Store:
 
-[![Open your Home Assistant instance and show the add-on store.](https://my.home-assistant.io/badges/supervisor_store.svg)](https://my.home-assistant.io/redirect/supervisor_store/)
+   [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%scottswaaley%2Fhass-zha-topology)
 
-Then add this repository URL:
-```
-https://github.com/scottswaaley/hass-zha-topology
-```
+   Or manually add: `https://github.com/scottswaaley/hass-zha-topology`
 
-## Configuration
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `auto_refresh_minutes` | 0 | Auto-refresh interval (0 = disabled) |
-| `topology_scan_wait` | 60 | Topology scan timeout in seconds |
-
-## Usage
-
-Access the visualization at `http://<your-ha-ip>:8099` after starting the add-on.
+2. Refresh the add-on store
+3. Install "ZHA Network Topology Visualizer"
+4. Start the add-on
+5. Access at `http://<your-ha-ip>:8099`
 
 ## Requirements
 
-- Home Assistant with Supervisor
+- Home Assistant OS or Supervised installation
 - ZHA integration configured and running
-- Zigbee coordinator connected
+
+## Documentation
+
+See the [add-on documentation](zha-topology-visualizer/DOCS.md) for detailed usage instructions.
+
+## Support
+
+- [Report an issue](https://github.com/scottswaaley/hass-zha-topology/issues)
+- [Home Assistant Community](https://community.home-assistant.io/)
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License
