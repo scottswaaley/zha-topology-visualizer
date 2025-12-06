@@ -25,6 +25,8 @@ HTML_FILE = DATA_DIR / 'topology.html'
 # Global state
 refresh_lock = threading.Lock()
 last_refresh_time = 0
+is_refreshing = False
+refresh_error = None
 
 
 def read_options() -> dict:
@@ -37,9 +39,11 @@ def read_options() -> dict:
 
 def do_refresh() -> tuple:
     """Perform data refresh and regenerate visualization."""
-    global last_refresh_time
+    global last_refresh_time, is_refreshing, refresh_error
 
     with refresh_lock:
+        is_refreshing = True
+        refresh_error = None
         try:
             print("\n" + "=" * 50)
             print("Starting data refresh...")
@@ -58,12 +62,147 @@ def do_refresh() -> tuple:
 
             last_refresh_time = time.time()
             print(f"\nRefresh complete! Serving: {output_file}")
+            is_refreshing = False
             return True, None
 
         except Exception as e:
             error_msg = str(e)
             print(f"\nRefresh failed: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            refresh_error = error_msg
+            is_refreshing = False
             return False, error_msg
+
+
+def get_loading_page():
+    """Return a loading page HTML."""
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHA Network Topology - Loading</title>
+    <meta http-equiv="refresh" content="5">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            color: #888;
+            margin-top: 20px;
+        }
+        .note {
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ZHA Network Topology</h1>
+        <div class="spinner"></div>
+        <p class="status">Fetching Zigbee network data...</p>
+        <p class="note">This may take 1-2 minutes for the initial topology scan.<br>This page will automatically refresh.</p>
+    </div>
+</body>
+</html>'''
+
+
+def get_error_page(error):
+    """Return an error page HTML."""
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHA Network Topology - Error</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }}
+        .container {{
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+        }}
+        h1 {{
+            color: #F44336;
+            margin-bottom: 20px;
+        }}
+        .error {{
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid #F44336;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }}
+        button {{
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }}
+        button:hover {{
+            background: #00b8e6;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Error Loading Topology</h1>
+        <div class="error">{error}</div>
+        <button onclick="location.reload()">Retry</button>
+    </div>
+</body>
+</html>'''
 
 
 class VisualizationHandler(BaseHTTPRequestHandler):
@@ -73,32 +212,70 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         print(f"[Server] {args[0]}")
 
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
-            self.serve_html()
-        elif self.path == '/health':
-            self.serve_health()
-        elif self.path == '/status':
-            self.serve_status()
-        else:
-            self.send_error(404)
+        try:
+            if self.path == '/' or self.path == '/index.html':
+                self.serve_html()
+            elif self.path == '/health':
+                self.serve_health()
+            elif self.path == '/status':
+                self.serve_status()
+            else:
+                self.send_error(404)
+        except BrokenPipeError:
+            pass  # Client disconnected, ignore
+        except ConnectionResetError:
+            pass  # Client reset connection, ignore
 
     def do_POST(self):
-        if self.path == '/refresh':
-            self.handle_refresh()
-        else:
-            self.send_error(404)
+        try:
+            if self.path == '/refresh':
+                self.handle_refresh()
+            else:
+                self.send_error(404)
+        except BrokenPipeError:
+            pass
+        except ConnectionResetError:
+            pass
 
     def serve_html(self):
         """Serve the visualization HTML."""
         try:
-            if not HTML_FILE.exists():
-                # Generate on first access if not exists
-                print("No visualization found, generating...")
-                success, error = do_refresh()
-                if not success:
-                    self.send_error(500, f'Failed to generate visualization: {error}')
-                    return
+            # If currently refreshing, show loading page
+            if is_refreshing:
+                content = get_loading_page()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', len(content.encode('utf-8')))
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+                return
 
+            # If there was a refresh error, show error page
+            if refresh_error and not HTML_FILE.exists():
+                content = get_error_page(refresh_error)
+                self.send_response(500)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', len(content.encode('utf-8')))
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+                return
+
+            # If no HTML file exists yet, show loading and trigger refresh
+            if not HTML_FILE.exists():
+                content = get_loading_page()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', len(content.encode('utf-8')))
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+
+                # Trigger background refresh if not already running
+                if not is_refreshing:
+                    thread = threading.Thread(target=do_refresh, daemon=True)
+                    thread.start()
+                return
+
+            # Serve the visualization
             with open(HTML_FILE, 'r', encoding='utf-8') as f:
                 content = f.read()
 
@@ -109,10 +286,12 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(content.encode('utf-8'))
 
-        except FileNotFoundError:
-            self.send_error(404, 'Visualization file not found')
+        except BrokenPipeError:
+            pass  # Client disconnected
         except Exception as e:
-            self.send_error(500, str(e))
+            print(f"Error serving HTML: {e}")
+            import traceback
+            traceback.print_exc()
 
     def serve_health(self):
         """Health check endpoint."""
@@ -125,8 +304,10 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         """Status endpoint with details."""
         status = {
             'healthy': True,
+            'is_refreshing': is_refreshing,
             'last_refresh': last_refresh_time,
             'html_exists': HTML_FILE.exists(),
+            'refresh_error': refresh_error,
             'options': read_options()
         }
 
@@ -139,22 +320,21 @@ class VisualizationHandler(BaseHTTPRequestHandler):
 
     def handle_refresh(self):
         """Handle refresh request."""
-        print("\n" + "=" * 50)
-        print("Manual refresh requested...")
-        print("=" * 50)
-
-        success, error = do_refresh()
-
-        if success:
-            self.send_response(200)
+        if is_refreshing:
+            self.send_response(202)  # Accepted - already in progress
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
-            self.wfile.write(b'OK')
-        else:
-            self.send_response(500)
-            self.send_header('Content-Type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(error.encode('utf-8'))
+            self.wfile.write(b'Refresh already in progress')
+            return
+
+        # Start refresh in background
+        thread = threading.Thread(target=do_refresh, daemon=True)
+        thread.start()
+
+        self.send_response(202)  # Accepted
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Refresh started')
 
 
 def auto_refresh_loop(interval_minutes: int):
@@ -163,10 +343,36 @@ def auto_refresh_loop(interval_minutes: int):
 
     while True:
         time.sleep(interval_minutes * 60)
-        print("\n" + "=" * 50)
-        print(f"Auto-refresh triggered (every {interval_minutes} min)...")
-        print("=" * 50)
-        do_refresh()
+        if not is_refreshing:
+            print("\n" + "=" * 50)
+            print(f"Auto-refresh triggered (every {interval_minutes} min)...")
+            print("=" * 50)
+            do_refresh()
+
+
+def initial_refresh():
+    """Perform initial data refresh on startup."""
+    global is_refreshing
+
+    # Check for existing data first
+    if HTML_FILE.exists():
+        print("Existing visualization found, skipping initial refresh")
+        return
+
+    latest = find_latest_export()
+    if latest:
+        print(f"Found existing export: {latest}")
+        print("Generating visualization from existing data...")
+        try:
+            generate_visualization(latest)
+            print("Visualization generated successfully")
+            return
+        except Exception as e:
+            print(f"Warning: Could not generate from existing export: {e}")
+
+    # No existing data, trigger refresh
+    print("No existing visualization, starting initial data fetch...")
+    do_refresh()
 
 
 def main():
@@ -184,19 +390,9 @@ def main():
     print(f"  - Data directory: {DATA_DIR}")
     print(f"  - HTML file: {HTML_FILE}")
 
-    # Check if we have an existing visualization or need to generate
-    if not HTML_FILE.exists():
-        # Check for existing export
-        latest = find_latest_export()
-        if latest:
-            print(f"\nFound existing export: {latest}")
-            print("Generating visualization...")
-            try:
-                generate_visualization(latest)
-            except Exception as e:
-                print(f"Warning: Could not generate from existing export: {e}")
-        else:
-            print("\nNo existing data found. Will generate on first access.")
+    # Start initial refresh in background thread
+    init_thread = threading.Thread(target=initial_refresh, daemon=True)
+    init_thread.start()
 
     # Start auto-refresh thread if configured
     if auto_refresh_minutes > 0:
@@ -207,15 +403,14 @@ def main():
         )
         thread.start()
 
-    # Start HTTP server
+    # Start HTTP server immediately
     port = 8099
     server = HTTPServer(('0.0.0.0', port), VisualizationHandler)
 
     print(f"\n{'=' * 50}")
     print(f"Server running on port {port}")
     print(f"Access at: http://<your-ha-host>:{port}")
-    print(f"{'=' * 50}")
-    print("Press Ctrl+C to stop\n")
+    print(f"{'=' * 50}\n")
 
     try:
         server.serve_forever()
