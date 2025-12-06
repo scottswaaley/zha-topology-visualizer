@@ -1,10 +1,11 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install Python and aiohttp
+# Install Python and pip, then install aiohttp via pip
 RUN apk add --no-cache \
     python3 \
-    py3-aiohttp
+    py3-pip \
+    && pip3 install --no-cache-dir --break-system-packages aiohttp
 
 # Copy root filesystem
 COPY rootfs /
