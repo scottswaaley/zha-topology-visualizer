@@ -1,0 +1,26 @@
+name: ZHA Network Topology Visualizer
+version: "1.0.0"
+slug: zha-topology-visualizer
+description: Interactive visualization of your Zigbee mesh network topology with signal quality indicators
+url: "https://github.com/scottswaaley/hass-zha-topology"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - i386
+startup: application
+boot: auto
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: Web interface
+map:
+  - share:rw
+homeassistant_api: true
+hassio_api: true
+options:
+  auto_refresh_minutes: 0
+  topology_scan_wait: 60
+schema:
+  auto_refresh_minutes: int(0,1440)
+  topology_scan_wait: int(30,300)

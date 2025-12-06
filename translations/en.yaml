@@ -1,0 +1,13 @@
+configuration:
+  auto_refresh_minutes:
+    name: Auto Refresh Interval
+    description: >-
+      Minutes between automatic data refreshes. Set to 0 to disable auto-refresh.
+      The visualization will still update when you click the Refresh button.
+      Recommended: 30-60 minutes for most networks.
+  topology_scan_wait:
+    name: Topology Scan Wait
+    description: >-
+      Seconds to wait for the Zigbee topology scan to complete.
+      Larger networks may need more time. Default is 60 seconds.
+      Increase this if you notice incomplete neighbor data.
