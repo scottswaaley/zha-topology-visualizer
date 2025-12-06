@@ -15,4 +15,5 @@ WORKDIR /app
 # Make scripts executable
 RUN chmod a+x /run.sh
 
-CMD ["/run.sh"]
+# Run as the entry point
+ENTRYPOINT ["/run.sh"]
