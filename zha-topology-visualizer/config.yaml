@@ -1,5 +1,5 @@
 name: ZHA Network Topology Visualizer
-version: "1.0.2"
+version: "1.0.3"
 slug: zha-topology-visualizer
 description: Interactive visualization of your Zigbee mesh network topology with signal quality indicators
 url: "https://github.com/scottswaaley/hass-zha-topology"
@@ -11,6 +11,7 @@ arch:
 startup: application
 boot: auto
 init: false
+webui: "http://[HOST]:[PORT:8099]"
 ports:
   8099/tcp: 8099
 ports_description:
