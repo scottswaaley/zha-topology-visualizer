@@ -1,5 +1,5 @@
 name: ZHA Network Topology Visualizer
-version: "1.0.4clau"
+version: "1.0.5"
 slug: zha-topology-visualizer
 description: Interactive visualization of your Zigbee mesh network topology with signal quality indicators
 url: "https://github.com/scottswaaley/hass-zha-topology"
@@ -23,6 +23,8 @@ hassio_api: true
 options:
   auto_refresh_minutes: 0
   topology_scan_wait: 60
+  debug: false
 schema:
   auto_refresh_minutes: int(0,1440)
   topology_scan_wait: int(30,300)
+  debug: bool

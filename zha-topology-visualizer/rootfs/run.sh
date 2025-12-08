@@ -6,9 +6,12 @@ echo "Starting ZHA Network Topology Visualizer..."
 if [ -f /data/options.json ]; then
     export TOPOLOGY_SCAN_WAIT=$(cat /data/options.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('topology_scan_wait', 60))")
     AUTO_REFRESH=$(cat /data/options.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('auto_refresh_minutes', 0))")
+    DEBUG_MODE=$(cat /data/options.json | python3 -c "import sys,json; print(str(json.load(sys.stdin).get('debug', False)).lower())")
+    export DEBUG=$DEBUG_MODE
 else
     export TOPOLOGY_SCAN_WAIT=60
     AUTO_REFRESH=0
+    export DEBUG=false
 fi
 
 echo "Topology scan wait: ${TOPOLOGY_SCAN_WAIT}s"
