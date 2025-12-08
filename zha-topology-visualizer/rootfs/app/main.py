@@ -121,6 +121,10 @@ class ZHAExporter:
 
                 print("\n[1/8] Fetching Home Assistant configuration...")
                 ha_config = await self.get_ha_config(ws)
+                # Temporarily log config keys to debug URL issue
+                print(f"      [DEBUG] HA config keys: {list(ha_config.keys())}")
+                for key in ['external_url', 'internal_url', 'base_url', 'url']:
+                    print(f"      [DEBUG] {key}: {ha_config.get(key, 'NOT PRESENT')}")
                 # Try external_url first, then internal_url, then fall back to empty
                 self.ha_external_url = (
                     ha_config.get('external_url') or
@@ -131,6 +135,7 @@ class ZHAExporter:
                     print(f"      Home Assistant URL: {self.ha_external_url}")
                 else:
                     print("      Warning: No external/internal URL configured in Home Assistant")
+                    print("      (Set this in Settings -> System -> Network for 'Open in HA' links to work)")
 
                 print("\n[2/8] Triggering topology scan...")
                 await self.trigger_topology_scan(ws)
