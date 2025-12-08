@@ -155,7 +155,6 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     d3_links = []
 
     devices = hierarchy['devices']
-    ha_url = data.get('home_assistant_url', '').rstrip('/')
     nodes = hierarchy['nodes']
 
     nwk_to_ieee = {}
@@ -362,7 +361,6 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             })
 
         device_reg_id = device.get('device_reg_id', '')
-        ha_device_url = f"{ha_url}/config/devices/device/{device_reg_id}" if device_reg_id and ha_url else ''
 
         d3_nodes.append({
             'id': node_id,
@@ -377,7 +375,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'neighbors': neighbor_list,
             'is_coordinator': node.get('is_coordinator', False),
             'parents': child_to_parents.get(node_id, []),
-            'ha_url': ha_device_url
+            'device_reg_id': device_reg_id
         })
 
     for ieee, link_info in device_primary_link.items():
@@ -1229,6 +1227,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 }}).join(', ');
             }}
 
+            // Construct HA device URL using current hostname (assumes HA is on port 8123)
+            const haBaseUrl = `${{window.location.protocol}}//${{window.location.hostname}}:8123`;
+            const haDeviceUrl = d.device_reg_id ? `${{haBaseUrl}}/config/devices/device/${{d.device_reg_id}}` : '';
+
             const content = `
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
@@ -1239,7 +1241,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div>Model: <span>${{d.model || 'Unknown'}}</span></div>
                 <div>Last seen: <span>${{formatLastSeen(d.last_seen)}}</span></div>
                 ${{d.neighbors && d.neighbors.length > 0 ? `<div>Neighbors: <span>${{d.neighbors.length}} (click to show)</span></div>` : ''}}
-                ${{d.ha_url ? `<div style="margin-top:5px"><a href="${{d.ha_url}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}
+                ${{haDeviceUrl ? `<div style="margin-top:5px"><a href="${{haDeviceUrl}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}
                 <div style="color:#666;margin-top:5px;font-size:10px">Drag to move | Click to select</div>
             `;
             showTooltip(content, event.pageX, event.pageY);

@@ -35,7 +35,6 @@ class ZHAExporter:
         self.token = SUPERVISOR_TOKEN
         self.ws_url = WS_URL
         self.api_url = INTERNAL_API_URL
-        self.ha_external_url = None  # Will be fetched from HA config
         self.msg_id = 0
 
     def next_id(self) -> int:
@@ -119,48 +118,30 @@ class ZHAExporter:
 
                 print("      Connected and authenticated!")
 
-                print("\n[1/8] Fetching Home Assistant configuration...")
-                ha_config = await self.get_ha_config(ws)
-                # Temporarily log config keys to debug URL issue
-                print(f"      [DEBUG] HA config keys: {list(ha_config.keys())}")
-                for key in ['external_url', 'internal_url', 'base_url', 'url']:
-                    print(f"      [DEBUG] {key}: {ha_config.get(key, 'NOT PRESENT')}")
-                # Try external_url first, then internal_url, then fall back to empty
-                self.ha_external_url = (
-                    ha_config.get('external_url') or
-                    ha_config.get('internal_url') or
-                    ''
-                ).rstrip('/')
-                if self.ha_external_url:
-                    print(f"      Home Assistant URL: {self.ha_external_url}")
-                else:
-                    print("      Warning: No external/internal URL configured in Home Assistant")
-                    print("      (Set this in Settings -> System -> Network for 'Open in HA' links to work)")
-
-                print("\n[2/8] Triggering topology scan...")
+                print("\n[1/7] Triggering topology scan...")
                 await self.trigger_topology_scan(ws)
 
-                print("\n[3/8] Fetching ZHA devices with neighbor data...")
+                print("\n[2/7] Fetching ZHA devices with neighbor data...")
                 devices = await self.get_devices(ws)
                 print(f"      Found {len(devices)} devices")
 
-                print("\n[4/8] Fetching network settings...")
+                print("\n[3/7] Fetching network settings...")
                 network = await self.get_network_settings(ws)
                 channel = network.get("network_info", {}).get("channel", "N/A")
                 print(f"      Channel: {channel}")
 
-                print("\n[5/8] Fetching network backups...")
+                print("\n[4/7] Fetching network backups...")
                 backups = await self.get_network_backups(ws)
                 print(f"      Found {len(backups)} backups")
 
-                print("\n[6/8] Fetching ZHA groups...")
+                print("\n[5/7] Fetching ZHA groups...")
                 groups = await self.get_groups(ws)
                 print(f"      Found {len(groups)} groups")
 
-                print("\n[7/8] Fetching device clusters...")
+                print("\n[6/7] Fetching device clusters...")
                 devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                print("\n[8/8] Fetching device registry...")
+                print("\n[7/7] Fetching device registry...")
                 registry = await self.get_device_registry(ws)
                 print(f"      Found {len(registry)} registry entries")
 
@@ -171,7 +152,6 @@ class ZHAExporter:
 
         return {
             "export_timestamp": datetime.now().isoformat(),
-            "home_assistant_url": self.ha_external_url,
             "network_settings": network,
             "network_backups": backups,
             "devices": devices_with_clusters,
@@ -240,11 +220,6 @@ class ZHAExporter:
             d for d in all_devices
             if any("zha" in str(ident).lower() for ident in d.get("identifiers", []))
         ]
-
-    async def get_ha_config(self, ws) -> dict:
-        """Fetch Home Assistant configuration to get external/internal URLs."""
-        result = await self.ws_command(ws, {"type": "get_config"})
-        return result.get("result", {})
 
     async def get_device_clusters(self, ws, devices: list) -> list:
         """Fetch cluster information for each device."""
