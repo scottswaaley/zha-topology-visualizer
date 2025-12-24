@@ -416,6 +416,41 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                         'source_type': 'sibling'
                     })
 
+    # Compute full path to coordinator for each device
+    coordinator_id = hierarchy['coordinator']['id']
+    device_paths = {}
+    for node_id in nodes.keys():
+        if node_id == coordinator_id:
+            device_paths[node_id] = []
+            continue
+
+        path = []
+        current = node_id
+        visited = set()
+
+        while current and current != coordinator_id and current not in visited:
+            visited.add(current)
+            if current in device_primary_link:
+                link = device_primary_link[current]
+                parent_id = link['target']
+                parent_node = nodes.get(parent_id)
+                parent_name = parent_node.get('name', parent_id) if parent_node else parent_id
+                path.append({
+                    'id': parent_id,
+                    'name': parent_name,
+                    'lqi': link['lqi'],
+                    'device_type': parent_node.get('device_type') if parent_node else 'Unknown'
+                })
+                current = parent_id
+            else:
+                break
+
+        device_paths[node_id] = path
+
+    # Add path_to_coordinator to each node
+    for node in d3_nodes:
+        node['path_to_coordinator'] = device_paths.get(node['id'], [])
+
     export_timestamp = data.get('export_timestamp', '')
     nodes_data = hierarchy['nodes']
     total = len(nodes_data)
@@ -1227,6 +1262,23 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 }}).join(', ');
             }}
 
+            // Build full path to coordinator
+            let pathInfo = '';
+            if (d.is_coordinator) {{
+                pathInfo = '<span style="color:#00d4ff">This is the Coordinator</span>';
+            }} else if (d.path_to_coordinator && d.path_to_coordinator.length > 0) {{
+                const deviceName = d.user_given_name || d.name;
+                const pathParts = [`<span style="color:#FFC107">${{deviceName}}</span>`];
+                d.path_to_coordinator.forEach(hop => {{
+                    const lqiStr = hop.lqi ? `<span style="color:${{getLqiColor(hop.lqi)}}">${{hop.lqi}}</span>` : '?';
+                    const hopColor = hop.device_type === 'Coordinator' ? '#00d4ff' : '#8BC34A';
+                    pathParts.push(`—(${{lqiStr}})→ <span style="color:${{hopColor}}">${{hop.name}}</span>`);
+                }});
+                pathInfo = pathParts.join(' ');
+            }} else {{
+                pathInfo = '<span style="color:#666">Unknown path</span>';
+            }}
+
             // Construct HA device URL using current hostname (assumes HA is on port 8123)
             const haBaseUrl = `${{window.location.protocol}}//${{window.location.hostname}}:8123`;
             const haDeviceUrl = d.device_reg_id ? `${{haBaseUrl}}/config/devices/device/${{d.device_reg_id}}` : '';
@@ -1236,6 +1288,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
                 <div>Type: <span>${{d.device_type}}</span></div>
                 <div>LQI: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span></div>
+                <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
                 <div>Model: <span>${{d.model || 'Unknown'}}</span></div>
