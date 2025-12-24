@@ -355,7 +355,9 @@ class VisualizationHandler(BaseHTTPRequestHandler):
 
     def handle_refresh(self):
         """Handle refresh request."""
+        log("[Server] Refresh requested")
         if is_refreshing:
+            log("[Server] Refresh already in progress, rejecting request")
             self.send_response(202)  # Accepted - already in progress
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
@@ -363,6 +365,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             return
 
         # Start refresh in background
+        log("[Server] Starting background refresh thread")
         thread = threading.Thread(target=do_refresh, daemon=True)
         thread.start()
 

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.32] - 2024-12-24
+
+### Fixed
+- Refresh button now properly waits for data refresh to complete before reloading
+- Added polling mechanism to track refresh progress (shows elapsed seconds)
+- Better error logging for WebSocket connection failures
+- Errors during refresh are now properly displayed to user
+
+### Changed
+- Refresh button shows progress countdown while waiting for data
+
 ## [1.0.30] - 2024-12-24
 
 ### Added

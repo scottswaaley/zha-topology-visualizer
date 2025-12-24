@@ -112,49 +112,58 @@ class ZHAExporter:
 
     async def export_all(self) -> dict:
         """Export all ZHA data including topology."""
-        async with aiohttp.ClientSession() as session:
-            async with session.ws_connect(
-                self.ws_url,
-                headers={"Authorization": f"Bearer {self.token}"},
-                heartbeat=15,
-                autoping=True,
-                receive_timeout=None
-            ) as ws:
-                if not await self.authenticate(ws):
-                    raise Exception("Authentication failed - check Supervisor token")
+        log(f"      Connecting to WebSocket: {self.ws_url}")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.ws_connect(
+                    self.ws_url,
+                    headers={"Authorization": f"Bearer {self.token}"},
+                    heartbeat=15,
+                    autoping=True,
+                    receive_timeout=None
+                ) as ws:
+                    if not await self.authenticate(ws):
+                        raise Exception("Authentication failed - check Supervisor token")
 
-                log("      Connected and authenticated!")
+                    log("      Connected and authenticated!")
 
-                log("[1/8] Triggering topology scan...")
-                await self.trigger_topology_scan(ws)
+                    log("[1/8] Triggering topology scan...")
+                    await self.trigger_topology_scan(ws)
 
-                log("[2/8] Fetching ZHA devices with neighbor data...")
-                devices = await self.get_devices(ws)
-                log(f"      Found {len(devices)} devices")
+                    log("[2/8] Fetching ZHA devices with neighbor data...")
+                    devices = await self.get_devices(ws)
+                    log(f"      Found {len(devices)} devices")
 
-                log("[3/8] Fetching network settings...")
-                network = await self.get_network_settings(ws)
-                channel = network.get("network_info", {}).get("channel", "N/A")
-                log(f"      Channel: {channel}")
+                    log("[3/8] Fetching network settings...")
+                    network = await self.get_network_settings(ws)
+                    channel = network.get("network_info", {}).get("channel", "N/A")
+                    log(f"      Channel: {channel}")
 
-                log("[4/8] Fetching network backups...")
-                backups = await self.get_network_backups(ws)
-                log(f"      Found {len(backups)} backups")
+                    log("[4/8] Fetching network backups...")
+                    backups = await self.get_network_backups(ws)
+                    log(f"      Found {len(backups)} backups")
 
-                log("[5/8] Fetching ZHA groups...")
-                groups = await self.get_groups(ws)
-                log(f"      Found {len(groups)} groups")
+                    log("[5/8] Fetching ZHA groups...")
+                    groups = await self.get_groups(ws)
+                    log(f"      Found {len(groups)} groups")
 
-                log("[6/8] Fetching device clusters...")
-                devices_with_clusters = await self.get_device_clusters(ws, devices)
+                    log("[6/8] Fetching device clusters...")
+                    devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                log("[7/8] Fetching device registry...")
-                device_registry = await self.get_device_registry(ws)
-                log(f"      Found {len(device_registry)} device registry entries")
+                    log("[7/8] Fetching device registry...")
+                    device_registry = await self.get_device_registry(ws)
+                    log(f"      Found {len(device_registry)} device registry entries")
 
-                log("[8/8] Fetching entity registry...")
-                entity_registry = await self.get_entity_registry(ws)
-                log(f"      Found {len(entity_registry)} entity registry entries")
+                    log("[8/8] Fetching entity registry...")
+                    entity_registry = await self.get_entity_registry(ws)
+                    log(f"      Found {len(entity_registry)} entity registry entries")
+
+        except aiohttp.ClientError as e:
+            log(f"      ERROR: WebSocket connection failed: {e}")
+            raise Exception(f"WebSocket connection failed: {e}")
+        except Exception as e:
+            log(f"      ERROR: Export failed: {e}")
+            raise
 
         # Fetch entity states via REST and optionally floorplan SVG
         async with aiohttp.ClientSession() as session:

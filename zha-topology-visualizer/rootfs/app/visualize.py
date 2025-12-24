@@ -2129,21 +2129,54 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             btn.disabled = true;
 
             try {{
+                // Start the refresh
                 const response = await fetch('/refresh', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }}
                 }});
 
-                if (response.ok) {{
-                    window.location.reload();
-                }} else {{
+                if (!response.ok) {{
                     const error = await response.text();
-                    alert('Refresh failed: ' + error);
-                    btn.textContent = originalText;
-                    btn.classList.remove('loading');
-                    btn.disabled = false;
+                    throw new Error(error);
                 }}
+
+                // Poll for completion
+                let attempts = 0;
+                const maxAttempts = 120;  // 2 minutes max
+                const pollInterval = 1000;  // 1 second
+
+                while (attempts < maxAttempts) {{
+                    await new Promise(r => setTimeout(r, pollInterval));
+                    attempts++;
+
+                    try {{
+                        const statusResponse = await fetch('/status');
+                        if (statusResponse.ok) {{
+                            const status = await statusResponse.json();
+
+                            if (status.refresh_error) {{
+                                throw new Error(status.refresh_error);
+                            }}
+
+                            if (!status.is_refreshing) {{
+                                // Refresh complete
+                                window.location.reload();
+                                return;
+                            }}
+                        }}
+                    }} catch (pollErr) {{
+                        console.error('[Refresh] Poll error:', pollErr);
+                    }}
+
+                    // Update button text with progress
+                    btn.textContent = `Refreshing (${{attempts}}s)`;
+                }}
+
+                // Timeout
+                throw new Error('Refresh timed out after 2 minutes');
+
             }} catch (err) {{
+                console.error('[Refresh] Error:', err);
                 alert('Refresh failed: ' + err.message);
                 btn.textContent = originalText;
                 btn.classList.remove('loading');
