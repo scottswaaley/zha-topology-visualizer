@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.16] - 2024-12-24
+
+### Fixed
+- Skip cluster fetching entirely (was causing hangs, not needed for visualization)
+- Data refresh now completes reliably
+
 ## [1.0.15] - 2024-12-24
 
 ### Fixed
