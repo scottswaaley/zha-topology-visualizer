@@ -10,12 +10,19 @@ import sys
 import threading
 import time
 import asyncio
+from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 # Import our modules
 from main import export_data
 from visualize import generate_visualization, find_latest_export
+
+
+def log(message: str):
+    """Print a log message with timestamp."""
+    timestamp = datetime.now().strftime('%H:%M:%S')
+    print(f"[{timestamp}] {message}")
 
 # Data directory
 DATA_DIR = Path('/data')
@@ -45,9 +52,9 @@ def do_refresh() -> tuple:
         is_refreshing = True
         refresh_error = None
         try:
-            print("\n" + "=" * 50)
-            print("Starting data refresh...")
-            print("=" * 50)
+            log("=" * 50)
+            log("Starting data refresh...")
+            log("=" * 50)
 
             # Export new data
             loop = asyncio.new_event_loop()
@@ -61,13 +68,13 @@ def do_refresh() -> tuple:
             output_file = generate_visualization(json_file)
 
             last_refresh_time = time.time()
-            print(f"\nRefresh complete! Serving: {output_file}")
+            log(f"Refresh complete! Serving: {output_file}")
             is_refreshing = False
             return True, None
 
         except Exception as e:
             error_msg = str(e)
-            print(f"\nRefresh failed: {error_msg}")
+            log(f"Refresh failed: {error_msg}")
             import traceback
             traceback.print_exc()
             refresh_error = error_msg
@@ -209,7 +216,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
     """HTTP request handler for the visualization server."""
 
     def log_message(self, format, *args):
-        print(f"[Server] {args[0]}")
+        log(f"[Server] {args[0]}")
 
     def do_GET(self):
         try:
@@ -270,9 +277,9 @@ class VisualizationHandler(BaseHTTPRequestHandler):
                     # Regenerate HTML from cached data
                     try:
                         generate_visualization(latest)
-                        print("[Server] Regenerated HTML from cached data")
+                        log("[Server] Regenerated HTML from cached data")
                     except Exception as e:
-                        print(f"[Server] Failed to regenerate: {e}")
+                        log(f"[Server] Failed to regenerate: {e}")
 
                 # If still no HTML, trigger full refresh
                 if not HTML_FILE.exists():
@@ -296,7 +303,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
                 try:
                     generate_visualization(latest)
                 except Exception as e:
-                    print(f"[Server] Auto-regenerate failed: {e}")
+                    log(f"[Server] Auto-regenerate failed: {e}")
 
             # Serve the visualization
             with open(HTML_FILE, 'r', encoding='utf-8') as f:
@@ -312,7 +319,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         except BrokenPipeError:
             pass  # Client disconnected
         except Exception as e:
-            print(f"Error serving HTML: {e}")
+            log(f"Error serving HTML: {e}")
             import traceback
             traceback.print_exc()
 
@@ -385,14 +392,14 @@ class VisualizationHandler(BaseHTTPRequestHandler):
 
 def auto_refresh_loop(interval_minutes: int):
     """Background thread for auto-refresh."""
-    print(f"Auto-refresh enabled: every {interval_minutes} minutes")
+    log(f"Auto-refresh enabled: every {interval_minutes} minutes")
 
     while True:
         time.sleep(interval_minutes * 60)
         if not is_refreshing:
-            print("\n" + "=" * 50)
-            print(f"Auto-refresh triggered (every {interval_minutes} min)...")
-            print("=" * 50)
+            log("=" * 50)
+            log(f"Auto-refresh triggered (every {interval_minutes} min)...")
+            log("=" * 50)
             do_refresh()
 
 
@@ -402,39 +409,39 @@ def initial_refresh():
 
     # Check for existing data first
     if HTML_FILE.exists():
-        print("Existing visualization found, skipping initial refresh")
+        log("Existing visualization found, skipping initial refresh")
         return
 
     latest = find_latest_export()
     if latest:
-        print(f"Found existing export: {latest}")
-        print("Generating visualization from existing data...")
+        log(f"Found existing export: {latest}")
+        log("Generating visualization from existing data...")
         try:
             generate_visualization(latest)
-            print("Visualization generated successfully")
+            log("Visualization generated successfully")
             return
         except Exception as e:
-            print(f"Warning: Could not generate from existing export: {e}")
+            log(f"Warning: Could not generate from existing export: {e}")
 
     # No existing data, trigger refresh
-    print("No existing visualization, starting initial data fetch...")
+    log("No existing visualization, starting initial data fetch...")
     do_refresh()
 
 
 def main():
     """Main entry point for the server."""
-    print("=" * 50)
-    print("ZHA Topology Visualization Server")
-    print("=" * 50)
+    log("=" * 50)
+    log("ZHA Topology Visualization Server")
+    log("=" * 50)
 
     # Read options
     options = read_options()
     auto_refresh_minutes = options.get('auto_refresh_minutes', 0)
 
-    print(f"Configuration:")
-    print(f"  - Auto-refresh: {auto_refresh_minutes} minutes (0 = disabled)")
-    print(f"  - Data directory: {DATA_DIR}")
-    print(f"  - HTML file: {HTML_FILE}")
+    log(f"Configuration:")
+    log(f"  - Auto-refresh: {auto_refresh_minutes} minutes (0 = disabled)")
+    log(f"  - Data directory: {DATA_DIR}")
+    log(f"  - HTML file: {HTML_FILE}")
 
     # Start initial refresh in background thread
     init_thread = threading.Thread(target=initial_refresh, daemon=True)
@@ -453,15 +460,15 @@ def main():
     port = 8099
     server = HTTPServer(('0.0.0.0', port), VisualizationHandler)
 
-    print(f"\n{'=' * 50}")
-    print(f"Server running on port {port}")
-    print(f"Access at: http://<your-ha-host>:{port}")
-    print(f"{'=' * 50}\n")
+    log("=" * 50)
+    log(f"Server running on port {port}")
+    log(f"Access at: http://<your-ha-host>:{port}")
+    log("=" * 50)
 
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nServer stopped.")
+        log("Server stopped.")
         server.shutdown()
 
 

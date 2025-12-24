@@ -8,8 +8,15 @@ import asyncio
 import aiohttp
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def log(message: str, end: str = '\n', flush: bool = False):
+    """Print a log message with timestamp."""
+    timestamp = datetime.now().strftime('%H:%M:%S')
+    print(f"[{timestamp}] {message}", end=end, flush=flush)
 
 
 # Configuration from environment (provided by Home Assistant Supervisor)
@@ -47,12 +54,12 @@ class ZHAExporter:
         command["id"] = msg_id
 
         if DEBUG:
-            print(f"      [DEBUG] Sending: {command.get('type')}")
+            log(f"      [DEBUG] Sending: {command.get('type')}")
 
         try:
             await ws.send_json(command)
         except (ConnectionResetError, aiohttp.ClientError) as e:
-            print(f"      Error: WebSocket connection failed - {e}")
+            log(f"      Error: WebSocket connection failed - {e}")
             raise
 
         try:
@@ -70,7 +77,7 @@ class ZHAExporter:
                     raise asyncio.TimeoutError(f"Timeout waiting for {command.get('type')}")
 
                 if DEBUG:
-                    print(f"      [DEBUG] Received: type={msg.get('type')}, id={msg.get('id')}")
+                    log(f"      [DEBUG] Received: type={msg.get('type')}, id={msg.get('id')}")
 
                 # Check if this is our response
                 if msg.get("id") == msg_id:
@@ -81,7 +88,7 @@ class ZHAExporter:
                     continue
 
         except asyncio.TimeoutError:
-            print(f"      Warning: Timeout on {command.get('type')}")
+            log(f"      Warning: Timeout on {command.get('type')}")
             return {"success": False, "error": "timeout"}
 
     async def authenticate(self, ws) -> bool:
@@ -89,7 +96,7 @@ class ZHAExporter:
         try:
             msg = await asyncio.wait_for(ws.receive_json(), timeout=10)
             if msg.get("type") != "auth_required":
-                print(f"      Unexpected message: {msg}")
+                log(f"      Unexpected message: {msg}")
                 return False
 
             await ws.send_json({
@@ -100,7 +107,7 @@ class ZHAExporter:
             msg = await asyncio.wait_for(ws.receive_json(), timeout=10)
             return msg.get("type") == "auth_ok"
         except asyncio.TimeoutError:
-            print("      Authentication timeout")
+            log("      Authentication timeout")
             return False
 
     async def export_all(self) -> dict:
@@ -116,44 +123,44 @@ class ZHAExporter:
                 if not await self.authenticate(ws):
                     raise Exception("Authentication failed - check Supervisor token")
 
-                print("      Connected and authenticated!")
+                log("      Connected and authenticated!")
 
-                print("\n[1/7] Triggering topology scan...")
+                log("[1/7] Triggering topology scan...")
                 await self.trigger_topology_scan(ws)
 
-                print("\n[2/7] Fetching ZHA devices with neighbor data...")
+                log("[2/7] Fetching ZHA devices with neighbor data...")
                 devices = await self.get_devices(ws)
-                print(f"      Found {len(devices)} devices")
+                log(f"      Found {len(devices)} devices")
 
-                print("\n[3/7] Fetching network settings...")
+                log("[3/7] Fetching network settings...")
                 network = await self.get_network_settings(ws)
                 channel = network.get("network_info", {}).get("channel", "N/A")
-                print(f"      Channel: {channel}")
+                log(f"      Channel: {channel}")
 
-                print("\n[4/7] Fetching network backups...")
+                log("[4/7] Fetching network backups...")
                 backups = await self.get_network_backups(ws)
-                print(f"      Found {len(backups)} backups")
+                log(f"      Found {len(backups)} backups")
 
-                print("\n[5/7] Fetching ZHA groups...")
+                log("[5/7] Fetching ZHA groups...")
                 groups = await self.get_groups(ws)
-                print(f"      Found {len(groups)} groups")
+                log(f"      Found {len(groups)} groups")
 
-                print("\n[6/7] Fetching device clusters...")
+                log("[6/7] Fetching device clusters...")
                 devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                print("\n[7/7] Fetching device registry...")
+                log("[7/7] Fetching device registry...")
                 registry = await self.get_device_registry(ws)
-                print(f"      Found {len(registry)} registry entries")
+                log(f"      Found {len(registry)} registry entries")
 
         # Fetch entity states via REST and optionally floorplan SVG
         async with aiohttp.ClientSession() as session:
             entities = await self.get_zha_entities(session)
-            print(f"\n      Found {len(entities)} ZHA entities")
+            log(f"      Found {len(entities)} ZHA entities")
 
             # Fetch floorplan SVG if configured
             floorplan_svg = await self.get_floorplan_svg(session)
             if floorplan_svg:
-                print(f"      Loaded floorplan SVG ({len(floorplan_svg)} bytes)")
+                log(f"      Loaded floorplan SVG ({len(floorplan_svg)} bytes)")
 
         return {
             "export_timestamp": datetime.now().isoformat(),
@@ -172,9 +179,9 @@ class ZHAExporter:
         result = await self.ws_command(ws, {"type": "zha/topology/update"}, timeout=10)
 
         if not result.get("success", True):
-            print(f"      Note: Topology update response: {result}")
+            log(f"      Note: Topology update response: {result}")
 
-        print(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for scan to complete", end="", flush=True)
+        log(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for scan to complete", end="", flush=True)
         start_time = asyncio.get_event_loop().time()
         last_dot = start_time
 
@@ -182,20 +189,20 @@ class ZHAExporter:
             try:
                 msg = await asyncio.wait_for(ws.receive(), timeout=2.0)
                 if msg.type == aiohttp.WSMsgType.CLOSE:
-                    print("\n      Warning: WebSocket closed during scan wait")
+                    log("\n      Warning: WebSocket closed during scan wait")
                     break
                 elif msg.type == aiohttp.WSMsgType.ERROR:
-                    print(f"\n      Warning: WebSocket error during scan wait")
+                    log("\n      Warning: WebSocket error during scan wait")
                     break
             except asyncio.TimeoutError:
                 pass
 
             now = asyncio.get_event_loop().time()
             if now - last_dot >= 5:
-                print(".", end="", flush=True)
+                print(".", end="", flush=True)  # Keep dots without timestamp for progress
                 last_dot = now
 
-        print(" done")
+        log(" done")
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""
@@ -229,7 +236,7 @@ class ZHAExporter:
 
     async def get_device_clusters(self, ws, devices: list) -> list:
         """Fetch cluster information for each device."""
-        print(f"      Fetching clusters for {len(devices)} devices", end="", flush=True)
+        log(f"      Fetching clusters for {len(devices)} devices", end="", flush=True)
 
         for device in devices:
             ieee = device.get("ieee")
@@ -254,11 +261,11 @@ class ZHAExporter:
                     device["cluster_details"][endpoint_id] = clusters
                 except Exception as e:
                     if DEBUG:
-                        print(f"\n      [DEBUG] Cluster fetch failed for {ieee}: {e}")
+                        log(f"\n      [DEBUG] Cluster fetch failed for {ieee}: {e}")
 
-            print(".", end="", flush=True)
+            print(".", end="", flush=True)  # Keep dots without timestamp for progress
 
-        print(" done")
+        log(" done")
         return devices
 
     async def get_zha_entities(self, session: aiohttp.ClientSession) -> list:
@@ -275,7 +282,7 @@ class ZHAExporter:
                 timeout=aiohttp.ClientTimeout(total=30)
             ) as resp:
                 if resp.status != 200:
-                    print(f"      Warning: Could not fetch entities (HTTP {resp.status})")
+                    log(f"      Warning: Could not fetch entities (HTTP {resp.status})")
                     return []
 
                 all_states = await resp.json()
@@ -290,7 +297,7 @@ class ZHAExporter:
 
                 return zha_entities
         except Exception as e:
-            print(f"      Warning: Entity fetch failed: {e}")
+            log(f"      Warning: Entity fetch failed: {e}")
             return []
 
     async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:
@@ -326,7 +333,7 @@ class ZHAExporter:
         try:
             url = f"{self.api_url}{api_path}"
             if DEBUG:
-                print(f"      [DEBUG] Fetching floorplan from: {url}")
+                log(f"      [DEBUG] Fetching floorplan from: {url}")
 
             async with session.get(
                 url,
@@ -334,17 +341,17 @@ class ZHAExporter:
                 timeout=aiohttp.ClientTimeout(total=30)
             ) as resp:
                 if resp.status != 200:
-                    print(f"      Warning: Could not fetch floorplan SVG (HTTP {resp.status})")
+                    log(f"      Warning: Could not fetch floorplan SVG (HTTP {resp.status})")
                     return None
 
                 content_type = resp.headers.get('Content-Type', '')
                 if 'svg' not in content_type and 'xml' not in content_type:
-                    print(f"      Warning: Floorplan file is not SVG (Content-Type: {content_type})")
+                    log(f"      Warning: Floorplan file is not SVG (Content-Type: {content_type})")
 
                 svg_content = await resp.text()
                 return svg_content
         except Exception as e:
-            print(f"      Warning: Floorplan fetch failed: {e}")
+            log(f"      Warning: Floorplan fetch failed: {e}")
             return None
 
     def build_topology(self, devices: list) -> dict:
@@ -413,9 +420,9 @@ class ZHAExporter:
 
 def print_topology_summary(topology: dict):
     """Print a summary of the network topology."""
-    print("\n" + "=" * 60)
-    print("NETWORK TOPOLOGY SUMMARY")
-    print("=" * 60)
+    log("=" * 60)
+    log("NETWORK TOPOLOGY SUMMARY")
+    log("=" * 60)
 
     nodes = topology.get("nodes", [])
     edges = topology.get("edges", [])
@@ -424,50 +431,50 @@ def print_topology_summary(topology: dict):
     routers = sum(1 for n in nodes if n.get("device_type") == "Router")
     end_devices = sum(1 for n in nodes if n.get("device_type") == "EndDevice")
 
-    print(f"\nDevices: {len(nodes)} total")
-    print(f"  - Coordinator: {coordinators}")
-    print(f"  - Routers: {routers}")
-    print(f"  - End Devices: {end_devices}")
+    log(f"Devices: {len(nodes)} total")
+    log(f"  - Coordinator: {coordinators}")
+    log(f"  - Routers: {routers}")
+    log(f"  - End Devices: {end_devices}")
 
     device_lqis = [n.get("lqi") for n in nodes if n.get("lqi") is not None]
     if device_lqis:
         avg_device_lqi = sum(device_lqis) / len(device_lqis)
         min_device_lqi = min(device_lqis)
         max_device_lqi = max(device_lqis)
-        print(f"\nDevice Signal Quality (matches ZHA visualization):")
-        print(f"  - Average: {avg_device_lqi:.0f}/255 ({(avg_device_lqi/255)*100:.0f}%)")
-        print(f"  - Range: {min_device_lqi} - {max_device_lqi}")
+        log(f"Device Signal Quality (matches ZHA visualization):")
+        log(f"  - Average: {avg_device_lqi:.0f}/255 ({(avg_device_lqi/255)*100:.0f}%)")
+        log(f"  - Range: {min_device_lqi} - {max_device_lqi}")
 
         weak_devices = [(n.get("name"), n.get("lqi")) for n in nodes
                         if n.get("lqi") is not None and n.get("lqi") < 50]
         if weak_devices:
-            print(f"\n[!] Weak Devices (LQI < 50):")
+            log(f"[!] Weak Devices (LQI < 50):")
             for name, lqi in sorted(weak_devices, key=lambda x: x[1]):
-                print(f"  - {name}: LQI {lqi}")
+                log(f"  - {name}: LQI {lqi}")
 
-    print(f"\nMesh Connections: {len(edges)} neighbor links")
+    log(f"Mesh Connections: {len(edges)} neighbor links")
     if edges:
         link_lqis = [e.get("lqi", 0) for e in edges if e.get("lqi")]
         if link_lqis:
             avg_link_lqi = sum(link_lqis) / len(link_lqis)
             min_link_lqi = min(link_lqis)
             max_link_lqi = max(link_lqis)
-            print(f"  - Average link LQI: {avg_link_lqi:.0f}/255 ({(avg_link_lqi/255)*100:.0f}%)")
-            print(f"  - Range: {min_link_lqi} - {max_link_lqi}")
+            log(f"  - Average link LQI: {avg_link_lqi:.0f}/255 ({(avg_link_lqi/255)*100:.0f}%)")
+            log(f"  - Range: {min_link_lqi} - {max_link_lqi}")
 
 
 async def export_data():
     """Export ZHA data and save to file."""
-    print("=" * 60)
-    print("Home Assistant ZHA Full Data Exporter")
-    print("=" * 60)
+    log("=" * 60)
+    log("Home Assistant ZHA Full Data Exporter")
+    log("=" * 60)
 
     exporter = ZHAExporter()
 
     try:
         data = await exporter.export_all()
     except Exception as e:
-        print(f"\nError: {e}")
+        log(f"Error: {e}")
         raise
 
     # Ensure data directory exists
@@ -479,12 +486,12 @@ async def export_data():
     with open(filename, "w") as f:
         json.dump(data, f, indent=2, default=str)
 
-    print(f"\n{'=' * 60}")
-    print(f"Export saved to: {filename}")
+    log("=" * 60)
+    log(f"Export saved to: {filename}")
 
     print_topology_summary(data.get("topology", {}))
 
-    print("\n" + "=" * 60)
+    log("=" * 60)
 
     return str(filename)
 

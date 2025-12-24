@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.14] - 2024-12-24
+
+### Added
+- Timestamps on all log entries for easier debugging
+- "Data as of" display in header now shows relative time (e.g., "2 hours ago")
+- Data age updates every minute without page refresh
+- Debug logging for entity-to-device matching
+
+### Fixed
+- Improved entity matching diagnostics
+
 ## [1.0.13] - 2024-12-24
 
 ### Added

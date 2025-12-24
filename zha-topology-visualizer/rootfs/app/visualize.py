@@ -180,12 +180,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     # Build a map of IEEE -> entities from the fetched entity states
     # Entities are fetched via REST API and stored in data['entities']
     ieee_to_entities = {}
-    for entity in data.get('entities', []):
+    entities_list = data.get('entities', [])
+    print(f"[Visualize] Total entities in data: {len(entities_list)}")
+    entities_with_ieee = 0
+    for entity in entities_list:
         entity_id = entity.get('entity_id', '')
         attributes = entity.get('attributes', {})
         # Get IEEE from attributes (common for ZHA entities)
         ieee = attributes.get('ieee')
         if ieee:
+            entities_with_ieee += 1
             if ieee not in ieee_to_entities:
                 ieee_to_entities[ieee] = []
             ieee_to_entities[ieee].append({
@@ -193,6 +197,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'friendly_name': attributes.get('friendly_name', entity_id),
                 'state': entity.get('state', 'unknown')
             })
+    print(f"[Visualize] Entities with IEEE attribute: {entities_with_ieee}")
+    print(f"[Visualize] Unique devices with entities: {len(ieee_to_entities)}")
 
     nwk_to_ieee = {}
     for ieee, device in devices.items():
@@ -965,7 +971,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <span>Coordinator: 1</span>
             <span>Routers: {routers}</span>
             <span>End Devices: {end_devices}</span>
-            <span style="color:#666">Export: {export_timestamp[:19] if export_timestamp else 'N/A'}</span>
+            <span id="dataAge" style="color:#666">Data as of: {export_timestamp[:19].replace('T', ' ') if export_timestamp else 'N/A'}</span>
         </div>
         <div class="legend">
             <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div> Coordinator</div>
@@ -1059,6 +1065,23 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 .style('display', d => linkTypeVisibility.sibling ? null : 'none');
         }}
 
+        function updateDataAge() {{
+            const now = new Date();
+            const diffMs = now - exportTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            let relativeTime;
+            if (diffMins < 1) relativeTime = 'just now';
+            else if (diffMins < 60) relativeTime = `${{diffMins}} minute${{diffMins !== 1 ? 's' : ''}} ago`;
+            else if (diffHours < 24) relativeTime = `${{diffHours}} hour${{diffHours !== 1 ? 's' : ''}} ago`;
+            else relativeTime = `${{diffDays}} day${{diffDays !== 1 ? 's' : ''}} ago`;
+
+            const dateStr = exportTime.toLocaleString();
+            document.getElementById('dataAge').textContent = `Data as of: ${{dateStr}} (${{relativeTime}})`;
+        }}
+
         document.addEventListener('DOMContentLoaded', () => {{
             document.querySelectorAll('.legend-item.clickable').forEach(item => {{
                 item.addEventListener('click', () => {{
@@ -1068,6 +1091,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     }}
                 }});
             }});
+
+            // Update data age display
+            updateDataAge();
+            // Update every minute
+            setInterval(updateDataAge, 60000);
         }});
 
         const nodeMap = {{}};
