@@ -393,7 +393,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 break
 
         # Get entity names associated with this device
-        entity_names = [e.get('name', '') for e in device.get('entities', []) if e.get('name')]
+        # ZHA API returns entities with 'entity_id' and 'name' fields
+        device_entities = device.get('entities', [])
+        entity_names = []
+        for e in device_entities:
+            # Add the friendly name if available
+            if e.get('name'):
+                entity_names.append(e.get('name'))
+            # Also add the entity_id for searchability (e.g., "light.living_room")
+            if e.get('entity_id'):
+                entity_names.append(e.get('entity_id'))
 
         d3_nodes.append({
             'id': node_id,
@@ -1054,53 +1063,75 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         let floorplanVisible = hasFloorplan;
         let floorplanBounds = {{ width: width, height: height }};
 
+        console.log('[Floorplan] hasFloorplan:', hasFloorplan);
+        console.log('[Floorplan] SVG content length:', floorplanSvgContent ? floorplanSvgContent.length : 0);
+
         if (hasFloorplan && floorplanSvgContent) {{
-            floorplanGroup = g.append('g')
-                .attr('class', 'floorplan-layer')
-                .attr('opacity', 0.3);
+            try {{
+                floorplanGroup = g.append('g')
+                    .attr('class', 'floorplan-layer')
+                    .attr('opacity', 0.3);
 
-            // Parse the SVG content to extract it properly
-            const parser = new DOMParser();
-            const svgDoc = parser.parseFromString(floorplanSvgContent, 'image/svg+xml');
-            const svgElement = svgDoc.documentElement;
+                // Parse the SVG content to extract it properly
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(floorplanSvgContent, 'image/svg+xml');
+                const svgElement = svgDoc.documentElement;
 
-            // Get the original viewBox or dimensions
-            let viewBox = svgElement.getAttribute('viewBox');
-            let svgWidth = parseFloat(svgElement.getAttribute('width')) || width;
-            let svgHeight = parseFloat(svgElement.getAttribute('height')) || height;
+                // Check for parsing errors
+                const parserError = svgDoc.querySelector('parsererror');
+                if (parserError) {{
+                    console.error('[Floorplan] SVG parsing error:', parserError.textContent);
+                }}
 
-            if (viewBox) {{
-                const vb = viewBox.split(/[\s,]+/).map(parseFloat);
-                svgWidth = vb[2] || svgWidth;
-                svgHeight = vb[3] || svgHeight;
+                // Get the original viewBox or dimensions
+                let viewBox = svgElement.getAttribute('viewBox');
+                let svgWidth = parseFloat(svgElement.getAttribute('width')) || width;
+                let svgHeight = parseFloat(svgElement.getAttribute('height')) || height;
+
+                console.log('[Floorplan] viewBox:', viewBox);
+                console.log('[Floorplan] dimensions:', svgWidth, 'x', svgHeight);
+
+                if (viewBox) {{
+                    const vb = viewBox.split(/[\s,]+/).map(parseFloat);
+                    svgWidth = vb[2] || svgWidth;
+                    svgHeight = vb[3] || svgHeight;
+                }}
+
+                floorplanBounds = {{ width: svgWidth, height: svgHeight }};
+
+                // Scale to fit the viewport while maintaining aspect ratio
+                const scale = Math.min(width / svgWidth, height / svgHeight) * 0.9;
+                const offsetX = (width - svgWidth * scale) / 2;
+                const offsetY = (height - svgHeight * scale) / 2;
+
+                console.log('[Floorplan] scale:', scale, 'offset:', offsetX, offsetY);
+
+                // Add a foreignObject to embed the SVG
+                floorplanGroup.append('foreignObject')
+                    .attr('x', offsetX)
+                    .attr('y', offsetY)
+                    .attr('width', svgWidth * scale)
+                    .attr('height', svgHeight * scale)
+                    .append('xhtml:div')
+                    .style('width', '100%')
+                    .style('height', '100%')
+                    .html(floorplanSvgContent);
+
+                // Store transform info for position normalization
+                floorplanGroup.datum({{
+                    scale: scale,
+                    offsetX: offsetX,
+                    offsetY: offsetY,
+                    originalWidth: svgWidth,
+                    originalHeight: svgHeight
+                }});
+
+                console.log('[Floorplan] Successfully added floorplan layer');
+            }} catch (err) {{
+                console.error('[Floorplan] Error adding floorplan:', err);
             }}
-
-            floorplanBounds = {{ width: svgWidth, height: svgHeight }};
-
-            // Scale to fit the viewport while maintaining aspect ratio
-            const scale = Math.min(width / svgWidth, height / svgHeight) * 0.9;
-            const offsetX = (width - svgWidth * scale) / 2;
-            const offsetY = (height - svgHeight * scale) / 2;
-
-            // Add a foreignObject to embed the SVG
-            floorplanGroup.append('foreignObject')
-                .attr('x', offsetX)
-                .attr('y', offsetY)
-                .attr('width', svgWidth * scale)
-                .attr('height', svgHeight * scale)
-                .append('xhtml:div')
-                .style('width', '100%')
-                .style('height', '100%')
-                .html(floorplanSvgContent);
-
-            // Store transform info for position normalization
-            floorplanGroup.datum({{
-                scale: scale,
-                offsetX: offsetX,
-                offsetY: offsetY,
-                originalWidth: svgWidth,
-                originalHeight: svgHeight
-            }});
+        }} else {{
+            console.log('[Floorplan] Skipping - hasFloorplan:', hasFloorplan, 'content exists:', !!floorplanSvgContent);
         }}
 
         function toggleFloorplan(btn) {{

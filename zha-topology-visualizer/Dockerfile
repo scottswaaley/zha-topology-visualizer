@@ -7,6 +7,9 @@ RUN pip3 install --no-cache-dir aiohttp pyyaml
 # Copy root filesystem
 COPY rootfs /
 
+# Copy config.yaml for version info
+COPY config.yaml /config.yaml
+
 # Set working directory
 WORKDIR /app
 
