@@ -179,23 +179,26 @@ class ZHAExporter:
             "floorplan_svg": floorplan_svg
         }
 
-    async def trigger_topology_scan(self, ws):  # noqa: ARG002
+    async def trigger_topology_scan(self, ws):
         """Trigger a network topology scan and wait for completion.
 
-        Note: We don't actually send the topology/update command anymore because
-        it times out and the scan happens anyway. We just wait for the scan to
-        complete so devices have fresh neighbor data.
+        We send periodic ping commands to keep the WebSocket alive during the wait.
+        This prevents the connection from being closed due to inactivity.
         """
         log(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for network scan", end="", flush=True)
 
-        # Simple sleep-based wait with progress dots
-        # We don't consume WebSocket messages here to avoid stealing responses
-        # from subsequent ws_command calls
+        # Keep WebSocket alive by sending ping commands periodically
+        # The ping command is a simple HA WebSocket command that returns quickly
         elapsed = 0
-        interval = 5
+        interval = 10  # Send ping every 10 seconds
         while elapsed < TOPOLOGY_SCAN_WAIT:
             await asyncio.sleep(interval)
             elapsed += interval
+            # Send a lightweight ping to keep connection alive
+            try:
+                await ws.ping()
+            except Exception:
+                pass  # Ignore ping errors, connection will fail on next command if dead
             print(".", end="", flush=True)
 
         log(" done")

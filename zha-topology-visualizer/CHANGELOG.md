@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.20] - 2024-12-24
+
+### Fixed
+- WebSocket connection no longer times out during topology scan wait
+- Send periodic pings to keep connection alive during 60s scan wait
+
 ## [1.0.19] - 2024-12-24
 
 ### Fixed
