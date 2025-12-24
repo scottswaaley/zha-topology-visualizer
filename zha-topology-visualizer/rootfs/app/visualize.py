@@ -1202,7 +1202,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
                 // Use a fixed scale factor (1 SVG unit = 1 graph unit)
                 // This keeps the floorplan and nodes at consistent relative sizes
-                const scale = 1.0;
+                const scale = 0.5;
                 const offsetX = (width - svgWidth * scale) / 2;
                 const offsetY = (height - svgHeight * scale) / 2;
 
