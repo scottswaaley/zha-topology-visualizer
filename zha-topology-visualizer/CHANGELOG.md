@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.33] - 2024-12-24
+
+### Added
+- "Oldest seen" indicator in header showing when the oldest device was last seen by ZHA
+- Color-coded freshness: green (<6h), yellow (6-24h), red (>24h)
+- Helps identify stale neighbor data that may need a topology scan refresh
+
 ## [1.0.32] - 2024-12-24
 
 ### Fixed
