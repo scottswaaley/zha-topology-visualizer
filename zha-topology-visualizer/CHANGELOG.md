@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.30] - 2024-12-24
+
+### Added
+- Feet-based coordinate system (72 SVG units = 1 foot)
+- Toggleable 10ft grid overlay for visual positioning reference
+- Server-side position storage (positions persist across browser cache clears)
+- Position display in device tooltip (shows feet coordinates when floorplan active)
+
+### Changed
+- Node positions now saved to server (/data/positions.json) instead of browser localStorage
+- Positions auto-save with debounce (500ms after last drag) for better performance
+- Position coordinates stored in feet for consistent placement across screen sizes
+
+### Removed
+- localStorage-based position storage (replaced by server-side storage)
+
 ## [1.0.28] - 2024-12-24
 
 ### Changed

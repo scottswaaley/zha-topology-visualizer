@@ -28,6 +28,7 @@ def log(message: str):
 DATA_DIR = Path('/data')
 OPTIONS_FILE = DATA_DIR / 'options.json'
 HTML_FILE = DATA_DIR / 'topology.html'
+POSITIONS_FILE = DATA_DIR / 'positions.json'
 
 # Global state
 refresh_lock = threading.Lock()
@@ -226,6 +227,8 @@ class VisualizationHandler(BaseHTTPRequestHandler):
                 self.serve_health()
             elif self.path == '/status':
                 self.serve_status()
+            elif self.path == '/positions':
+                self.serve_positions()
             else:
                 self.send_error(404)
         except BrokenPipeError:
@@ -239,6 +242,8 @@ class VisualizationHandler(BaseHTTPRequestHandler):
                 self.handle_refresh()
             elif self.path == '/regenerate':
                 self.handle_regenerate()
+            elif self.path == '/positions':
+                self.handle_save_positions()
             else:
                 self.send_error(404)
         except BrokenPipeError:
@@ -388,6 +393,57 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
             self.wfile.write(f'Regeneration failed: {e}'.encode('utf-8'))
+
+    def serve_positions(self):
+        """Serve saved node positions."""
+        try:
+            if POSITIONS_FILE.exists():
+                with open(POSITIONS_FILE, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            else:
+                content = '{}'
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', len(content.encode('utf-8')))
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            self.wfile.write(content.encode('utf-8'))
+        except Exception as e:
+            log(f"Error serving positions: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f'Error: {e}'.encode('utf-8'))
+
+    def handle_save_positions(self):
+        """Save node positions to file."""
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            positions = json.loads(body)
+
+            # Ensure data directory exists
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+            with open(POSITIONS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(positions, f, indent=2)
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'Positions saved')
+        except json.JSONDecodeError as e:
+            self.send_response(400)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f'Invalid JSON: {e}'.encode('utf-8'))
+        except Exception as e:
+            log(f"Error saving positions: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f'Error: {e}'.encode('utf-8'))
 
 
 def auto_refresh_loop(interval_minutes: int):

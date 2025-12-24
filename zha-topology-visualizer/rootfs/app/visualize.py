@@ -1045,6 +1045,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <button onclick="savePositions()">Save Positions</button>
             <button onclick="toggleEndDevices(this)" class="active" id="toggleEndBtn">Show End Devices</button>
             {'<button onclick="toggleFloorplan(this)" class="active" id="toggleFloorplanBtn">Show Floorplan</button>' if has_floorplan else ''}
+            {'<button onclick="toggleGrid(this)" id="toggleGridBtn">Show Grid</button>' if has_floorplan else ''}
             <div class="filter-group">
                 <label>Last seen:</label>
                 <select id="timeFilter" onchange="applyTimeFilter()">
@@ -1238,6 +1239,100 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             console.log('[Floorplan] Skipping - hasFloorplan:', hasFloorplan, 'content exists:', !!floorplanSvgContent);
         }}
 
+        // Coordinate system: 72 SVG units = 1 foot
+        const UNITS_PER_FOOT = 72;
+        const GRID_SPACING_FT = 10;
+
+        function feetToUnits(feet) {{
+            return feet * UNITS_PER_FOOT;
+        }}
+
+        function unitsToFeet(units) {{
+            return units / UNITS_PER_FOOT;
+        }}
+
+        // Grid layer for visual positioning reference
+        let gridGroup = null;
+        let gridVisible = false;
+
+        function createGrid() {{
+            if (!hasFloorplan || !floorplanGroup) return;
+
+            const fpData = floorplanGroup.datum();
+            if (!fpData) return;
+
+            const {{ scale, offsetX, offsetY, originalWidth, originalHeight }} = fpData;
+
+            // Calculate grid dimensions in feet
+            const widthFeet = Math.ceil(originalWidth / UNITS_PER_FOOT);
+            const heightFeet = Math.ceil(originalHeight / UNITS_PER_FOOT);
+
+            gridGroup = g.append('g')
+                .attr('class', 'grid-layer')
+                .style('display', 'none');
+
+            // Vertical lines every GRID_SPACING_FT feet
+            for (let ft = 0; ft <= widthFeet; ft += GRID_SPACING_FT) {{
+                const x = offsetX + (ft * UNITS_PER_FOOT * scale);
+                gridGroup.append('line')
+                    .attr('x1', x)
+                    .attr('y1', offsetY)
+                    .attr('x2', x)
+                    .attr('y2', offsetY + originalHeight * scale)
+                    .attr('stroke', '#444')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '4,4')
+                    .attr('opacity', 0.5);
+
+                // Label
+                gridGroup.append('text')
+                    .attr('x', x)
+                    .attr('y', offsetY - 5)
+                    .attr('fill', '#666')
+                    .attr('font-size', '10px')
+                    .attr('text-anchor', 'middle')
+                    .text(ft + 'ft');
+            }}
+
+            // Horizontal lines every GRID_SPACING_FT feet
+            for (let ft = 0; ft <= heightFeet; ft += GRID_SPACING_FT) {{
+                const y = offsetY + (ft * UNITS_PER_FOOT * scale);
+                gridGroup.append('line')
+                    .attr('x1', offsetX)
+                    .attr('y1', y)
+                    .attr('x2', offsetX + originalWidth * scale)
+                    .attr('y2', y)
+                    .attr('stroke', '#444')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '4,4')
+                    .attr('opacity', 0.5);
+
+                // Label
+                gridGroup.append('text')
+                    .attr('x', offsetX - 5)
+                    .attr('y', y + 3)
+                    .attr('fill', '#666')
+                    .attr('font-size', '10px')
+                    .attr('text-anchor', 'end')
+                    .text(ft + 'ft');
+            }}
+
+            console.log('[Grid] Created grid: ' + widthFeet + 'ft x ' + heightFeet + 'ft');
+        }}
+
+        function toggleGrid(btn) {{
+            if (!gridGroup) return;
+            gridVisible = !gridVisible;
+            gridGroup.style('display', gridVisible ? null : 'none');
+            btn.classList.toggle('active', gridVisible);
+            btn.textContent = gridVisible ? 'Hide Grid' : 'Show Grid';
+        }}
+
+        // Create grid after floorplan
+        if (hasFloorplan) {{
+            createGrid();
+        }}
+
         function toggleFloorplan(btn) {{
             if (!floorplanGroup) return;
             floorplanVisible = !floorplanVisible;
@@ -1282,90 +1377,153 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(d => getNodeRadius(d) + 10));
 
-        // Position normalization for consistent placement across viewport sizes
-        // When floorplan is active, positions are normalized to floorplan dimensions
-        // Otherwise, normalized to viewport dimensions
-        function normalizePosition(x, y) {{
-            // Normalize to 0-1 range based on current reference dimensions
-            const refWidth = hasFloorplan ? floorplanBounds.width : width;
-            const refHeight = hasFloorplan ? floorplanBounds.height : height;
-            return {{
-                nx: x / width,  // Always normalize against current viewport
-                ny: y / height,
-                // Also store floorplan-relative if available
-                fpx: hasFloorplan ? (x - (width - floorplanBounds.width * getFloorplanScale()) / 2) / (floorplanBounds.width * getFloorplanScale()) : null,
-                fpy: hasFloorplan ? (y - (height - floorplanBounds.height * getFloorplanScale()) / 2) / (floorplanBounds.height * getFloorplanScale()) : null
-            }};
-        }}
-
-        function denormalizePosition(pos) {{
-            // If we have floorplan-relative positions and floorplan is active, use those
-            if (hasFloorplan && pos.fpx !== null && pos.fpx !== undefined) {{
-                const scale = getFloorplanScale();
-                const offsetX = (width - floorplanBounds.width * scale) / 2;
-                const offsetY = (height - floorplanBounds.height * scale) / 2;
-                return {{
-                    x: pos.fpx * floorplanBounds.width * scale + offsetX,
-                    y: pos.fpy * floorplanBounds.height * scale + offsetY
-                }};
-            }}
-            // Fallback to viewport-relative
-            return {{
-                x: pos.nx * width,
-                y: pos.ny * height
-            }};
-        }}
-
         function getFloorplanScale() {{
             if (!hasFloorplan) return 1;
-            return Math.min(width / floorplanBounds.width, height / floorplanBounds.height) * 0.9;
+            return 0.5;  // Fixed scale used for floorplan display
         }}
 
-        function loadPositions() {{
-            const saved = localStorage.getItem(storageKey);
-            if (saved) {{
-                try {{
-                    const positions = JSON.parse(saved);
+        // Convert screen coordinates to feet (relative to floorplan origin)
+        function screenToFeet(screenX, screenY) {{
+            if (!hasFloorplan || !floorplanGroup) {{
+                // No floorplan - store as normalized viewport coordinates
+                return {{ x: screenX / width, y: screenY / height, isFeet: false }};
+            }}
+
+            const fpData = floorplanGroup.datum();
+            if (!fpData) {{
+                return {{ x: screenX / width, y: screenY / height, isFeet: false }};
+            }}
+
+            const {{ scale, offsetX, offsetY }} = fpData;
+
+            // Convert screen position to SVG units, then to feet
+            const svgX = (screenX - offsetX) / scale;
+            const svgY = (screenY - offsetY) / scale;
+
+            return {{
+                x: Math.round(unitsToFeet(svgX) * 10) / 10,  // Round to 1 decimal
+                y: Math.round(unitsToFeet(svgY) * 10) / 10,
+                isFeet: true
+            }};
+        }}
+
+        // Convert feet (relative to floorplan origin) to screen coordinates
+        function feetToScreen(feetX, feetY, isFeet) {{
+            if (!isFeet) {{
+                // Legacy normalized viewport coordinates
+                return {{ x: feetX * width, y: feetY * height }};
+            }}
+
+            if (!hasFloorplan || !floorplanGroup) {{
+                // No floorplan - can't convert feet, use center
+                return {{ x: width / 2, y: height / 2 }};
+            }}
+
+            const fpData = floorplanGroup.datum();
+            if (!fpData) {{
+                return {{ x: width / 2, y: height / 2 }};
+            }}
+
+            const {{ scale, offsetX, offsetY }} = fpData;
+
+            // Convert feet to SVG units, then to screen position
+            const svgX = feetToUnits(feetX);
+            const svgY = feetToUnits(feetY);
+
+            return {{
+                x: svgX * scale + offsetX,
+                y: svgY * scale + offsetY
+            }};
+        }}
+
+        // Server-side position storage
+        let serverPositions = {{}};
+        let positionsDirty = false;
+        let saveTimeout = null;
+
+        async function loadPositionsFromServer() {{
+            try {{
+                const response = await fetch('/positions');
+                if (response.ok) {{
+                    serverPositions = await response.json();
+                    console.log('[Positions] Loaded', Object.keys(serverPositions).length, 'positions from server');
+
+                    let loadedCount = 0;
                     nodesData.forEach(node => {{
-                        if (positions[node.id]) {{
-                            const pos = positions[node.id];
-                            // Check if this is a normalized position (has nx/ny)
-                            if (pos.nx !== undefined) {{
-                                const denorm = denormalizePosition(pos);
-                                node.x = denorm.x;
-                                node.y = denorm.y;
-                                if (pos.fixed) {{
-                                    node.fx = denorm.x;
-                                    node.fy = denorm.y;
-                                }}
-                            }} else {{
-                                // Legacy format - direct pixel values
-                                node.x = pos.x;
-                                node.y = pos.y;
-                                node.fx = pos.fx;
-                                node.fy = pos.fy;
+                        if (serverPositions[node.id]) {{
+                            const pos = serverPositions[node.id];
+                            const screen = feetToScreen(pos.x, pos.y, pos.isFeet !== false);
+                            node.x = screen.x;
+                            node.y = screen.y;
+                            if (pos.fixed) {{
+                                node.fx = screen.x;
+                                node.fy = screen.y;
                             }}
+                            loadedCount++;
                         }}
                     }});
-                    return true;
-                }} catch (e) {{
-                    console.error('Failed to load positions:', e);
+                    console.log('[Positions] Applied positions to', loadedCount, 'nodes');
+                    return loadedCount > 0;
                 }}
+            }} catch (e) {{
+                console.error('[Positions] Failed to load from server:', e);
             }}
             return false;
         }}
 
-        function savePositions() {{
+        async function savePositionsToServer() {{
             const positions = {{}};
             nodesData.forEach(node => {{
-                const norm = normalizePosition(node.x, node.y);
-                positions[node.id] = {{
-                    ...norm,
-                    fixed: node.fx !== null && node.fx !== undefined
-                }};
+                if (node.fx !== null && node.fx !== undefined) {{
+                    const feet = screenToFeet(node.x, node.y);
+                    positions[node.id] = {{
+                        x: feet.x,
+                        y: feet.y,
+                        isFeet: feet.isFeet,
+                        fixed: true
+                    }};
+                }}
             }});
-            localStorage.setItem(storageKey, JSON.stringify(positions));
-            showToast('Positions saved!');
+
+            try {{
+                const response = await fetch('/positions', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(positions)
+                }});
+                if (response.ok) {{
+                    serverPositions = positions;
+                    positionsDirty = false;
+                    console.log('[Positions] Saved', Object.keys(positions).length, 'positions to server');
+                    return true;
+                }}
+            }} catch (e) {{
+                console.error('[Positions] Failed to save to server:', e);
+            }}
+            return false;
+        }}
+
+        // Debounced save - waits 500ms after last change before saving
+        function scheduleSave() {{
+            positionsDirty = true;
+            if (saveTimeout) {{
+                clearTimeout(saveTimeout);
+            }}
+            saveTimeout = setTimeout(async () => {{
+                if (positionsDirty) {{
+                    await savePositionsToServer();
+                }}
+            }}, 500);
+        }}
+
+        function savePositions() {{
+            savePositionsToServer().then(success => {{
+                if (success) {{
+                    showToast('Positions saved!');
+                }} else {{
+                    showToast('Failed to save positions');
+                }}
+            }});
         }}
 
         function showToast(message) {{
@@ -1376,8 +1534,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             setTimeout(() => toast.remove(), 2000);
         }}
 
-        function resetPositions() {{
-            localStorage.removeItem(storageKey);
+        async function resetPositions() {{
+            // Clear server positions
+            try {{
+                await fetch('/positions', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{}})
+                }});
+            }} catch (e) {{
+                console.error('[Positions] Failed to clear server positions:', e);
+            }}
+
+            serverPositions = {{}};
             nodesData.forEach(node => {{
                 node.fx = null;
                 node.fy = null;
@@ -1386,7 +1555,14 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             showToast('Layout reset!');
         }}
 
-        const hasPositions = loadPositions();
+        // Load positions on startup (async)
+        let hasPositions = false;
+        loadPositionsFromServer().then(loaded => {{
+            hasPositions = loaded;
+            if (loaded) {{
+                simulation.alpha(0.1);
+            }}
+        }});
 
         function getRectilinearPath(source, target) {{
             const midY = (source.y + target.y) / 2;
@@ -1657,11 +1833,18 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 entitiesHtml = `<div style="margin-top:3px">Entities: <span style="color:#888">(${{d.entity_details.length}})</span></div>${{entityLines}}${{moreCount}}`;
             }}
 
+            // Get position in feet for display
+            const posFeet = screenToFeet(d.x, d.y);
+            const positionDisplay = posFeet.isFeet
+                ? `${{posFeet.x}}ft × ${{posFeet.y}}ft`
+                : `${{Math.round(d.x)}}px × ${{Math.round(d.y)}}px`;
+
             const content = `
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
                 <div>Type: <span>${{d.device_type}}</span>${{d.nwk ? ` <span style="color:#666;font-size:10px">(NWK: ${{d.nwk}})</span>` : ''}}</div>
                 <div>LQI: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span> | Depth: <span>${{depthDisplay}}</span></div>
+                <div>Position: <span style="color:#888">${{positionDisplay}}</span></div>
                 <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
@@ -1723,6 +1906,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             d3.select(event.sourceEvent.target.parentNode).classed('dragging', false);
             highlightConnectedLinks(d.id, false);
             clearSelection();
+            // Schedule auto-save after drag (debounced)
+            scheduleSave();
         }}
 
         simulation.on('tick', () => {{
@@ -1935,25 +2120,6 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             simulation.force('center', d3.forceCenter(width / 2, height / 2));
             simulation.alpha(0.3).restart();
         }});
-
-        setInterval(() => {{
-            const positions = {{}};
-            let hasFixed = false;
-            nodesData.forEach(node => {{
-                if (node.fx !== null && node.fx !== undefined) {{
-                    hasFixed = true;
-                    positions[node.id] = {{
-                        x: node.x,
-                        y: node.y,
-                        fx: node.fx,
-                        fy: node.fy
-                    }};
-                }}
-            }});
-            if (hasFixed) {{
-                localStorage.setItem(storageKey, JSON.stringify(positions));
-            }}
-        }}, 10000);
 
         async function refreshData() {{
             const btn = document.getElementById('refreshBtn');
