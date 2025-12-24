@@ -177,6 +177,23 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     devices = hierarchy['devices']
     nodes = hierarchy['nodes']
 
+    # Build a map of IEEE -> entities from the fetched entity states
+    # Entities are fetched via REST API and stored in data['entities']
+    ieee_to_entities = {}
+    for entity in data.get('entities', []):
+        entity_id = entity.get('entity_id', '')
+        attributes = entity.get('attributes', {})
+        # Get IEEE from attributes (common for ZHA entities)
+        ieee = attributes.get('ieee')
+        if ieee:
+            if ieee not in ieee_to_entities:
+                ieee_to_entities[ieee] = []
+            ieee_to_entities[ieee].append({
+                'entity_id': entity_id,
+                'friendly_name': attributes.get('friendly_name', entity_id),
+                'state': entity.get('state', 'unknown')
+            })
+
     nwk_to_ieee = {}
     for ieee, device in devices.items():
         nwk = device.get('nwk')
@@ -392,17 +409,23 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 depth = n.get('depth')
                 break
 
-        # Get entity names associated with this device
-        # ZHA API returns entities with 'entity_id' and 'name' fields
-        device_entities = device.get('entities', [])
+        # Get entity names associated with this device from the ieee_to_entities map
+        device_entities = ieee_to_entities.get(node_id, [])
         entity_names = []
+        entity_details = []  # For displaying in tooltip
         for e in device_entities:
-            # Add the friendly name if available
-            if e.get('name'):
-                entity_names.append(e.get('name'))
+            # Add the friendly name for searchability
+            if e.get('friendly_name'):
+                entity_names.append(e.get('friendly_name'))
             # Also add the entity_id for searchability (e.g., "light.living_room")
             if e.get('entity_id'):
                 entity_names.append(e.get('entity_id'))
+            # Store full details for tooltip display
+            entity_details.append({
+                'entity_id': e.get('entity_id', ''),
+                'friendly_name': e.get('friendly_name', ''),
+                'state': e.get('state', 'unknown')
+            })
 
         d3_nodes.append({
             'id': node_id,
@@ -420,7 +443,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'device_reg_id': device_reg_id,
             'nwk': nwk,
             'depth': depth,
-            'entity_names': entity_names
+            'entity_names': entity_names,
+            'entity_details': entity_details
         })
 
     for ieee, link_info in device_primary_link.items():
@@ -508,6 +532,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     # Get floorplan SVG if available
     floorplan_svg = data.get('floorplan_svg', '')
     has_floorplan = bool(floorplan_svg)
+
+    # Debug log for floorplan
+    print(f"[Visualize] Floorplan SVG in data: {'Yes (' + str(len(floorplan_svg)) + ' bytes)' if floorplan_svg else 'No'}")
 
     # Escape the SVG for embedding in JavaScript
     if floorplan_svg:
@@ -1540,6 +1567,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             const depthValue = d.is_coordinator ? 0 : (d.path_to_coordinator ? d.path_to_coordinator.length : null);
             const depthDisplay = depthValue !== null ? depthValue : 'N/A';
 
+            // Build entities section for tooltip
+            let entitiesHtml = '';
+            if (d.entity_details && d.entity_details.length > 0) {{
+                const entityLines = d.entity_details.slice(0, 5).map(e => {{
+                    const stateColor = e.state === 'on' ? '#4CAF50' : (e.state === 'off' ? '#666' : '#888');
+                    return `<div style="font-size:10px;margin-left:10px;color:#aaa">• ${{e.friendly_name}} <span style="color:${{stateColor}}">${{e.state}}</span></div>`;
+                }}).join('');
+                const moreCount = d.entity_details.length > 5 ? `<div style="font-size:10px;margin-left:10px;color:#666">... and ${{d.entity_details.length - 5}} more</div>` : '';
+                entitiesHtml = `<div style="margin-top:3px">Entities: <span style="color:#888">(${{d.entity_details.length}})</span></div>${{entityLines}}${{moreCount}}`;
+            }}
+
             const content = `
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
@@ -1549,6 +1587,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div>Connected via: <span>${{parentInfo}}</span></div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
                 <div>Model: <span>${{d.model || 'Unknown'}}</span></div>
+                ${{entitiesHtml}}
                 <div>Last seen: <span>${{formatLastSeen(d.last_seen)}}</span></div>
                 ${{d.neighbors && d.neighbors.length > 0 ? `<div>Neighbors: <span>${{d.neighbors.length}} (click to show)</span></div>` : ''}}
                 ${{haDeviceUrl ? `<div style="margin-top:5px"><a href="${{haDeviceUrl}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}

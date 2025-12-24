@@ -4,7 +4,8 @@
       "WebSearch",
       "WebFetch(domain:developers.home-assistant.io)",
       "Bash(cat:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.13] - 2024-12-24
+
+### Added
+- Entities now displayed in device tooltip with friendly names and current state
+- Show up to 5 entities per device in tooltip (with count indicator for more)
+- Entity state color coding (green for on, gray for off)
+
+### Fixed
+- Entity search now works correctly by matching entities from Home Assistant REST API
+- Entities properly linked to devices via IEEE address matching
+- Added server-side debug logging for floorplan SVG detection
+
+### Changed
+- Entity extraction now uses Home Assistant entity states API for accurate friendly names
+
 ## [1.0.12] - 2024-12-24
 
 ### Fixed
