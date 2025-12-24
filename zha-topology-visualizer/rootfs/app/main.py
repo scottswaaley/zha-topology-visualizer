@@ -179,33 +179,24 @@ class ZHAExporter:
             "floorplan_svg": floorplan_svg
         }
 
-    async def trigger_topology_scan(self, ws):
-        """Trigger a network topology scan and wait for completion."""
-        result = await self.ws_command(ws, {"type": "zha/topology/update"}, timeout=10)
+    async def trigger_topology_scan(self, ws):  # noqa: ARG002
+        """Trigger a network topology scan and wait for completion.
 
-        if not result.get("success", True):
-            log(f"      Note: Topology update response: {result}")
+        Note: We don't actually send the topology/update command anymore because
+        it times out and the scan happens anyway. We just wait for the scan to
+        complete so devices have fresh neighbor data.
+        """
+        log(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for network scan", end="", flush=True)
 
-        log(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for scan to complete", end="", flush=True)
-        start_time = asyncio.get_event_loop().time()
-        last_dot = start_time
-
-        while asyncio.get_event_loop().time() - start_time < TOPOLOGY_SCAN_WAIT:
-            try:
-                msg = await asyncio.wait_for(ws.receive(), timeout=2.0)
-                if msg.type == aiohttp.WSMsgType.CLOSE:
-                    log("\n      Warning: WebSocket closed during scan wait")
-                    break
-                elif msg.type == aiohttp.WSMsgType.ERROR:
-                    log("\n      Warning: WebSocket error during scan wait")
-                    break
-            except asyncio.TimeoutError:
-                pass
-
-            now = asyncio.get_event_loop().time()
-            if now - last_dot >= 5:
-                print(".", end="", flush=True)  # Keep dots without timestamp for progress
-                last_dot = now
+        # Simple sleep-based wait with progress dots
+        # We don't consume WebSocket messages here to avoid stealing responses
+        # from subsequent ws_command calls
+        elapsed = 0
+        interval = 5
+        while elapsed < TOPOLOGY_SCAN_WAIT:
+            await asyncio.sleep(interval)
+            elapsed += interval
+            print(".", end="", flush=True)
 
         log(" done")
 

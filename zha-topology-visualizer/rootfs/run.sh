@@ -1,6 +1,9 @@
 #!/bin/sh
 
-echo "Starting ZHA Network Topology Visualizer..."
+# Get version from config.yaml
+VERSION=$(python3 -c "import yaml; print(yaml.safe_load(open('/config.yaml'))['version'])" 2>/dev/null || echo "unknown")
+
+echo "Starting ZHA Network Topology Visualizer v${VERSION}..."
 
 # Read configuration from options.json (created by HA Supervisor)
 if [ -f /data/options.json ]; then

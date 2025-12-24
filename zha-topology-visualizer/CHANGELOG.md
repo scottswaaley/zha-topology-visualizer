@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.19] - 2024-12-24
+
+### Fixed
+- Data refresh no longer hangs after topology scan wait
+- Topology scan now uses simple sleep instead of consuming WebSocket messages
+
+### Added
+- Version number now displayed in startup log
+
 ## [1.0.18] - 2024-12-24
 
 ### Fixed
