@@ -264,8 +264,8 @@ class ZHAExporter:
     async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:  # noqa: ARG002
         """Load floorplan SVG from filesystem.
 
-        The add-on has homeassistant_config mapping which mounts to /homeassistant_config.
-        /local/ paths in HA correspond to /homeassistant_config/www/ on the filesystem.
+        The add-on uses 'config:ro' mapping which mounts HA config to /config.
+        /local/ paths in HA correspond to /config/www/ on the filesystem.
         """
         # Read the floorplan path from options
         options_file = DATA_DIR / 'options.json'
@@ -287,34 +287,32 @@ class ZHAExporter:
         log(f"      [Floorplan] Configured path: {floorplan_path}")
 
         # Convert /local/ path to filesystem path
-        # /local/path/file.svg -> /homeassistant_config/www/path/file.svg
+        # /local/path/file.svg -> /config/www/path/file.svg
         if floorplan_path.startswith('/local/'):
-            fs_path = floorplan_path.replace('/local/', '/homeassistant_config/www/', 1)
+            fs_path = floorplan_path.replace('/local/', '/config/www/', 1)
         elif floorplan_path.startswith('local/'):
-            fs_path = '/homeassistant_config/www/' + floorplan_path[6:]
+            fs_path = '/config/www/' + floorplan_path[6:]
         else:
             # Assume it's already a full path or relative to www
-            fs_path = '/homeassistant_config/www/' + floorplan_path.lstrip('/')
+            fs_path = '/config/www/' + floorplan_path.lstrip('/')
 
         log(f"      [Floorplan] Resolved filesystem path: {fs_path}")
 
-        # Check if the mount point exists
+        # Debug: Check if the mount point exists
         import os
-        if os.path.isdir('/homeassistant_config'):
-            log("      [Floorplan] /homeassistant_config mount exists")
-            if os.path.isdir('/homeassistant_config/www'):
-                log("      [Floorplan] /homeassistant_config/www exists")
+        if os.path.isdir('/config'):
+            log("      [Floorplan] /config mount exists")
+            if os.path.isdir('/config/www'):
+                log("      [Floorplan] /config/www exists")
             else:
-                log("      [Floorplan] WARNING: /homeassistant_config/www does NOT exist")
-                # List what's in /homeassistant_config
+                log("      [Floorplan] WARNING: /config/www does NOT exist")
                 try:
-                    contents = os.listdir('/homeassistant_config')[:10]
-                    log(f"      [Floorplan] Contents of /homeassistant_config: {contents}")
+                    contents = os.listdir('/config')[:10]
+                    log(f"      [Floorplan] Contents of /config: {contents}")
                 except Exception as e:
-                    log(f"      [Floorplan] Cannot list /homeassistant_config: {e}")
+                    log(f"      [Floorplan] Cannot list /config: {e}")
         else:
-            log("      [Floorplan] WARNING: /homeassistant_config mount does NOT exist!")
-            # Check what mounts exist
+            log("      [Floorplan] WARNING: /config mount does NOT exist!")
             try:
                 root_contents = os.listdir('/')
                 log(f"      [Floorplan] Root directories: {[d for d in root_contents if os.path.isdir('/' + d)]}")

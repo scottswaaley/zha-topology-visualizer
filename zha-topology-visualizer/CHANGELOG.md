@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.25] - 2024-12-24
+
+### Fixed
+- Floorplan path now uses correct `/config/www/` mount point (from `config:ro` mapping)
+- Previously was incorrectly using `/homeassistant_config/www/`
+
 ## [1.0.24] - 2024-12-24
 
 ### Added
