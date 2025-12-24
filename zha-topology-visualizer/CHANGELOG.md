@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.27] - 2024-12-24
+
+### Fixed
+- Floorplan SVG now visible (removed dark background when floorplan active)
+- Increased floorplan opacity from 0.3 to 0.8
+
+### Added
+- Bundled floorplan CSS for proper SVG styling
+
 ## [1.0.26] - 2024-12-24
 
 ### Changed

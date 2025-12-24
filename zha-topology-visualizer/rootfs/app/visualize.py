@@ -570,12 +570,14 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     coordinator_id = hierarchy['coordinator']['id']
     storage_key = f"zha_topology_{coordinator_id[:8]}"
 
-    # Get floorplan SVG if available
+    # Get floorplan SVG and CSS if available
     floorplan_svg = data.get('floorplan_svg', '')
+    floorplan_css = data.get('floorplan_css', '')
     has_floorplan = bool(floorplan_svg)
 
     # Debug log for floorplan
     print(f"[Visualize] Floorplan SVG in data: {'Yes (' + str(len(floorplan_svg)) + ' bytes)' if floorplan_svg else 'No'}")
+    print(f"[Visualize] Floorplan CSS in data: {'Yes (' + str(len(floorplan_css)) + ' bytes)' if floorplan_css else 'No'}")
 
     # Escape the SVG for embedding in JavaScript
     if floorplan_svg:
@@ -583,6 +585,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         floorplan_svg_escaped = floorplan_svg.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${')
     else:
         floorplan_svg_escaped = ''
+
+    # Escape CSS for embedding
+    floorplan_css_escaped = floorplan_css if floorplan_css else ''
 
     html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -599,11 +604,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #1a1a2e;
             color: #eee;
             min-height: 100vh;
             overflow: hidden;
         }}
+        body.floorplan-active {{
+            background: transparent;
+        }}
+
+        /* Floorplan CSS */
+        {floorplan_css_escaped}
         .header {{
             position: fixed;
             top: 0;
@@ -1160,7 +1171,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             try {{
                 floorplanGroup = g.append('g')
                     .attr('class', 'floorplan-layer')
-                    .attr('opacity', 0.3);
+                    .attr('opacity', 0.8);
 
                 // Parse the SVG content to extract it properly
                 const parser = new DOMParser();
@@ -1217,6 +1228,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 }});
 
                 console.log('[Floorplan] Successfully added floorplan layer');
+                // Set initial body class for floorplan background
+                document.body.classList.add('floorplan-active');
             }} catch (err) {{
                 console.error('[Floorplan] Error adding floorplan:', err);
             }}
@@ -1230,6 +1243,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             floorplanGroup.style('display', floorplanVisible ? null : 'none');
             btn.classList.toggle('active', floorplanVisible);
             btn.textContent = floorplanVisible ? 'Show Floorplan' : 'Hide Floorplan';
+            // Toggle body background
+            document.body.classList.toggle('floorplan-active', floorplanVisible);
         }}
 
         const zoom = d3.zoom()

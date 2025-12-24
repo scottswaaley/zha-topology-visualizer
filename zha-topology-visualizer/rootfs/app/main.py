@@ -161,10 +161,8 @@ class ZHAExporter:
             entities = await self.get_all_entity_states(session)
             log(f"      Found {len(entities)} entity states")
 
-            # Fetch floorplan SVG if configured
-            floorplan_svg = await self.get_floorplan_svg(session)
-            if floorplan_svg:
-                log(f"      Loaded floorplan SVG ({len(floorplan_svg)} bytes)")
+            # Fetch floorplan SVG and CSS
+            floorplan_data = await self.get_floorplan_svg(session)
 
         return {
             "export_timestamp": datetime.now().isoformat(),
@@ -176,7 +174,8 @@ class ZHAExporter:
             "entity_registry": entity_registry,
             "entities": entities,
             "topology": self.build_topology(devices_with_clusters),
-            "floorplan_svg": floorplan_svg
+            "floorplan_svg": floorplan_data.get('svg') if floorplan_data else None,
+            "floorplan_css": floorplan_data.get('css') if floorplan_data else None
         }
 
     async def trigger_topology_scan(self, ws):  # noqa: ARG002
@@ -261,23 +260,35 @@ class ZHAExporter:
             log(f"      Warning: Entity fetch failed: {e}")
             return []
 
-    async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:  # noqa: ARG002
-        """Load bundled floorplan SVG from assets folder."""
-        # Load the bundled SVG file
-        svg_path = Path(__file__).parent / 'assets' / 'home.svg'
+    async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> dict:  # noqa: ARG002
+        """Load bundled floorplan SVG and CSS from assets folder."""
+        assets_dir = Path(__file__).parent / 'assets'
+        svg_path = assets_dir / 'home.svg'
+        css_path = assets_dir / 'home.css'
 
+        result = {'svg': None, 'css': None}
+
+        # Load SVG
         try:
             with open(svg_path, 'r', encoding='utf-8') as f:
-                svg_content = f.read()
-
-            log(f"      [Floorplan] Loaded bundled SVG ({len(svg_content)} bytes)")
-            return svg_content
+                result['svg'] = f.read()
+            log(f"      [Floorplan] Loaded SVG ({len(result['svg'])} bytes)")
         except FileNotFoundError:
-            log(f"      [Floorplan] Bundled SVG not found: {svg_path}")
-            return None
+            log(f"      [Floorplan] SVG not found: {svg_path}")
         except Exception as e:
-            log(f"      [Floorplan] Load failed: {e}")
-            return None
+            log(f"      [Floorplan] SVG load failed: {e}")
+
+        # Load CSS
+        try:
+            with open(css_path, 'r', encoding='utf-8') as f:
+                result['css'] = f.read()
+            log(f"      [Floorplan] Loaded CSS ({len(result['css'])} bytes)")
+        except FileNotFoundError:
+            log(f"      [Floorplan] CSS not found: {css_path}")
+        except Exception as e:
+            log(f"      [Floorplan] CSS load failed: {e}")
+
+        return result if result['svg'] else None
 
     def build_topology(self, devices: list) -> dict:
         """Build a topology structure suitable for visualization."""
