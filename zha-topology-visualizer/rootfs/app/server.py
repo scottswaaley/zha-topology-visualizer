@@ -230,6 +230,8 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         try:
             if self.path == '/refresh':
                 self.handle_refresh()
+            elif self.path == '/regenerate':
+                self.handle_regenerate()
             else:
                 self.send_error(404)
         except BrokenPipeError:
@@ -262,18 +264,39 @@ class VisualizationHandler(BaseHTTPRequestHandler):
 
             # If no HTML file exists yet, show loading and trigger refresh
             if not HTML_FILE.exists():
-                content = get_loading_page()
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', len(content.encode('utf-8')))
-                self.end_headers()
-                self.wfile.write(content.encode('utf-8'))
+                # Check if we have cached data to regenerate from
+                latest = find_latest_export()
+                if latest:
+                    # Regenerate HTML from cached data
+                    try:
+                        generate_visualization(latest)
+                        print("[Server] Regenerated HTML from cached data")
+                    except Exception as e:
+                        print(f"[Server] Failed to regenerate: {e}")
 
-                # Trigger background refresh if not already running
-                if not is_refreshing:
-                    thread = threading.Thread(target=do_refresh, daemon=True)
-                    thread.start()
-                return
+                # If still no HTML, trigger full refresh
+                if not HTML_FILE.exists():
+                    content = get_loading_page()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.send_header('Content-Length', len(content.encode('utf-8')))
+                    self.end_headers()
+                    self.wfile.write(content.encode('utf-8'))
+
+                    # Trigger background refresh if not already running
+                    if not is_refreshing:
+                        thread = threading.Thread(target=do_refresh, daemon=True)
+                        thread.start()
+                    return
+
+            # Auto-regenerate HTML on each page load from cached data
+            # This ensures UI updates are reflected immediately after add-on updates
+            latest = find_latest_export()
+            if latest:
+                try:
+                    generate_visualization(latest)
+                except Exception as e:
+                    print(f"[Server] Auto-regenerate failed: {e}")
 
             # Serve the visualization
             with open(HTML_FILE, 'r', encoding='utf-8') as f:
@@ -335,6 +358,29 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
         self.wfile.write(b'Refresh started')
+
+    def handle_regenerate(self):
+        """Handle UI regeneration request (uses cached data)."""
+        try:
+            latest = find_latest_export()
+            if not latest:
+                self.send_response(404)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'No cached data found. Use full refresh first.')
+                return
+
+            generate_visualization(latest)
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'UI regenerated')
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f'Regeneration failed: {e}'.encode('utf-8'))
 
 
 def auto_refresh_loop(interval_minutes: int):

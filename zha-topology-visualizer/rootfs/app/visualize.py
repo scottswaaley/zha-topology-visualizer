@@ -952,6 +952,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <span class="search-count" id="searchCount"></span>
             </div>
             <button onclick="refreshData()" id="refreshBtn">Refresh Data</button>
+            <button onclick="regenerateUI()" id="regenBtn" title="Regenerate UI from cached data (fast)">Regenerate UI</button>
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
             <button onclick="toggleEndDevices(this)" class="active" id="toggleEndBtn">Show End Devices</button>
@@ -1829,6 +1830,36 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 }}
             }} catch (err) {{
                 alert('Refresh failed: ' + err.message);
+                btn.textContent = originalText;
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }}
+        }}
+
+        async function regenerateUI() {{
+            const btn = document.getElementById('regenBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Regenerating';
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {{
+                const response = await fetch('/regenerate', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }}
+                }});
+
+                if (response.ok) {{
+                    window.location.reload();
+                }} else {{
+                    const error = await response.text();
+                    alert('Regenerate failed: ' + error);
+                    btn.textContent = originalText;
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }}
+            }} catch (err) {{
+                alert('Regenerate failed: ' + err.message);
                 btn.textContent = originalText;
                 btn.classList.remove('loading');
                 btn.disabled = false;
