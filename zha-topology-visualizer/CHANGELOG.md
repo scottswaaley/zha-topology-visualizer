@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.24] - 2024-12-24
+
+### Added
+- Extensive debug logging for floorplan loading to diagnose mount issues
+- Log shows whether /homeassistant_config mount exists and its contents
+
 ## [1.0.23] - 2024-12-24
 
 ### Fixed
