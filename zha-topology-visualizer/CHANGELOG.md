@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.28] - 2024-12-24
+
+### Changed
+- Floorplan SVG now uses fixed 1:1 scale with graph coordinates
+- Floorplan and nodes maintain consistent relative sizes when zooming
+
 ## [1.0.27] - 2024-12-24
 
 ### Fixed
