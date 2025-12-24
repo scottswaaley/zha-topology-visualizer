@@ -362,6 +362,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
         device_reg_id = device.get('device_reg_id', '')
 
+        # Get nwk address
+        nwk = device.get('nwk', '')
+
+        # Get depth from neighbors (depth is reported by the device's parent)
+        depth = None
+        for n in neighbors:
+            if n.get('depth') is not None:
+                depth = n.get('depth')
+                break
+
+        # Get entity names associated with this device
+        entity_names = [e.get('name', '') for e in device.get('entities', []) if e.get('name')]
+
         d3_nodes.append({
             'id': node_id,
             'name': node.get('name', node_id),
@@ -375,7 +388,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'neighbors': neighbor_list,
             'is_coordinator': node.get('is_coordinator', False),
             'parents': child_to_parents.get(node_id, []),
-            'device_reg_id': device_reg_id
+            'device_reg_id': device_reg_id,
+            'nwk': nwk,
+            'depth': depth,
+            'entity_names': entity_names
         })
 
     for ieee, link_info in device_primary_link.items():
@@ -600,6 +616,49 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             border-left: 1px solid #444;
             margin-left: 4px;
         }}
+        .search-container {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .search-container input {{
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            width: 180px;
+            transition: border-color 0.2s, width 0.2s;
+        }}
+        .search-container input:focus {{
+            outline: none;
+            border-color: #00d4ff;
+            width: 220px;
+        }}
+        .search-container input::placeholder {{
+            color: #666;
+        }}
+        .search-container .clear-search {{
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+            display: none;
+        }}
+        .search-container .clear-search.visible {{
+            display: inline;
+        }}
+        .search-container .clear-search:hover {{
+            color: #00d4ff;
+        }}
+        .search-container .search-count {{
+            font-size: 10px;
+            color: #888;
+            min-width: 50px;
+        }}
 
         #graph {{
             position: fixed;
@@ -704,7 +763,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             pointer-events: none;
             z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            max-width: 280px;
+            min-width: 280px;
+            max-width: min(450px, 90vw);
+            width: max-content;
             opacity: 0;
             transition: opacity 0.2s;
         }}
@@ -846,6 +907,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <div class="legend-item clickable disabled" data-link-type="sibling"><div class="legend-line" style="width:20px;border-top:2px dashed #888;margin-right:5px"></div> Sibling</div>
         </div>
         <div class="controls">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search devices, entities, nwk..." oninput="handleSearch(this.value)">
+                <button class="clear-search" id="clearSearch" onclick="clearSearch()">&times;</button>
+                <span class="search-count" id="searchCount"></span>
+            </div>
             <button onclick="refreshData()" id="refreshBtn">Refresh Data</button>
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
@@ -1283,11 +1349,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             const haBaseUrl = `${{window.location.protocol}}//${{window.location.hostname}}:8123`;
             const haDeviceUrl = d.device_reg_id ? `${{haBaseUrl}}/config/devices/device/${{d.device_reg_id}}` : '';
 
+            // Calculate depth from path length (coordinator = 0)
+            const depthValue = d.is_coordinator ? 0 : (d.path_to_coordinator ? d.path_to_coordinator.length : null);
+            const depthDisplay = depthValue !== null ? depthValue : 'N/A';
+
             const content = `
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
-                <div>Type: <span>${{d.device_type}}</span></div>
-                <div>LQI: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span></div>
+                <div>Type: <span>${{d.device_type}}</span>${{d.nwk ? ` <span style="color:#666;font-size:10px">(NWK: ${{d.nwk}})</span>` : ''}}</div>
+                <div>LQI: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span> | Depth: <span>${{depthDisplay}}</span></div>
                 <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
@@ -1398,24 +1468,96 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             applyFilters();
         }}
 
+        let currentSearchTerm = '';
+
+        function handleSearch(term) {{
+            currentSearchTerm = term.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearch');
+            clearBtn.classList.toggle('visible', currentSearchTerm.length > 0);
+            applyFilters();
+        }}
+
+        function clearSearch() {{
+            document.getElementById('searchInput').value = '';
+            currentSearchTerm = '';
+            document.getElementById('clearSearch').classList.remove('visible');
+            document.getElementById('searchCount').textContent = '';
+            applyFilters();
+        }}
+
+        function matchesSearch(d, term) {{
+            if (!term) return true;
+
+            // Match device name
+            const name = (d.name || '').toLowerCase();
+            if (name.includes(term)) return true;
+
+            // Match user given name
+            const userGivenName = (d.user_given_name || '').toLowerCase();
+            if (userGivenName.includes(term)) return true;
+
+            // Match nwk address (with or without 0x prefix)
+            const nwk = (d.nwk || '').toString().toLowerCase();
+            if (nwk.includes(term)) return true;
+            if (nwk.replace('0x', '').includes(term.replace('0x', ''))) return true;
+
+            // Match entity names
+            if (d.entity_names && d.entity_names.length > 0) {{
+                for (const entityName of d.entity_names) {{
+                    if (entityName.toLowerCase().includes(term)) return true;
+                }}
+            }}
+
+            // Match manufacturer
+            const manufacturer = (d.manufacturer || '').toLowerCase();
+            if (manufacturer.includes(term)) return true;
+
+            // Match model
+            const model = (d.model || '').toLowerCase();
+            if (model.includes(term)) return true;
+
+            return false;
+        }}
+
         function applyFilters() {{
             let visibleCount = 0;
+            let matchCount = 0;
 
             node.each(function(d) {{
                 const minutesAgo = getMinutesSinceLastSeen(d.last_seen);
                 const passesTimeFilter = timeFilterMinutes === 0 || minutesAgo <= timeFilterMinutes || isNaN(minutesAgo);
                 const passesTypeFilter = showEndDevices || d.device_type !== 'EndDevice';
+                const passesSearch = matchesSearch(d, currentSearchTerm);
                 const visible = passesTimeFilter && passesTypeFilter;
 
                 d.visible = visible;
+                d.searchMatch = passesSearch;
                 d3.select(this).classed('hidden', !visible);
 
+                // Dim non-matching nodes when searching
+                d3.select(this).classed('dimmed', visible && currentSearchTerm && !passesSearch);
+
                 if (visible) visibleCount++;
+                if (visible && passesSearch) matchCount++;
             }});
 
             link.classed('hidden', d => !d.source.visible || !d.target.visible);
 
+            // Dim links that don't connect to matching nodes
+            link.classed('dimmed', d => {{
+                if (!currentSearchTerm) return false;
+                return !d.source.searchMatch && !d.target.searchMatch;
+            }});
+
             document.getElementById('visibleCount').textContent = `(Showing: ${{visibleCount}})`;
+
+            // Update search count
+            const searchCountEl = document.getElementById('searchCount');
+            if (currentSearchTerm) {{
+                searchCountEl.textContent = `${{matchCount}} match${{matchCount !== 1 ? 'es' : ''}}`;
+            }} else {{
+                searchCountEl.textContent = '';
+            }}
         }}
 
         function zoomIn() {{
