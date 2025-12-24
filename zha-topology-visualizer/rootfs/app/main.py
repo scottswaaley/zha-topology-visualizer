@@ -179,29 +179,13 @@ class ZHAExporter:
             "floorplan_svg": floorplan_svg
         }
 
-    async def trigger_topology_scan(self, ws):
-        """Trigger a network topology scan and wait for completion.
+    async def trigger_topology_scan(self, ws):  # noqa: ARG002
+        """Skip topology scan - neighbor data is already maintained by ZHA.
 
-        We send periodic ping commands to keep the WebSocket alive during the wait.
-        This prevents the connection from being closed due to inactivity.
+        Note: ZHA maintains neighbor tables automatically. The topology_scan_wait
+        setting is now ignored to avoid WebSocket timeout issues during long waits.
         """
-        log(f"      Waiting {TOPOLOGY_SCAN_WAIT}s for network scan", end="", flush=True)
-
-        # Keep WebSocket alive by sending ping commands periodically
-        # The ping command is a simple HA WebSocket command that returns quickly
-        elapsed = 0
-        interval = 10  # Send ping every 10 seconds
-        while elapsed < TOPOLOGY_SCAN_WAIT:
-            await asyncio.sleep(interval)
-            elapsed += interval
-            # Send a lightweight ping to keep connection alive
-            try:
-                await ws.ping()
-            except Exception:
-                pass  # Ignore ping errors, connection will fail on next command if dead
-            print(".", end="", flush=True)
-
-        log(" done")
+        log("      Skipped (using existing neighbor data)")
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""

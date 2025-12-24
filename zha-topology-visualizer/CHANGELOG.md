@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.21] - 2024-12-24
+
+### Changed
+- Skip topology scan wait entirely - ZHA already maintains neighbor data
+- topology_scan_wait setting now ignored (fixes WebSocket timeout issues)
+- Data refresh now completes in seconds instead of 60+ seconds
+
 ## [1.0.20] - 2024-12-24
 
 ### Fixed
