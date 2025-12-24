@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.15] - 2024-12-24
+
+### Fixed
+- Data refresh no longer hangs on step 6/7 (cluster fetching)
+- Added 2-minute overall timeout for cluster fetching
+- Reduced per-request timeout from 10s to 5s
+- Shows progress: "done (X devices, Y errors)" after cluster fetch
+
 ## [1.0.14] - 2024-12-24
 
 ### Added

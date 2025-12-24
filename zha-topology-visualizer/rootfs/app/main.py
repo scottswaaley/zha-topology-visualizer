@@ -238,7 +238,18 @@ class ZHAExporter:
         """Fetch cluster information for each device."""
         log(f"      Fetching clusters for {len(devices)} devices", end="", flush=True)
 
+        # Set an overall timeout for cluster fetching (2 minutes max)
+        start_time = asyncio.get_event_loop().time()
+        max_duration = 120  # seconds
+        devices_processed = 0
+        errors = 0
+
         for device in devices:
+            # Check if we've exceeded the overall timeout
+            if asyncio.get_event_loop().time() - start_time > max_duration:
+                log(f"\n      Warning: Cluster fetch timeout after {devices_processed} devices")
+                break
+
             ieee = device.get("ieee")
             if not ieee:
                 continue
@@ -255,17 +266,22 @@ class ZHAExporter:
                         "type": "zha/devices/clusters",
                         "ieee": ieee,
                         "endpoint_id": endpoint_id
-                    }, timeout=10)
+                    }, timeout=5)  # Reduced timeout per request
 
-                    clusters = result.get("result", [])
-                    device["cluster_details"][endpoint_id] = clusters
+                    if result.get("success", True):
+                        clusters = result.get("result", [])
+                        device["cluster_details"][endpoint_id] = clusters
+                    else:
+                        errors += 1
                 except Exception as e:
+                    errors += 1
                     if DEBUG:
                         log(f"\n      [DEBUG] Cluster fetch failed for {ieee}: {e}")
 
+            devices_processed += 1
             print(".", end="", flush=True)  # Keep dots without timestamp for progress
 
-        log(" done")
+        log(f" done ({devices_processed} devices, {errors} errors)")
         return devices
 
     async def get_zha_entities(self, session: aiohttp.ClientSession) -> list:

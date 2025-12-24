@@ -1,5 +1,5 @@
 name: ZHA Network Topology Visualizer
-version: "1.0.14"
+version: "1.0.15"
 slug: zha-topology-visualizer
 description: Interactive visualization of your Zigbee mesh network topology with signal quality indicators
 url: "https://github.com/scottswaaley/hass-zha-topology"
