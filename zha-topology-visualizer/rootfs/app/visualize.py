@@ -217,7 +217,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'friendly_name': attributes.get('friendly_name', entity_id),
             'state': entity.get('state', 'unknown')
         }
-    print(f"[Visualize] Entity states: {len(entity_states)} ZHA entities")
+    print(f"[Visualize] Entity states: {len(entity_states)} total entities")
 
     # Step 4: Chain: entity_id -> device_id -> IEEE, and build ieee_to_entities map
     entities_mapped = 0

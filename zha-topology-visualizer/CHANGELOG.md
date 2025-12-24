@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.18] - 2024-12-24
+
+### Fixed
+- Entity states now fetched for all entities (not just those with 'zha' in ID)
+- ZHA entities like `light.kitchen` now properly matched via registry chain
+
 ## [1.0.17] - 2024-12-24
 
 ### Fixed

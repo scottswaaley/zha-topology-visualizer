@@ -158,8 +158,8 @@ class ZHAExporter:
 
         # Fetch entity states via REST and optionally floorplan SVG
         async with aiohttp.ClientSession() as session:
-            entities = await self.get_zha_entities(session)
-            log(f"      Found {len(entities)} ZHA entity states")
+            entities = await self.get_all_entity_states(session)
+            log(f"      Found {len(entities)} entity states")
 
             # Fetch floorplan SVG if configured
             floorplan_svg = await self.get_floorplan_svg(session)
@@ -255,8 +255,13 @@ class ZHAExporter:
             device["cluster_details"] = {}
         return devices
 
-    async def get_zha_entities(self, session: aiohttp.ClientSession) -> list:
-        """Fetch ZHA entity states via REST API."""
+    async def get_all_entity_states(self, session: aiohttp.ClientSession) -> list:
+        """Fetch all entity states via REST API.
+
+        We fetch all states because ZHA entities don't have 'zha' in their IDs
+        (e.g., 'light.kitchen' not 'zha.kitchen'). The entity registry mapping
+        handles filtering to ZHA devices.
+        """
         headers = {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json"
@@ -273,16 +278,7 @@ class ZHAExporter:
                     return []
 
                 all_states = await resp.json()
-
-                zha_entities = []
-                for entity in all_states:
-                    entity_id = entity.get("entity_id", "")
-                    attributes = entity.get("attributes", {})
-
-                    if "ieee" in str(attributes) or "zha" in entity_id.lower():
-                        zha_entities.append(entity)
-
-                return zha_entities
+                return all_states
         except Exception as e:
             log(f"      Warning: Entity fetch failed: {e}")
             return []
