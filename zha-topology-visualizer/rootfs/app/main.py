@@ -264,8 +264,8 @@ class ZHAExporter:
     async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:  # noqa: ARG002
         """Load floorplan SVG from filesystem.
 
-        The add-on has config:ro mapping which mounts /homeassistant to the HA config dir.
-        /local/ paths in HA correspond to /homeassistant/www/ on the filesystem.
+        The add-on has homeassistant_config mapping which mounts to /homeassistant_config.
+        /local/ paths in HA correspond to /homeassistant_config/www/ on the filesystem.
         """
         # Read the floorplan path from options
         options_file = DATA_DIR / 'options.json'
@@ -283,14 +283,14 @@ class ZHAExporter:
             return None
 
         # Convert /local/ path to filesystem path
-        # /local/path/file.svg -> /homeassistant/www/path/file.svg
+        # /local/path/file.svg -> /homeassistant_config/www/path/file.svg
         if floorplan_path.startswith('/local/'):
-            fs_path = floorplan_path.replace('/local/', '/homeassistant/www/', 1)
+            fs_path = floorplan_path.replace('/local/', '/homeassistant_config/www/', 1)
         elif floorplan_path.startswith('local/'):
-            fs_path = '/homeassistant/www/' + floorplan_path[6:]
+            fs_path = '/homeassistant_config/www/' + floorplan_path[6:]
         else:
             # Assume it's already a full path or relative to www
-            fs_path = '/homeassistant/www/' + floorplan_path.lstrip('/')
+            fs_path = '/homeassistant_config/www/' + floorplan_path.lstrip('/')
 
         if DEBUG:
             log(f"      [DEBUG] Loading floorplan from: {fs_path}")

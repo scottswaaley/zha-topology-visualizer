@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.23] - 2024-12-24
+
+### Fixed
+- Use correct `homeassistant_config` mapping type per HA add-on documentation
+- Floorplan path now correctly maps to `/homeassistant_config/www/`
+
 ## [1.0.22] - 2024-12-24
 
 ### Fixed
