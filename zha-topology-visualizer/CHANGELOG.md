@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.26] - 2024-12-24
+
+### Changed
+- Floorplan SVG now bundled directly in add-on (no longer requires external file)
+- Removed `floorplan_svg` configuration option
+- Removed `config:ro` mapping (no longer needed)
+
 ## [1.0.25] - 2024-12-24
 
 ### Fixed

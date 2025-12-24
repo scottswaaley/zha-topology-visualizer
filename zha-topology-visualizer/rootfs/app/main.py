@@ -262,78 +262,18 @@ class ZHAExporter:
             return []
 
     async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:  # noqa: ARG002
-        """Load floorplan SVG from filesystem.
-
-        The add-on uses 'config:ro' mapping which mounts HA config to /config.
-        /local/ paths in HA correspond to /config/www/ on the filesystem.
-        """
-        # Read the floorplan path from options
-        options_file = DATA_DIR / 'options.json'
-        if not options_file.exists():
-            log("      [Floorplan] No options.json found")
-            return None
+        """Load bundled floorplan SVG from assets folder."""
+        # Load the bundled SVG file
+        svg_path = Path(__file__).parent / 'assets' / 'home.svg'
 
         try:
-            with open(options_file) as f:
-                options = json.load(f)
-        except Exception as e:
-            log(f"      [Floorplan] Failed to read options: {e}")
-            return None
-
-        floorplan_path = options.get('floorplan_svg', '')
-        if not floorplan_path:
-            return None
-
-        log(f"      [Floorplan] Configured path: {floorplan_path}")
-
-        # Convert /local/ path to filesystem path
-        # /local/path/file.svg -> /config/www/path/file.svg
-        if floorplan_path.startswith('/local/'):
-            fs_path = floorplan_path.replace('/local/', '/config/www/', 1)
-        elif floorplan_path.startswith('local/'):
-            fs_path = '/config/www/' + floorplan_path[6:]
-        else:
-            # Assume it's already a full path or relative to www
-            fs_path = '/config/www/' + floorplan_path.lstrip('/')
-
-        log(f"      [Floorplan] Resolved filesystem path: {fs_path}")
-
-        # Debug: Check if the mount point exists
-        import os
-        if os.path.isdir('/config'):
-            log("      [Floorplan] /config mount exists")
-            if os.path.isdir('/config/www'):
-                log("      [Floorplan] /config/www exists")
-            else:
-                log("      [Floorplan] WARNING: /config/www does NOT exist")
-                try:
-                    contents = os.listdir('/config')[:10]
-                    log(f"      [Floorplan] Contents of /config: {contents}")
-                except Exception as e:
-                    log(f"      [Floorplan] Cannot list /config: {e}")
-        else:
-            log("      [Floorplan] WARNING: /config mount does NOT exist!")
-            try:
-                root_contents = os.listdir('/')
-                log(f"      [Floorplan] Root directories: {[d for d in root_contents if os.path.isdir('/' + d)]}")
-            except Exception as e:
-                log(f"      [Floorplan] Cannot list root: {e}")
-
-        try:
-            with open(fs_path, 'r', encoding='utf-8') as f:
+            with open(svg_path, 'r', encoding='utf-8') as f:
                 svg_content = f.read()
 
-            if not svg_content.strip().startswith('<'):
-                log(f"      [Floorplan] Warning: File doesn't appear to be SVG")
-                return None
-
-            log(f"      [Floorplan] Successfully loaded {len(svg_content)} bytes")
+            log(f"      [Floorplan] Loaded bundled SVG ({len(svg_content)} bytes)")
             return svg_content
         except FileNotFoundError:
-            log(f"      [Floorplan] File not found: {fs_path}")
-            return None
-        except PermissionError:
-            log(f"      [Floorplan] Permission denied: {fs_path}")
+            log(f"      [Floorplan] Bundled SVG not found: {svg_path}")
             return None
         except Exception as e:
             log(f"      [Floorplan] Load failed: {e}")
