@@ -6,11 +6,31 @@ Adapted for Home Assistant Add-on environment.
 
 import json
 import sys
+import yaml
 from pathlib import Path
 from collections import defaultdict
 
 # Data directory for persistence
 DATA_DIR = Path('/data')
+
+# Add-on version from config
+def get_addon_version():
+    """Read add-on version from config.yaml."""
+    config_paths = [
+        Path('/config.yaml'),  # Standard add-on location
+        Path(__file__).parent.parent.parent / 'config.yaml',  # Development
+    ]
+    for config_path in config_paths:
+        if config_path.exists():
+            try:
+                with open(config_path, 'r') as f:
+                    config = yaml.safe_load(f)
+                    return config.get('version', 'unknown')
+            except Exception:
+                pass
+    return 'unknown'
+
+ADDON_VERSION = get_addon_version()
 
 
 def load_topology(json_file: str) -> dict:
@@ -902,7 +922,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 </head>
 <body>
     <div class="header">
-        <h1>ZHA Network Topology</h1>
+        <h1>ZHA Network Topology <span style="font-size:11px;color:#666;font-weight:normal">v{ADDON_VERSION}</span></h1>
         <div class="stats">
             <span>Total: {total} devices</span>
             <span id="visibleCount" style="color:#00d4ff">(Showing: {total})</span>

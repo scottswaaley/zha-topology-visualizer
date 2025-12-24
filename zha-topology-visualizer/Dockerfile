@@ -1,8 +1,8 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install aiohttp via pip (base-python image already has pip)
-RUN pip3 install --no-cache-dir aiohttp
+# Install dependencies via pip (base-python image already has pip)
+RUN pip3 install --no-cache-dir aiohttp pyyaml
 
 # Copy root filesystem
 COPY rootfs /
