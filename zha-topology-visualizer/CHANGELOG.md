@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.22] - 2024-12-24
+
+### Fixed
+- Floorplan SVG now loads correctly from /local/ paths
+- Added config:ro mapping to access Home Assistant www folder
+- Floorplan loaded from filesystem instead of HTTP API (more reliable)
+
 ## [1.0.21] - 2024-12-24
 
 ### Changed

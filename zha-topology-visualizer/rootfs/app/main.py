@@ -261,8 +261,12 @@ class ZHAExporter:
             log(f"      Warning: Entity fetch failed: {e}")
             return []
 
-    async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:
-        """Fetch floorplan SVG from Home Assistant if configured."""
+    async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:  # noqa: ARG002
+        """Load floorplan SVG from filesystem.
+
+        The add-on has config:ro mapping which mounts /homeassistant to the HA config dir.
+        /local/ paths in HA correspond to /homeassistant/www/ on the filesystem.
+        """
         # Read the floorplan path from options
         options_file = DATA_DIR / 'options.json'
         if not options_file.exists():
@@ -278,41 +282,33 @@ class ZHAExporter:
         if not floorplan_path:
             return None
 
-        # Convert /local/ path to actual API endpoint
-        # /local/path/file.svg -> /api/local/path/file.svg
+        # Convert /local/ path to filesystem path
+        # /local/path/file.svg -> /homeassistant/www/path/file.svg
         if floorplan_path.startswith('/local/'):
-            api_path = floorplan_path.replace('/local/', '/api/local/', 1)
+            fs_path = floorplan_path.replace('/local/', '/homeassistant/www/', 1)
         elif floorplan_path.startswith('local/'):
-            api_path = '/api/' + floorplan_path
+            fs_path = '/homeassistant/www/' + floorplan_path[6:]
         else:
-            api_path = '/api/local/' + floorplan_path.lstrip('/')
+            # Assume it's already a full path or relative to www
+            fs_path = '/homeassistant/www/' + floorplan_path.lstrip('/')
 
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-        }
+        if DEBUG:
+            log(f"      [DEBUG] Loading floorplan from: {fs_path}")
 
         try:
-            url = f"{self.api_url}{api_path}"
-            if DEBUG:
-                log(f"      [DEBUG] Fetching floorplan from: {url}")
+            with open(fs_path, 'r', encoding='utf-8') as f:
+                svg_content = f.read()
 
-            async with session.get(
-                url,
-                headers=headers,
-                timeout=aiohttp.ClientTimeout(total=30)
-            ) as resp:
-                if resp.status != 200:
-                    log(f"      Warning: Could not fetch floorplan SVG (HTTP {resp.status})")
-                    return None
+            if not svg_content.strip().startswith('<'):
+                log(f"      Warning: File doesn't appear to be SVG")
+                return None
 
-                content_type = resp.headers.get('Content-Type', '')
-                if 'svg' not in content_type and 'xml' not in content_type:
-                    log(f"      Warning: Floorplan file is not SVG (Content-Type: {content_type})")
-
-                svg_content = await resp.text()
-                return svg_content
+            return svg_content
+        except FileNotFoundError:
+            log(f"      Warning: Floorplan file not found: {fs_path}")
+            return None
         except Exception as e:
-            log(f"      Warning: Floorplan fetch failed: {e}")
+            log(f"      Warning: Floorplan load failed: {e}")
             return None
 
     def build_topology(self, devices: list) -> dict:
