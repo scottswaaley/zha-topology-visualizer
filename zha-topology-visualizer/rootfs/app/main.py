@@ -145,10 +145,15 @@ class ZHAExporter:
                 registry = await self.get_device_registry(ws)
                 print(f"      Found {len(registry)} registry entries")
 
-        # Fetch entity states via REST
+        # Fetch entity states via REST and optionally floorplan SVG
         async with aiohttp.ClientSession() as session:
             entities = await self.get_zha_entities(session)
             print(f"\n      Found {len(entities)} ZHA entities")
+
+            # Fetch floorplan SVG if configured
+            floorplan_svg = await self.get_floorplan_svg(session)
+            if floorplan_svg:
+                print(f"      Loaded floorplan SVG ({len(floorplan_svg)} bytes)")
 
         return {
             "export_timestamp": datetime.now().isoformat(),
@@ -158,7 +163,8 @@ class ZHAExporter:
             "groups": groups,
             "device_registry": registry,
             "entities": entities,
-            "topology": self.build_topology(devices_with_clusters)
+            "topology": self.build_topology(devices_with_clusters),
+            "floorplan_svg": floorplan_svg
         }
 
     async def trigger_topology_scan(self, ws):
@@ -286,6 +292,60 @@ class ZHAExporter:
         except Exception as e:
             print(f"      Warning: Entity fetch failed: {e}")
             return []
+
+    async def get_floorplan_svg(self, session: aiohttp.ClientSession) -> str:
+        """Fetch floorplan SVG from Home Assistant if configured."""
+        # Read the floorplan path from options
+        options_file = DATA_DIR / 'options.json'
+        if not options_file.exists():
+            return None
+
+        try:
+            with open(options_file) as f:
+                options = json.load(f)
+        except Exception:
+            return None
+
+        floorplan_path = options.get('floorplan_svg', '')
+        if not floorplan_path:
+            return None
+
+        # Convert /local/ path to actual API endpoint
+        # /local/path/file.svg -> /api/local/path/file.svg
+        if floorplan_path.startswith('/local/'):
+            api_path = floorplan_path.replace('/local/', '/api/local/', 1)
+        elif floorplan_path.startswith('local/'):
+            api_path = '/api/' + floorplan_path
+        else:
+            api_path = '/api/local/' + floorplan_path.lstrip('/')
+
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+        }
+
+        try:
+            url = f"{self.api_url}{api_path}"
+            if DEBUG:
+                print(f"      [DEBUG] Fetching floorplan from: {url}")
+
+            async with session.get(
+                url,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=30)
+            ) as resp:
+                if resp.status != 200:
+                    print(f"      Warning: Could not fetch floorplan SVG (HTTP {resp.status})")
+                    return None
+
+                content_type = resp.headers.get('Content-Type', '')
+                if 'svg' not in content_type and 'xml' not in content_type:
+                    print(f"      Warning: Floorplan file is not SVG (Content-Type: {content_type})")
+
+                svg_content = await resp.text()
+                return svg_content
+        except Exception as e:
+            print(f"      Warning: Floorplan fetch failed: {e}")
+            return None
 
     def build_topology(self, devices: list) -> dict:
         """Build a topology structure suitable for visualization."""

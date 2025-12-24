@@ -476,6 +476,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     coordinator_id = hierarchy['coordinator']['id']
     storage_key = f"zha_topology_{coordinator_id[:8]}"
 
+    # Get floorplan SVG if available
+    floorplan_svg = data.get('floorplan_svg', '')
+    has_floorplan = bool(floorplan_svg)
+
+    # Escape the SVG for embedding in JavaScript
+    if floorplan_svg:
+        # Escape backticks and backslashes for JS template literal
+        floorplan_svg_escaped = floorplan_svg.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${')
+    else:
+        floorplan_svg_escaped = ''
+
     html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -694,6 +705,14 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
         .node .neighbor-badge {{
             cursor: pointer;
+        }}
+
+        .floorplan-layer {{
+            pointer-events: none;
+        }}
+        .floorplan-layer svg {{
+            width: 100%;
+            height: 100%;
         }}
 
         .link {{
@@ -916,6 +935,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
             <button onclick="toggleEndDevices(this)" class="active" id="toggleEndBtn">Show End Devices</button>
+            {'<button onclick="toggleFloorplan(this)" class="active" id="toggleFloorplanBtn">Show Floorplan</button>' if has_floorplan else ''}
             <div class="filter-group">
                 <label>Last seen:</label>
                 <select id="timeFilter" onchange="applyTimeFilter()">
@@ -952,6 +972,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         const linksData = {json.dumps(d3_links)};
         const exportTime = new Date("{export_timestamp}");
         const storageKey = "{storage_key}";
+        const hasFloorplan = {'true' if has_floorplan else 'false'};
+        const floorplanSvgContent = `{floorplan_svg_escaped}`;
 
         const linkTypeVisibility = {{
             route: true,
@@ -1006,6 +1028,68 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
         const g = svg.append('g');
 
+        // Add floorplan background if available
+        let floorplanGroup = null;
+        let floorplanVisible = hasFloorplan;
+        let floorplanBounds = {{ width: width, height: height }};
+
+        if (hasFloorplan && floorplanSvgContent) {{
+            floorplanGroup = g.append('g')
+                .attr('class', 'floorplan-layer')
+                .attr('opacity', 0.3);
+
+            // Parse the SVG content to extract it properly
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(floorplanSvgContent, 'image/svg+xml');
+            const svgElement = svgDoc.documentElement;
+
+            // Get the original viewBox or dimensions
+            let viewBox = svgElement.getAttribute('viewBox');
+            let svgWidth = parseFloat(svgElement.getAttribute('width')) || width;
+            let svgHeight = parseFloat(svgElement.getAttribute('height')) || height;
+
+            if (viewBox) {{
+                const vb = viewBox.split(/[\s,]+/).map(parseFloat);
+                svgWidth = vb[2] || svgWidth;
+                svgHeight = vb[3] || svgHeight;
+            }}
+
+            floorplanBounds = {{ width: svgWidth, height: svgHeight }};
+
+            // Scale to fit the viewport while maintaining aspect ratio
+            const scale = Math.min(width / svgWidth, height / svgHeight) * 0.9;
+            const offsetX = (width - svgWidth * scale) / 2;
+            const offsetY = (height - svgHeight * scale) / 2;
+
+            // Add a foreignObject to embed the SVG
+            floorplanGroup.append('foreignObject')
+                .attr('x', offsetX)
+                .attr('y', offsetY)
+                .attr('width', svgWidth * scale)
+                .attr('height', svgHeight * scale)
+                .append('xhtml:div')
+                .style('width', '100%')
+                .style('height', '100%')
+                .html(floorplanSvgContent);
+
+            // Store transform info for position normalization
+            floorplanGroup.datum({{
+                scale: scale,
+                offsetX: offsetX,
+                offsetY: offsetY,
+                originalWidth: svgWidth,
+                originalHeight: svgHeight
+            }});
+        }}
+
+        function toggleFloorplan(btn) {{
+            if (!floorplanGroup) return;
+            floorplanVisible = !floorplanVisible;
+            floorplanGroup.style('display', floorplanVisible ? null : 'none');
+            btn.classList.toggle('active', floorplanVisible);
+            btn.textContent = floorplanVisible ? 'Show Floorplan' : 'Hide Floorplan';
+        }}
+
         const zoom = d3.zoom()
             .scaleExtent([0.1, 4])
             .on('zoom', (event) => {{
@@ -1040,6 +1124,45 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(d => getNodeRadius(d) + 10));
 
+        // Position normalization for consistent placement across viewport sizes
+        // When floorplan is active, positions are normalized to floorplan dimensions
+        // Otherwise, normalized to viewport dimensions
+        function normalizePosition(x, y) {{
+            // Normalize to 0-1 range based on current reference dimensions
+            const refWidth = hasFloorplan ? floorplanBounds.width : width;
+            const refHeight = hasFloorplan ? floorplanBounds.height : height;
+            return {{
+                nx: x / width,  // Always normalize against current viewport
+                ny: y / height,
+                // Also store floorplan-relative if available
+                fpx: hasFloorplan ? (x - (width - floorplanBounds.width * getFloorplanScale()) / 2) / (floorplanBounds.width * getFloorplanScale()) : null,
+                fpy: hasFloorplan ? (y - (height - floorplanBounds.height * getFloorplanScale()) / 2) / (floorplanBounds.height * getFloorplanScale()) : null
+            }};
+        }}
+
+        function denormalizePosition(pos) {{
+            // If we have floorplan-relative positions and floorplan is active, use those
+            if (hasFloorplan && pos.fpx !== null && pos.fpx !== undefined) {{
+                const scale = getFloorplanScale();
+                const offsetX = (width - floorplanBounds.width * scale) / 2;
+                const offsetY = (height - floorplanBounds.height * scale) / 2;
+                return {{
+                    x: pos.fpx * floorplanBounds.width * scale + offsetX,
+                    y: pos.fpy * floorplanBounds.height * scale + offsetY
+                }};
+            }}
+            // Fallback to viewport-relative
+            return {{
+                x: pos.nx * width,
+                y: pos.ny * height
+            }};
+        }}
+
+        function getFloorplanScale() {{
+            if (!hasFloorplan) return 1;
+            return Math.min(width / floorplanBounds.width, height / floorplanBounds.height) * 0.9;
+        }}
+
         function loadPositions() {{
             const saved = localStorage.getItem(storageKey);
             if (saved) {{
@@ -1047,10 +1170,23 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     const positions = JSON.parse(saved);
                     nodesData.forEach(node => {{
                         if (positions[node.id]) {{
-                            node.x = positions[node.id].x;
-                            node.y = positions[node.id].y;
-                            node.fx = positions[node.id].fx;
-                            node.fy = positions[node.id].fy;
+                            const pos = positions[node.id];
+                            // Check if this is a normalized position (has nx/ny)
+                            if (pos.nx !== undefined) {{
+                                const denorm = denormalizePosition(pos);
+                                node.x = denorm.x;
+                                node.y = denorm.y;
+                                if (pos.fixed) {{
+                                    node.fx = denorm.x;
+                                    node.fy = denorm.y;
+                                }}
+                            }} else {{
+                                // Legacy format - direct pixel values
+                                node.x = pos.x;
+                                node.y = pos.y;
+                                node.fx = pos.fx;
+                                node.fy = pos.fy;
+                            }}
                         }}
                     }});
                     return true;
@@ -1064,11 +1200,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         function savePositions() {{
             const positions = {{}};
             nodesData.forEach(node => {{
+                const norm = normalizePosition(node.x, node.y);
                 positions[node.id] = {{
-                    x: node.x,
-                    y: node.y,
-                    fx: node.fx,
-                    fy: node.fy
+                    ...norm,
+                    fixed: node.fx !== null && node.fx !== undefined
                 }};
             }});
             localStorage.setItem(storageKey, JSON.stringify(positions));
