@@ -177,28 +177,63 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     devices = hierarchy['devices']
     nodes = hierarchy['nodes']
 
-    # Build a map of IEEE -> entities from the fetched entity states
-    # Entities are fetched via REST API and stored in data['entities']
+    # Build a map of IEEE -> entities using device registry and entity registry
+    # 1. Device registry maps device_id -> IEEE (from identifiers like ["zha", "00:11:22:..."])
+    # 2. Entity registry maps entity_id -> device_id
+    # 3. Entity states provide friendly_name and current state
+
     ieee_to_entities = {}
+
+    # Step 1: Build device_id -> IEEE map from device registry
+    device_id_to_ieee = {}
+    device_registry = data.get('device_registry', [])
+    for dev in device_registry:
+        device_id = dev.get('id')
+        identifiers = dev.get('identifiers', [])
+        for ident in identifiers:
+            if isinstance(ident, (list, tuple)) and len(ident) >= 2:
+                if ident[0] == 'zha':
+                    device_id_to_ieee[device_id] = ident[1]
+                    break
+    print(f"[Visualize] Device registry: {len(device_registry)} devices, {len(device_id_to_ieee)} with IEEE")
+
+    # Step 2: Build entity_id -> device_id map from entity registry
+    entity_id_to_device_id = {}
+    entity_registry = data.get('entity_registry', [])
+    for ent in entity_registry:
+        entity_id = ent.get('entity_id')
+        device_id = ent.get('device_id')
+        if entity_id and device_id:
+            entity_id_to_device_id[entity_id] = device_id
+    print(f"[Visualize] Entity registry: {len(entity_registry)} entities, {len(entity_id_to_device_id)} with device_id")
+
+    # Step 3: Get entity states for friendly names and current state
+    entity_states = {}
     entities_list = data.get('entities', [])
-    print(f"[Visualize] Total entities in data: {len(entities_list)}")
-    entities_with_ieee = 0
     for entity in entities_list:
         entity_id = entity.get('entity_id', '')
         attributes = entity.get('attributes', {})
-        # Get IEEE from attributes (common for ZHA entities)
-        ieee = attributes.get('ieee')
-        if ieee:
-            entities_with_ieee += 1
+        entity_states[entity_id] = {
+            'friendly_name': attributes.get('friendly_name', entity_id),
+            'state': entity.get('state', 'unknown')
+        }
+    print(f"[Visualize] Entity states: {len(entity_states)} ZHA entities")
+
+    # Step 4: Chain: entity_id -> device_id -> IEEE, and build ieee_to_entities map
+    entities_mapped = 0
+    for entity_id, device_id in entity_id_to_device_id.items():
+        ieee = device_id_to_ieee.get(device_id)
+        if ieee and entity_id in entity_states:
+            entities_mapped += 1
             if ieee not in ieee_to_entities:
                 ieee_to_entities[ieee] = []
+            state_info = entity_states[entity_id]
             ieee_to_entities[ieee].append({
                 'entity_id': entity_id,
-                'friendly_name': attributes.get('friendly_name', entity_id),
-                'state': entity.get('state', 'unknown')
+                'friendly_name': state_info['friendly_name'],
+                'state': state_info['state']
             })
-    print(f"[Visualize] Entities with IEEE attribute: {entities_with_ieee}")
-    print(f"[Visualize] Unique devices with entities: {len(ieee_to_entities)}")
+    print(f"[Visualize] Mapped {entities_mapped} entities to {len(ieee_to_entities)} devices")
 
     nwk_to_ieee = {}
     for ieee, device in devices.items():

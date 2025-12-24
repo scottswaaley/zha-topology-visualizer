@@ -125,37 +125,41 @@ class ZHAExporter:
 
                 log("      Connected and authenticated!")
 
-                log("[1/7] Triggering topology scan...")
+                log("[1/8] Triggering topology scan...")
                 await self.trigger_topology_scan(ws)
 
-                log("[2/7] Fetching ZHA devices with neighbor data...")
+                log("[2/8] Fetching ZHA devices with neighbor data...")
                 devices = await self.get_devices(ws)
                 log(f"      Found {len(devices)} devices")
 
-                log("[3/7] Fetching network settings...")
+                log("[3/8] Fetching network settings...")
                 network = await self.get_network_settings(ws)
                 channel = network.get("network_info", {}).get("channel", "N/A")
                 log(f"      Channel: {channel}")
 
-                log("[4/7] Fetching network backups...")
+                log("[4/8] Fetching network backups...")
                 backups = await self.get_network_backups(ws)
                 log(f"      Found {len(backups)} backups")
 
-                log("[5/7] Fetching ZHA groups...")
+                log("[5/8] Fetching ZHA groups...")
                 groups = await self.get_groups(ws)
                 log(f"      Found {len(groups)} groups")
 
-                log("[6/7] Fetching device clusters...")
+                log("[6/8] Fetching device clusters...")
                 devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                log("[7/7] Fetching device registry...")
-                registry = await self.get_device_registry(ws)
-                log(f"      Found {len(registry)} registry entries")
+                log("[7/8] Fetching device registry...")
+                device_registry = await self.get_device_registry(ws)
+                log(f"      Found {len(device_registry)} device registry entries")
+
+                log("[8/8] Fetching entity registry...")
+                entity_registry = await self.get_entity_registry(ws)
+                log(f"      Found {len(entity_registry)} entity registry entries")
 
         # Fetch entity states via REST and optionally floorplan SVG
         async with aiohttp.ClientSession() as session:
             entities = await self.get_zha_entities(session)
-            log(f"      Found {len(entities)} ZHA entities")
+            log(f"      Found {len(entities)} ZHA entity states")
 
             # Fetch floorplan SVG if configured
             floorplan_svg = await self.get_floorplan_svg(session)
@@ -168,7 +172,8 @@ class ZHAExporter:
             "network_backups": backups,
             "devices": devices_with_clusters,
             "groups": groups,
-            "device_registry": registry,
+            "device_registry": device_registry,
+            "entity_registry": entity_registry,
             "entities": entities,
             "topology": self.build_topology(devices_with_clusters),
             "floorplan_svg": floorplan_svg
@@ -233,6 +238,11 @@ class ZHAExporter:
             d for d in all_devices
             if any("zha" in str(ident).lower() for ident in d.get("identifiers", []))
         ]
+
+    async def get_entity_registry(self, ws) -> list:
+        """Fetch entity registry to map entities to devices."""
+        result = await self.ws_command(ws, {"type": "config/entity_registry/list"})
+        return result.get("result", [])
 
     async def get_device_clusters(self, ws, devices: list) -> list:  # noqa: ARG002
         """Fetch cluster information for each device.

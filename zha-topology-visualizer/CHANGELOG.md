@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.17] - 2024-12-24
+
+### Fixed
+- Entity-to-device matching now uses device registry and entity registry
+- Entities properly linked to ZHA devices via IEEE address from device identifiers
+- Entity names now searchable and displayed in device tooltips
+
+### Added
+- Fetch entity registry (step 8/8) for proper entity-to-device mapping
+
 ## [1.0.16] - 2024-12-24
 
 ### Fixed
