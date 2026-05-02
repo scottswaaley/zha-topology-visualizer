@@ -837,7 +837,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }}
         .node .lqi-badge {{
-            font-size: 9px;
+            font-size: 6px;
             fill: #fff;
         }}
         .node .neighbor-badge {{
@@ -1756,29 +1756,29 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         node.filter(d => d.lqi !== null)
             .append('text')
             .attr('class', 'lqi-badge')
-            .attr('dy', 4)
+            .attr('dy', 3)
             .attr('fill', d => getLqiColor(d.lqi))
             .text(d => d.lqi);
 
         node.filter(d => d.neighbors && d.neighbors.length > 0)
             .append('g')
             .attr('class', 'neighbor-badge')
-            .attr('transform', d => `translate(${{getNodeRadius(d) - 5}}, ${{-getNodeRadius(d) + 5}})`)
+            .attr('transform', d => `translate(${{getNodeRadius(d) - 3}}, ${{-getNodeRadius(d) + 3}})`)
             .on('click', (event, d) => {{
                 event.stopPropagation();
                 showNeighborOverlay(d);
             }})
             .call(g => {{
                 g.append('circle')
-                    .attr('r', 10)
+                    .attr('r', 5)
                     .attr('fill', '#00d4ff')
                     .attr('stroke', '#fff')
-                    .attr('stroke-width', 2);
+                    .attr('stroke-width', 1);
                 g.append('text')
-                    .attr('dy', 4)
+                    .attr('dy', 3)
                     .attr('text-anchor', 'middle')
                     .attr('fill', '#000')
-                    .attr('font-size', '10px')
+                    .attr('font-size', '6px')
                     .attr('font-weight', 'bold')
                     .text(d => d.neighbors.length);
             }});
