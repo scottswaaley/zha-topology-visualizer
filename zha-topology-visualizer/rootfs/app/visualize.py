@@ -830,7 +830,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             filter: brightness(1.2);
         }}
         .node text {{
-            font-size: 11px;
+            font-size: 7px;
             fill: #fff;
             text-anchor: middle;
             pointer-events: none;
@@ -842,6 +842,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
         .node .neighbor-badge {{
             cursor: pointer;
+        }}
+        .node .neighbor-badge text {{
+            font-size: 6px;
         }}
 
         .floorplan-layer {{
