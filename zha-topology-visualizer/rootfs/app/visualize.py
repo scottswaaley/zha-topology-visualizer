@@ -1105,6 +1105,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
     <div id="graph"></div>
     <div class="tooltip" id="tooltip"></div>
+    <div id="coordDisplay" style="position:fixed; bottom:8px; left:8px; font-size:11px; color:#888; font-family:monospace; pointer-events:none; z-index:10;"></div>
 
     <div class="overlay" id="neighborOverlay">
         <span class="overlay-close" onclick="closeOverlay()">&times;</span>
@@ -1420,13 +1421,30 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             document.body.classList.toggle('floorplan-active', floorplanVisible);
         }}
 
+        let currentTransform = d3.zoomIdentity;
+
         const zoom = d3.zoom()
             .scaleExtent([0.1, 4])
             .on('zoom', (event) => {{
+                currentTransform = event.transform;
                 g.attr('transform', event.transform);
             }});
 
         svg.call(zoom);
+
+        // Mouse position display (bottom-left corner)
+        svg.on('mousemove', (event) => {{
+            const [mx, my] = d3.pointer(event);
+            const worldX = (mx - currentTransform.x) / currentTransform.k;
+            const worldY = (my - currentTransform.y) / currentTransform.k;
+            const pos = screenToFeet(worldX, worldY);
+            const coordEl = document.getElementById('coordDisplay');
+            if (pos.isFeet) {{
+                coordEl.textContent = pos.x + ' ft, ' + pos.y + ' ft';
+            }} else {{
+                coordEl.textContent = Math.round(worldX) + ', ' + Math.round(worldY);
+            }}
+        }});
 
         function getNodeColor(d) {{
             if (d.is_coordinator) return '#00d4ff';
