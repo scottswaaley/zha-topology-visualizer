@@ -61,13 +61,16 @@ def build_hierarchy(data: dict) -> dict:
     assigned = set()
     assigned.add(coordinator['id'])
 
+    # Use minimum LQI across both directions for conservative tree decisions
     best_link = {}
     for edge in edges:
         src, tgt = edge['source'], edge['target']
         lqi = edge.get('lqi', 0) or 0
         key = tuple(sorted([src, tgt]))
-        if key not in best_link or lqi > best_link[key]:
+        if key not in best_link:
             best_link[key] = lqi
+        else:
+            best_link[key] = min(best_link[key], lqi)
 
     def get_link_lqi(id1, id2):
         key = tuple(sorted([id1, id2]))
@@ -241,6 +244,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         if nwk:
             nwk_to_ieee[nwk] = ieee
 
+    # Build directional LQI lookup: (source_ieee, target_ieee) -> lqi
+    # Source is the reporting device, target is the neighbor it reported
+    topology = data.get('topology', {})
+    directional_lqi = {}
+    for edge in topology.get('edges', []):
+        src = edge.get('source')
+        tgt = edge.get('target')
+        lqi = edge.get('lqi', 0) or 0
+        if src and tgt:
+            directional_lqi[(src, tgt)] = lqi
+
     device_primary_link = {}
 
     def nwk_to_int(nwk_val):
@@ -399,10 +413,12 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     best_neighbor = n_ieee
 
         if best_neighbor:
+            # End devices using "best neighbor" are inferred - no confirmed parent
+            source_type = 'inferred' if device_type == 'EndDevice' else 'neighbor'
             device_primary_link[ieee] = {
                 'target': best_neighbor,
                 'lqi': best_lqi,
-                'source_type': 'neighbor'
+                'source_type': source_type
             }
 
     coordinator_id = hierarchy['coordinator']['id']
@@ -419,11 +435,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         parent_ieee = link_info['target']
         parent_node = nodes.get(parent_ieee)
         parent_name = parent_node.get('name', parent_ieee) if parent_node else parent_ieee
+        # Reverse LQI: how does the parent see this child?
+        reverse_lqi = directional_lqi.get((parent_ieee, ieee))
+        # Source last_seen: when was the reporting device last heard from?
+        reporting_device = devices.get(ieee, {})
         child_to_parents[ieee].append({
             'id': parent_ieee,
             'name': parent_name,
             'lqi': link_info['lqi'],
-            'source_type': link_info['source_type']
+            'lqi_reverse': reverse_lqi,
+            'source_type': link_info['source_type'],
+            'source_last_seen': reporting_device.get('last_seen')
         })
 
     for node_id, node in nodes.items():
@@ -489,12 +511,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         })
 
     for ieee, link_info in device_primary_link.items():
+        parent_ieee = link_info['target']
+        # Reverse LQI: how does the parent see this child?
+        reverse_lqi = directional_lqi.get((parent_ieee, ieee))
+        # Source last_seen: when was the reporting device last heard from?
+        reporting_device = devices.get(ieee, {})
         d3_links.append({
-            'source': link_info['target'],
+            'source': parent_ieee,
             'target': ieee,
             'lqi': link_info['lqi'],
+            'lqi_reverse': reverse_lqi,
             'type': 'primary',
-            'source_type': link_info['source_type']
+            'source_type': link_info['source_type'],
+            'source_last_seen': reporting_device.get('last_seen')
         })
 
     sibling_links_added = set()
@@ -833,6 +862,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             stroke-opacity: 0.3;
         }}
 
+        .link.primary.inferred {{
+            stroke-dasharray: 4, 2;
+            stroke-opacity: 0.4;
+        }}
+
         .link.sibling.highlighted {{
             stroke-opacity: 0.8;
         }}
@@ -1031,8 +1065,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <div class="legend-item clickable" data-link-type="route" style="margin-left:15px"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route</div>
             <div class="legend-item clickable" data-link-type="parent"><div class="legend-line" style="width:20px;height:3px;background:#8BC34A;margin-right:5px"></div> Parent</div>
             <div class="legend-item clickable" data-link-type="neighbor"><div class="legend-line" style="width:20px;height:3px;background:#FFC107;margin-right:5px"></div> Neighbor</div>
+            <div class="legend-item clickable" data-link-type="inferred"><div class="legend-line" style="width:20px;border-top:2px dashed #FF9800;margin-right:5px"></div> Inferred</div>
             <div class="legend-item clickable" data-link-type="fallback"><div class="legend-line" style="width:20px;height:3px;background:#666;margin-right:5px"></div> Fallback</div>
             <div class="legend-item clickable disabled" data-link-type="sibling"><div class="legend-line" style="width:20px;border-top:2px dashed #888;margin-right:5px"></div> Sibling</div>
+            <div class="legend-item" style="margin-left:15px"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px;opacity:0.5"></div> Stale (&gt;24h)</div>
         </div>
         <div class="controls">
             <div class="search-container">
@@ -1040,7 +1076,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <button class="clear-search" id="clearSearch" onclick="clearSearch()">&times;</button>
                 <span class="search-count" id="searchCount"></span>
             </div>
-            <button onclick="refreshData()" id="refreshBtn">Refresh Data</button>
+            <button onclick="refreshData()" id="refreshBtn" title="Fetch latest data from ZHA (uses cached neighbor tables)">Refresh Data</button>
+            <button onclick="scanNetwork()" id="scanBtn" title="Full network scan - queries all routers for neighbor tables (takes several minutes)">Scan Network</button>
             <button onclick="regenerateUI()" id="regenBtn" title="Regenerate UI from cached data (fast)">Regenerate UI</button>
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
@@ -1090,6 +1127,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             route: true,
             parent: true,
             neighbor: true,
+            inferred: true,
             fallback: true,
             sibling: false
         }};
@@ -1616,6 +1654,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 case 'route': return '#00d4ff';
                 case 'parent': return '#8BC34A';
                 case 'neighbor': return '#FFC107';
+                case 'inferred': return '#FF9800';
                 case 'fallback': return '#666';
                 case 'sibling': return '#888';
                 default: return '#888';
@@ -1645,6 +1684,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 if (d.lqi >= 100) return 2.5;
                 if (d.lqi >= 50) return 2;
                 return 1.5;
+            }})
+            .attr('stroke-dasharray', d => {{
+                // Stale links (>24h) shown dashed
+                if (!d.source_last_seen) return '6, 3';
+                const hoursSince = (exportTime - new Date(d.source_last_seen)) / 3600000;
+                if (hoursSince > 24) return '6, 3';
+                return null;
+            }})
+            .attr('stroke-opacity', d => {{
+                if (!d.source_last_seen) return 0.35;
+                const hoursSince = (exportTime - new Date(d.source_last_seen)) / 3600000;
+                if (hoursSince > 24) return 0.35;
+                return 0.6;
             }});
 
         const neighborLinksGroup = g.append('g').attr('class', 'neighbor-links-group');
@@ -1818,13 +1870,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'route': 'Route Table',
                 'parent': 'Parent Relationship',
                 'neighbor': 'Strongest Neighbor',
-                'fallback': 'Fallback',
+                'inferred': 'Inferred (actual parent unknown)',
+                'fallback': 'No connection data',
                 'sibling': 'Sibling'
             }};
             const sourceTypeColors = {{
                 'route': '#00d4ff',
                 'parent': '#8BC34A',
                 'neighbor': '#FFC107',
+                'inferred': '#FF9800',
                 'fallback': '#666',
                 'sibling': '#888'
             }};
@@ -1832,7 +1886,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 parentInfo = d.parents.map(p => {{
                     const sourceLabel = sourceTypeLabels[p.source_type] || p.source_type;
                     const sourceColor = sourceTypeColors[p.source_type] || '#888';
-                    return `${{p.name}}${{p.lqi ? ` (LQI: ${{p.lqi}})` : ''}} <span style="color:${{sourceColor}};font-size:9px">[${{sourceLabel}}]</span>`;
+                    // Show bidirectional LQI: forward (child→parent) and reverse (parent→child)
+                    let lqiDisplay = '';
+                    if (p.lqi != null || p.lqi_reverse != null) {{
+                        const fwd = p.lqi != null ? p.lqi : '?';
+                        const rev = p.lqi_reverse != null ? p.lqi_reverse : '?';
+                        lqiDisplay = ` (LQI: ${{fwd}} \\u2192 / \\u2190 ${{rev}})`;
+                    }}
+                    // Show data staleness
+                    const dataAge = p.source_last_seen ? formatLastSeen(p.source_last_seen) : 'unknown';
+                    return `${{p.name}}${{lqiDisplay}} <span style="color:${{sourceColor}};font-size:9px">[${{sourceLabel}}]</span> <span style="color:#666;font-size:9px">(data: ${{dataAge}})</span>`;
                 }}).join(', ');
             }}
 
@@ -1882,10 +1945,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
                 <div>Type: <span>${{d.device_type}}</span>${{d.nwk ? ` <span style="color:#666;font-size:10px">(NWK: ${{d.nwk}})</span>` : ''}}</div>
-                <div>LQI: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span> | Depth: <span>${{depthDisplay}}</span></div>
+                <div>Device LQI <span style="color:#555;font-size:9px">(last msg to coordinator)</span>: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span> | Depth: <span>${{depthDisplay}}</span></div>
                 <div>Position: <span style="color:#888">${{positionDisplay}}</span></div>
                 <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
+                <div style="color:#555;font-size:9px;margin-top:-2px">Link LQI values below are from neighbor table scans</div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
                 <div>Model: <span>${{d.model || 'Unknown'}}</span></div>
                 ${{entitiesHtml}}
@@ -2108,7 +2172,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             const grid = document.getElementById('neighborGrid');
 
             title.textContent = `${{nodeData.name}} - Neighbor Table`;
-            subtitle.textContent = `${{nodeData.neighbors.length}} neighbors | Device LQI: ${{nodeData.lqi || 'N/A'}}`;
+            subtitle.textContent = `${{nodeData.neighbors.length}} neighbors | Device LQI (to coordinator): ${{nodeData.lqi || 'N/A'}}`;
 
             const sortedNeighbors = [...nodeData.neighbors].sort((a, b) => (b.lqi || 0) - (a.lqi || 0));
 
@@ -2120,10 +2184,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 const lqiPercent = Math.round((neighbor.lqi / 255) * 100);
                 const notInNetwork = !neighborNode ? 'not-in-network' : '';
 
+                // Look up reverse LQI (how does the neighbor see this device?)
+                let reverseLqi = null;
+                if (neighborNode && neighborNode.neighbors) {{
+                    const reverseEntry = neighborNode.neighbors.find(n => n.ieee === nodeData.id);
+                    if (reverseEntry) reverseLqi = reverseEntry.lqi;
+                }}
+                const reverseLqiColor = reverseLqi != null ? getLqiColor(reverseLqi) : '#666';
+                const reverseDisplay = reverseLqi != null ? reverseLqi : '?';
+
                 html += `
                     <div class="neighbor-card ${{notInNetwork}}">
                         <div class="name">${{neighborName}}</div>
-                        <div class="lqi-value" style="color:${{lqiColor}}">${{neighbor.lqi}}</div>
+                        <div class="lqi-value" style="color:${{lqiColor}}">${{neighbor.lqi}} <span style="font-size:11px;color:#888">\\u2192</span> <span style="font-size:11px;color:${{reverseLqiColor}}">\\u2190 ${{reverseDisplay}}</span></div>
                         <div class="lqi-bar">
                             <div class="lqi-bar-fill" style="width:${{lqiPercent}}%;background:${{lqiColor}}"></div>
                         </div>
@@ -2219,6 +2292,38 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 alert('Refresh failed: ' + err.message);
                 btn.textContent = originalText;
                 btn.classList.remove('loading');
+                btn.disabled = false;
+            }}
+        }}
+
+        async function scanNetwork() {{
+            const btn = document.getElementById('scanBtn');
+
+            if (!confirm('This will trigger a full network scan, querying all routers for their neighbor tables.\\n\\nThe scan runs in the background and typically takes 2-5 minutes.\\nClick "Refresh Data" afterward to see updated neighbor tables.\\n\\nContinue?')) {{
+                return;
+            }}
+
+            btn.textContent = 'Triggering...';
+            btn.disabled = true;
+
+            try {{
+                const response = await fetch('/scan', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }}
+                }});
+
+                const data = await response.json();
+
+                if (response.ok) {{
+                    showToast(data.message || "Topology scan triggered. Click 'Refresh Data' in a few minutes.");
+                }} else {{
+                    showToast('Scan failed: ' + (data.message || 'Unknown error'));
+                }}
+            }} catch (err) {{
+                console.error('[Scan] Error:', err);
+                showToast('Failed to trigger scan: ' + err.message);
+            }} finally {{
+                btn.textContent = 'Scan Network';
                 btn.disabled = false;
             }}
         }}

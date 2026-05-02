@@ -127,34 +127,31 @@ class ZHAExporter:
 
                     log("      Connected and authenticated!")
 
-                    log("[1/8] Triggering topology scan...")
-                    await self.trigger_topology_scan(ws)
-
-                    log("[2/8] Fetching ZHA devices with neighbor data...")
+                    log("[1/7] Fetching ZHA devices with neighbor data...")
                     devices = await self.get_devices(ws)
                     log(f"      Found {len(devices)} devices")
 
-                    log("[3/8] Fetching network settings...")
+                    log("[2/7] Fetching network settings...")
                     network = await self.get_network_settings(ws)
                     channel = network.get("network_info", {}).get("channel", "N/A")
                     log(f"      Channel: {channel}")
 
-                    log("[4/8] Fetching network backups...")
+                    log("[3/7] Fetching network backups...")
                     backups = await self.get_network_backups(ws)
                     log(f"      Found {len(backups)} backups")
 
-                    log("[5/8] Fetching ZHA groups...")
+                    log("[4/7] Fetching ZHA groups...")
                     groups = await self.get_groups(ws)
                     log(f"      Found {len(groups)} groups")
 
-                    log("[6/8] Fetching device clusters...")
+                    log("[5/7] Fetching device clusters...")
                     devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                    log("[7/8] Fetching device registry...")
+                    log("[6/7] Fetching device registry...")
                     device_registry = await self.get_device_registry(ws)
                     log(f"      Found {len(device_registry)} device registry entries")
 
-                    log("[8/8] Fetching entity registry...")
+                    log("[7/7] Fetching entity registry...")
                     entity_registry = await self.get_entity_registry(ws)
                     log(f"      Found {len(entity_registry)} entity registry entries")
 
@@ -187,13 +184,40 @@ class ZHAExporter:
             "floorplan_css": floorplan_data.get('css') if floorplan_data else None
         }
 
-    async def trigger_topology_scan(self, ws):  # noqa: ARG002
-        """Skip topology scan - neighbor data is already maintained by ZHA.
+    async def trigger_topology_scan(self):
+        """Trigger a ZHA network topology scan (fire-and-forget).
 
-        Note: ZHA maintains neighbor tables automatically. The topology_scan_wait
-        setting is now ignored to avoid WebSocket timeout issues during long waits.
+        Sends zha/network/update_topology which tells ZHA to query all routers
+        for their neighbor tables. The scan runs asynchronously on the ZHA side.
+        Returns True if the command was acknowledged successfully.
         """
-        log("      Skipped (using existing neighbor data)")
+        log("      Connecting to WebSocket for scan trigger...")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.ws_connect(
+                    self.ws_url,
+                    headers={"Authorization": f"Bearer {self.token}"},
+                    heartbeat=15,
+                    autoping=True,
+                    receive_timeout=None
+                ) as ws:
+                    if not await self.authenticate(ws):
+                        raise Exception("Authentication failed")
+
+                    result = await self.ws_command(
+                        ws,
+                        {"type": "zha/network/update_topology"},
+                        timeout=30
+                    )
+                    if result.get("success"):
+                        log("      Topology scan triggered successfully")
+                        return True
+                    else:
+                        log(f"      Warning: Scan may not have started: {result}")
+                        return False
+        except Exception as e:
+            log(f"      Error triggering scan: {e}")
+            raise
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""
@@ -406,6 +430,18 @@ def print_topology_summary(topology: dict):
             max_link_lqi = max(link_lqis)
             log(f"  - Average link LQI: {avg_link_lqi:.0f}/255 ({(avg_link_lqi/255)*100:.0f}%)")
             log(f"  - Range: {min_link_lqi} - {max_link_lqi}")
+
+
+async def trigger_scan():
+    """Trigger a ZHA topology scan without fetching data.
+
+    This is a fire-and-forget operation. The scan runs asynchronously on the
+    ZHA side, querying all routers for their neighbor tables. Use export_data()
+    after the scan completes to fetch updated data.
+    """
+    log("Triggering ZHA topology scan...")
+    exporter = ZHAExporter()
+    return await exporter.trigger_topology_scan()
 
 
 async def export_data():

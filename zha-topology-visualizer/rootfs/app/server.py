@@ -15,7 +15,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 # Import our modules
-from main import export_data
+from main import export_data, trigger_scan
 from visualize import generate_visualization, find_latest_export
 
 
@@ -240,6 +240,8 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         try:
             if self.path == '/refresh':
                 self.handle_refresh()
+            elif self.path == '/scan':
+                self.handle_scan()
             elif self.path == '/regenerate':
                 self.handle_regenerate()
             elif self.path == '/positions':
@@ -354,7 +356,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         self.wfile.write(content.encode('utf-8'))
 
     def handle_refresh(self):
-        """Handle refresh request."""
+        """Handle refresh request (uses cached neighbor data, fast)."""
         log("[Server] Refresh requested")
         if is_refreshing:
             log("[Server] Refresh already in progress, rejecting request")
@@ -364,7 +366,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'Refresh already in progress')
             return
 
-        # Start refresh in background
+        # Start refresh in background (no network scan)
         log("[Server] Starting background refresh thread")
         thread = threading.Thread(target=do_refresh, daemon=True)
         thread.start()
@@ -373,6 +375,49 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
         self.wfile.write(b'Refresh started')
+
+    def handle_scan(self):
+        """Handle topology scan request (fire-and-forget).
+
+        Triggers ZHA to query all routers for their neighbor tables.
+        The scan runs asynchronously on the ZHA side. Users should click
+        'Refresh Data' after a few minutes to see updated neighbor tables.
+        """
+        log("[Server] Topology scan trigger requested")
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                success = loop.run_until_complete(trigger_scan())
+            finally:
+                loop.close()
+
+            if success:
+                response = json.dumps({
+                    "status": "triggered",
+                    "message": "Topology scan triggered. Click 'Refresh Data' in a few minutes to see updated neighbor tables."
+                })
+                self.send_response(200)
+            else:
+                response = json.dumps({
+                    "status": "warning",
+                    "message": "Scan command sent but ZHA did not confirm success. Try again or check ZHA logs."
+                })
+                self.send_response(200)
+
+        except Exception as e:
+            log(f"[Server] Scan trigger failed: {e}")
+            response = json.dumps({
+                "status": "error",
+                "message": f"Failed to trigger scan: {e}"
+            })
+            self.send_response(500)
+
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', len(response.encode('utf-8')))
+        self.end_headers()
+        self.wfile.write(response.encode('utf-8'))
 
     def handle_regenerate(self):
         """Handle UI regeneration request (uses cached data)."""
