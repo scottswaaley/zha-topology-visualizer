@@ -1317,8 +1317,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             console.log('[Floorplan] Skipping - hasFloorplan:', hasFloorplan, 'content exists:', !!floorplanSvgContent);
         }}
 
-        // Coordinate system: 72 SVG units = 1 foot
-        const UNITS_PER_FOOT = 72;
+        // Coordinate system: 1 SVG unit = 1 inch, 12 units = 1 foot
+        const UNITS_PER_FOOT = 12;
         const GRID_SPACING_FT = 10;
 
         function feetToUnits(feet) {{
