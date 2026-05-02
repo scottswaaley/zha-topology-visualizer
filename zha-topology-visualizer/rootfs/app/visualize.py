@@ -1531,6 +1531,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             }};
         }}
 
+        // Node position bounds (in feet)
+        const BOUNDS_FT = {{ minX: -100, maxX: 150, minY: 0, maxY: 250 }};
+        const boundsMin = feetToScreen(BOUNDS_FT.minX, BOUNDS_FT.minY, true);
+        const boundsMax = feetToScreen(BOUNDS_FT.maxX, BOUNDS_FT.maxY, true);
+        const BOUNDS = {{
+            minX: Math.min(boundsMin.x, boundsMax.x),
+            maxX: Math.max(boundsMin.x, boundsMax.x),
+            minY: Math.min(boundsMin.y, boundsMax.y),
+            maxY: Math.max(boundsMin.y, boundsMax.y)
+        }};
+
         // Server-side position storage
         let serverPositions = {{}};
         let positionsDirty = false;
@@ -1657,6 +1668,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             if (loaded) {{
                 simulation.alpha(0.1);
             }}
+            // Fit view to show all content on initial load
+            setTimeout(() => fitView(), 100);
         }});
 
         function getRectilinearPath(source, target) {{
@@ -2018,8 +2031,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 
         function dragged(event, d) {{
-            d.fx = event.x;
-            d.fy = event.y;
+            d.fx = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, event.x));
+            d.fy = Math.max(BOUNDS.minY, Math.min(BOUNDS.maxY, event.y));
         }}
 
         function dragended(event, d) {{
@@ -2032,6 +2045,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 
         simulation.on('tick', () => {{
+            nodesData.forEach(d => {{
+                d.x = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, d.x));
+                d.y = Math.max(BOUNDS.minY, Math.min(BOUNDS.maxY, d.y));
+                if (d.fx !== null && d.fx !== undefined) {{
+                    d.fx = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, d.fx));
+                    d.fy = Math.max(BOUNDS.minY, Math.min(BOUNDS.maxY, d.fy));
+                }}
+            }});
+
             link.attr('d', d => getRectilinearPath(d.source, d.target));
 
             siblingLink.attr('d', d => `M${{d.source.x}},${{d.source.y}} L${{d.target.x}},${{d.target.y}}`);
@@ -2181,6 +2203,20 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
         function zoomReset() {{
             svg.transition().call(zoom.transform, d3.zoomIdentity);
+        }}
+
+        function fitView() {{
+            const padding = 50;
+            const bx = BOUNDS.minX - padding;
+            const by = BOUNDS.minY - padding;
+            const bw = (BOUNDS.maxX - BOUNDS.minX) + padding * 2;
+            const bh = (BOUNDS.maxY - BOUNDS.minY) + padding * 2;
+
+            const scale = Math.min(width / bw, height / bh) * 0.9;
+            const tx = width / 2 - (bx + bw / 2) * scale;
+            const ty = height / 2 - (by + bh / 2) * scale;
+
+            svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
         }}
 
         function showNeighborOverlay(nodeData) {{
