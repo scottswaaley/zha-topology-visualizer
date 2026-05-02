@@ -1461,16 +1461,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 
         function getNodeRadius(d) {{
-            if (d.is_coordinator) return 30;
-            if (d.device_type === 'Router') return 22;
-            return 16;
+            if (d.is_coordinator) return 15;
+            if (d.device_type === 'Router') return 11;
+            return 8;
         }}
 
         const simulation = d3.forceSimulation(nodesData)
             .force('link', d3.forceLink(linksData).id(d => d.id).distance(100).strength(0.5))
             .force('charge', d3.forceManyBody().strength(-300))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(d => getNodeRadius(d) + 10));
+            .force('collision', d3.forceCollide().radius(d => getNodeRadius(d) + 5));
 
         function getFloorplanScale() {{
             if (!hasFloorplan) return 1;
@@ -1750,7 +1750,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .attr('stroke-opacity', d => d.available === false ? 1 : 0.3);
 
         node.append('text')
-            .attr('dy', d => getNodeRadius(d) + 14)
+            .attr('dy', d => getNodeRadius(d) + 10)
             .text(d => d.name.length > 15 ? d.name.substring(0, 14) + '...' : d.name);
 
         node.filter(d => d.lqi !== null)
