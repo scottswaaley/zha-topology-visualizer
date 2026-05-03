@@ -3,2447 +3,2468 @@
   <!-- Generator: Adobe Illustrator 30.3.0, SVG Export Plug-In . SVG Version: 2.1.3 Build 182)  -->
   <defs>
     <style>
-      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12, .st13, .st14 {
-        fill: none;
-      }
-
-      .st0, .st2, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12 {
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      .st0, .st2, .st4, .st5, .st6, .st7, .st8, .st9, .st11, .st12 {
-        stroke: #6d6e71;
-      }
-
-      .st0, .st6, .st8, .st14 {
-        stroke-width: 1px;
-      }
-
-      .st1 {
-        stroke-width: 4.7px;
-      }
-
-      .st1, .st13 {
-        stroke: #ed1c24;
-      }
-
-      .st1, .st14 {
-        stroke-miterlimit: 5.2;
-      }
-
-      .st15 {
+      .st0 {
         font-family: ArialMT, Arial;
         font-size: 46.7px;
       }
 
-      .st15, .st16, .st17 {
+      .st0, .st1, .st2 {
         isolation: isolate;
       }
 
+      .st3 {
+        stroke: #231f20;
+      }
+
+      .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12, .st13, .st14, .st15, .st16, .st17 {
+        fill: none;
+      }
+
+      .st3, .st17 {
+        stroke-miterlimit: 5.2;
+      }
+
+      .st4 {
+        stroke-width: .5px;
+      }
+
+      .st4, .st5, .st6, .st8, .st9, .st10, .st11, .st12, .st14, .st15, .st16 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .st4, .st6, .st8, .st9, .st10, .st11, .st12, .st14, .st15, .st16 {
+        stroke: #6d6e71;
+      }
+
+      .st5 {
+        stroke-width: 2px;
+      }
+
+      .st5, .st13, .st17 {
+        stroke: #666;
+      }
+
+      .st6 {
+        stroke-width: 1px;
+      }
+
+      .st8 {
+        stroke-width: .7px;
+      }
+
+      .st9 {
+        stroke-dasharray: .2 0;
+      }
+
+      .st9, .st12 {
+        stroke-width: .5px;
+      }
+
       .st2 {
-        stroke-dasharray: 0 0;
-      }
-
-      .st2, .st4 {
-        stroke-width: .4px;
-      }
-
-      .st17 {
         font-family: MyriadPro-Regular, 'Myriad Pro';
         font-size: 9.9px;
       }
 
-      .st5, .st7 {
-        stroke-width: .5px;
-      }
-
-      .st6 {
-        stroke-dasharray: 11.7 5.8;
-      }
-
-      .st7 {
-        stroke-dasharray: .2 0;
-      }
-
-      .st8 {
-        stroke-dasharray: .8 .4;
-      }
-
-      .st9 {
-        stroke-width: 1px;
-      }
-
-      .st10 {
-        stroke: #000;
-        stroke-width: .7px;
+      .st10, .st11 {
+        stroke-width: .4px;
       }
 
       .st11 {
-        stroke-width: .5px;
-      }
-
-      .st12 {
-        stroke-width: .7px;
+        stroke-dasharray: 0 0;
       }
 
       .st13 {
         stroke-miterlimit: 5.2;
-        stroke-width: 4.7px;
       }
 
-      .st14 {
-        stroke: #231f20;
+      .st13, .st17 {
+        stroke-width: 3px;
+      }
+
+      .st15 {
+        stroke-dasharray: 11.7 5.8;
+      }
+
+      .st16 {
+        stroke-dasharray: .8 .4;
       }
     </style>
   </defs>
   <g id="House">
     <g id="LWPOLYLINE">
-      <line class="st0" x1="477.2" y1="1315.3" x2="482.2" y2="1315.3"/>
+      <line class="st14" x1="477.2" y1="1315.3" x2="482.2" y2="1315.3"/>
     </g>
     <g id="LWPOLYLINE-2">
-      <line class="st0" x1="476.2" y1="1314.3" x2="476.2" y2="1309.3"/>
+      <line class="st14" x1="476.2" y1="1314.3" x2="476.2" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-3">
-      <line class="st0" x1="447.2" y1="1314.3" x2="447.2" y2="1309.3"/>
+      <line class="st14" x1="447.2" y1="1314.3" x2="447.2" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-4">
-      <line class="st0" x1="476.2" y1="1311.8" x2="447.2" y2="1311.8"/>
+      <line class="st14" x1="476.2" y1="1311.8" x2="447.2" y2="1311.8"/>
     </g>
     <g id="LWPOLYLINE-5">
-      <line class="st0" x1="315.3" y1="1648.7" x2="315.3" y2="1643.7"/>
+      <line class="st14" x1="315.3" y1="1648.7" x2="315.3" y2="1643.7"/>
     </g>
     <g id="LWPOLYLINE-6">
-      <line class="st0" x1="375.3" y1="1646.2" x2="315.3" y2="1646.2"/>
+      <line class="st14" x1="375.3" y1="1646.2" x2="315.3" y2="1646.2"/>
     </g>
     <g id="LWPOLYLINE-7">
-      <line class="st0" x1="213.3" y1="1585.2" x2="213.3" y2="1513.3"/>
+      <line class="st14" x1="213.3" y1="1585.2" x2="213.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-8">
-      <line class="st0" x1="292.3" y1="1314.3" x2="292.3" y2="1309.3"/>
+      <line class="st14" x1="292.3" y1="1314.3" x2="292.3" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-9">
-      <line class="st0" x1="292.3" y1="1314.3" x2="477.2" y2="1314.3"/>
+      <line class="st14" x1="292.3" y1="1314.3" x2="477.2" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-10">
-      <line class="st0" x1="292.3" y1="1313.3" x2="262.3" y2="1313.3"/>
+      <line class="st14" x1="292.3" y1="1313.3" x2="262.3" y2="1313.3"/>
     </g>
     <g id="LWPOLYLINE-11">
-      <line class="st0" x1="262.3" y1="1310.3" x2="262.3" y2="1313.3"/>
+      <line class="st14" x1="262.3" y1="1310.3" x2="262.3" y2="1313.3"/>
     </g>
     <g id="LWPOLYLINE-12">
-      <line class="st0" x1="213.3" y1="1480.3" x2="213.3" y2="1314.3"/>
+      <line class="st14" x1="213.3" y1="1480.3" x2="213.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-13">
-      <line class="st0" x1="208.3" y1="1480.3" x2="208.3" y2="1451.3"/>
+      <line class="st14" x1="208.3" y1="1480.3" x2="208.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-14">
-      <line class="st0" x1="234.3" y1="1576" x2="234.3" y2="1564"/>
+      <line class="st14" x1="234.3" y1="1576" x2="234.3" y2="1564"/>
     </g>
     <g id="LWPOLYLINE-15">
-      <line class="st0" x1="178.3" y1="1480.3" x2="178.3" y2="1451.3"/>
+      <line class="st14" x1="178.3" y1="1480.3" x2="178.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-16">
-      <line class="st0" x1="183.3" y1="1480.3" x2="183.3" y2="1451.3"/>
+      <line class="st14" x1="183.3" y1="1480.3" x2="183.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-17">
-      <line class="st0" x1="134.3" y1="1487.3" x2="139.3" y2="1487.3"/>
+      <line class="st14" x1="134.3" y1="1487.3" x2="139.3" y2="1487.3"/>
     </g>
     <g id="LWPOLYLINE-18">
-      <line class="st0" x1="183.3" y1="1518.2" x2="183.3" y2="1513.3"/>
+      <line class="st14" x1="183.3" y1="1518.2" x2="183.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-19">
-      <line class="st0" x1="208.3" y1="1513.3" x2="213.3" y2="1513.3"/>
+      <line class="st14" x1="208.3" y1="1513.3" x2="213.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-20">
-      <line class="st0" x1="174.3" y1="1518.2" x2="174.3" y2="1513.3"/>
+      <line class="st14" x1="174.3" y1="1518.2" x2="174.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-21">
-      <line class="st0" x1="174.3" y1="1518.2" x2="178.3" y2="1518.2"/>
+      <line class="st14" x1="174.3" y1="1518.2" x2="178.3" y2="1518.2"/>
     </g>
     <g id="LWPOLYLINE-22">
-      <line class="st0" x1="174.3" y1="1513.3" x2="183.3" y2="1513.3"/>
+      <line class="st14" x1="174.3" y1="1513.3" x2="183.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-23">
-      <line class="st0" x1="46.8" y1="1560.2" x2="51.8" y2="1560.2"/>
+      <line class="st14" x1="46.8" y1="1560.2" x2="51.8" y2="1560.2"/>
     </g>
     <g id="LWPOLYLINE-24">
-      <line class="st0" x1="46.8" y1="1608.2" x2="51.8" y2="1608.2"/>
+      <line class="st14" x1="46.8" y1="1608.2" x2="51.8" y2="1608.2"/>
     </g>
     <g id="LINE">
-      <line class="st0" x1="49.3" y1="1608.2" x2="49.3" y2="1560.2"/>
+      <line class="st14" x1="49.3" y1="1608.2" x2="49.3" y2="1560.2"/>
     </g>
     <g id="LWPOLYLINE-25">
-      <line class="st0" x1="87.8" y1="1648.7" x2="87.8" y2="1643.7"/>
+      <line class="st14" x1="87.8" y1="1648.7" x2="87.8" y2="1643.7"/>
     </g>
     <g id="LWPOLYLINE-26">
-      <line class="st0" x1="51.8" y1="1513.3" x2="51.8" y2="1451.3"/>
+      <line class="st14" x1="51.8" y1="1513.3" x2="51.8" y2="1451.3"/>
     </g>
     <g id="LINE-2">
-      <line class="st0" x1="49.3" y1="1506.3" x2="49.3" y2="1458.3"/>
+      <line class="st14" x1="49.3" y1="1506.3" x2="49.3" y2="1458.3"/>
     </g>
     <g id="LINE-3">
-      <line class="st4" x1="110.3" y1="1492.3" x2="134.3" y2="1492.3"/>
+      <line class="st10" x1="110.3" y1="1492.3" x2="134.3" y2="1492.3"/>
     </g>
     <g id="LWPOLYLINE-27">
-      <line class="st5" x1="81.8" y1="1513.3" x2="81.8" y2="1451.3"/>
+      <line class="st12" x1="81.8" y1="1513.3" x2="81.8" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-28">
-      <rect class="st5" x="54.7" y="1456.5" width="24" height="54" rx="12" ry="12"/>
+      <path class="st12" d="M66.7,1456.5h0c6.6,0,12,5.4,12,12v30c0,6.6-5.4,12-12,12h0c-6.6,0-12-5.4-12-12v-30c0-6.6,5.4-12,12-12Z"/>
     </g>
     <g>
-      <rect class="st3" x="45" y="1300.8" width="844.8" height="364.4"/>
+      <rect class="st7" x="45" y="1300.8" width="844.8" height="364.4"/>
       <g id="LWPOLYLINE-29">
-        <line class="st0" x1="46.8" y1="1648.7" x2="545.2" y2="1648.7"/>
+        <line class="st14" x1="46.8" y1="1648.7" x2="545.2" y2="1648.7"/>
       </g>
       <g id="LWPOLYLINE-30">
-        <line class="st0" x1="482.2" y1="1445" x2="482.2" y2="1414"/>
+        <line class="st14" x1="482.2" y1="1445" x2="482.2" y2="1414"/>
       </g>
       <g id="LWPOLYLINE-31">
-        <line class="st0" x1="477.2" y1="1440" x2="477.2" y2="1414"/>
+        <line class="st14" x1="477.2" y1="1440" x2="477.2" y2="1414"/>
       </g>
       <g id="LWPOLYLINE-32">
-        <line class="st0" x1="477.2" y1="1383" x2="482.2" y2="1383"/>
+        <line class="st14" x1="477.2" y1="1383" x2="482.2" y2="1383"/>
       </g>
       <g id="LWPOLYLINE-33">
-        <line class="st0" x1="482.2" y1="1346" x2="482.2" y2="1309.3"/>
+        <line class="st14" x1="482.2" y1="1346" x2="482.2" y2="1309.3"/>
       </g>
       <g id="LWPOLYLINE-34">
-        <line class="st0" x1="477.2" y1="1414" x2="482.2" y2="1414"/>
+        <line class="st14" x1="477.2" y1="1414" x2="482.2" y2="1414"/>
       </g>
       <g id="LWPOLYLINE-35">
-        <line class="st0" x1="482.2" y1="1383" x2="482.2" y2="1351"/>
+        <line class="st14" x1="482.2" y1="1383" x2="482.2" y2="1351"/>
       </g>
       <g id="LWPOLYLINE-36">
-        <line class="st0" x1="477.2" y1="1383" x2="477.2" y2="1314.3"/>
+        <line class="st14" x1="477.2" y1="1383" x2="477.2" y2="1314.3"/>
       </g>
       <g id="LWPOLYLINE-37">
-        <line class="st0" x1="325.3" y1="1445" x2="482.2" y2="1445"/>
+        <line class="st14" x1="325.3" y1="1445" x2="482.2" y2="1445"/>
       </g>
       <g id="LWPOLYLINE-38">
-        <line class="st0" x1="477.2" y1="1343.3" x2="482.2" y2="1343.3"/>
+        <line class="st14" x1="477.2" y1="1343.3" x2="482.2" y2="1343.3"/>
       </g>
       <g id="LWPOLYLINE-39">
-        <line class="st0" x1="479.7" y1="1315.3" x2="479.7" y2="1343.3"/>
+        <line class="st14" x1="479.7" y1="1315.3" x2="479.7" y2="1343.3"/>
       </g>
       <g id="LWPOLYLINE-40">
-        <line class="st0" x1="474.2" y1="1643.7" x2="474.2" y2="1483"/>
+        <line class="st14" x1="474.2" y1="1643.7" x2="474.2" y2="1483"/>
       </g>
       <g id="LWPOLYLINE-41">
-        <line class="st0" x1="325.3" y1="1445" x2="325.3" y2="1440"/>
+        <line class="st14" x1="325.3" y1="1445" x2="325.3" y2="1440"/>
       </g>
       <g id="LWPOLYLINE-42">
-        <line class="st0" x1="325.3" y1="1440" x2="477.2" y2="1440"/>
+        <line class="st14" x1="325.3" y1="1440" x2="477.2" y2="1440"/>
       </g>
       <g id="LWPOLYLINE-43">
-        <line class="st6" x1="474.2" y1="1483" x2="474.2" y2="1445"/>
+        <line class="st15" x1="474.2" y1="1483" x2="474.2" y2="1445"/>
       </g>
       <g id="LWPOLYLINE-44">
-        <line class="st0" x1="479.2" y1="1643.7" x2="479.2" y2="1488"/>
+        <line class="st14" x1="479.2" y1="1643.7" x2="479.2" y2="1488"/>
       </g>
       <g id="LWPOLYLINE-45">
-        <line class="st0" x1="471.2" y1="1648.7" x2="471.2" y2="1643.7"/>
+        <line class="st14" x1="471.2" y1="1648.7" x2="471.2" y2="1643.7"/>
       </g>
       <g id="LWPOLYLINE-46">
-        <line class="st0" x1="399.3" y1="1648.7" x2="399.3" y2="1643.7"/>
+        <line class="st14" x1="399.3" y1="1648.7" x2="399.3" y2="1643.7"/>
       </g>
       <g id="LWPOLYLINE-47">
-        <line class="st0" x1="471.2" y1="1643.7" x2="474.2" y2="1643.7"/>
+        <line class="st14" x1="471.2" y1="1643.7" x2="474.2" y2="1643.7"/>
       </g>
       <g id="door.back_slider">
-        <line class="st0" x1="471.2" y1="1646.2" x2="399.3" y2="1646.2"/>
+        <line class="st14" x1="471.2" y1="1646.2" x2="399.3" y2="1646.2"/>
       </g>
       <g id="LWPOLYLINE-48">
-        <line class="st0" x1="471.2" y1="1644.7" x2="435.3" y2="1644.7"/>
+        <line class="st14" x1="471.2" y1="1644.7" x2="435.3" y2="1644.7"/>
       </g>
       <g id="LWPOLYLINE-49">
-        <line class="st0" x1="435.3" y1="1647.7" x2="399.3" y2="1647.7"/>
+        <line class="st14" x1="435.3" y1="1647.7" x2="399.3" y2="1647.7"/>
       </g>
       <g id="LWPOLYLINE-50">
-        <line class="st0" x1="435.3" y1="1647.7" x2="435.3" y2="1644.7"/>
+        <line class="st14" x1="435.3" y1="1647.7" x2="435.3" y2="1644.7"/>
       </g>
       <g id="LWPOLYLINE-51">
-        <line class="st0" x1="375.3" y1="1648.7" x2="375.3" y2="1643.7"/>
+        <line class="st14" x1="375.3" y1="1648.7" x2="375.3" y2="1643.7"/>
       </g>
       <g id="LWPOLYLINE-52">
-        <line class="st0" x1="208.3" y1="1643.7" x2="208.3" y2="1535.7"/>
+        <line class="st14" x1="208.3" y1="1643.7" x2="208.3" y2="1535.7"/>
       </g>
       <g id="LWPOLYLINE-53">
-        <line class="st0" x1="277.3" y1="1643.7" x2="399.3" y2="1643.7"/>
+        <line class="st14" x1="277.3" y1="1643.7" x2="399.3" y2="1643.7"/>
       </g>
       <g id="LWPOLYLINE-54">
-        <line class="st0" x1="285.4" y1="1622.7" x2="381.3" y2="1622.7"/>
+        <line class="st14" x1="285.4" y1="1622.7" x2="381.3" y2="1622.7"/>
       </g>
       <g id="LWPOLYLINE-55">
-        <line class="st0" x1="381.3" y1="1643.7" x2="381.3" y2="1622.7"/>
+        <line class="st14" x1="381.3" y1="1643.7" x2="381.3" y2="1622.7"/>
       </g>
       <g id="LWPOLYLINE-56">
-        <line class="st0" x1="213.3" y1="1564" x2="234.3" y2="1564"/>
+        <line class="st14" x1="213.3" y1="1564" x2="234.3" y2="1564"/>
       </g>
       <g id="LWPOLYLINE-57">
-        <line class="st0" x1="135.8" y1="1648.7" x2="135.8" y2="1643.7"/>
+        <line class="st14" x1="135.8" y1="1648.7" x2="135.8" y2="1643.7"/>
       </g>
       <g id="LINE-4">
-        <line class="st0" x1="87.8" y1="1646.2" x2="135.8" y2="1646.2"/>
+        <line class="st14" x1="87.8" y1="1646.2" x2="135.8" y2="1646.2"/>
       </g>
       <g id="LINE-5">
-        <line class="st0" x1="183.3" y1="1642.2" x2="183.3" y2="1643.7"/>
+        <line class="st14" x1="183.3" y1="1642.2" x2="183.3" y2="1643.7"/>
       </g>
       <g id="LINE-6">
-        <line class="st0" x1="178.3" y1="1642.2" x2="178.3" y2="1643.7"/>
+        <line class="st14" x1="178.3" y1="1642.2" x2="178.3" y2="1643.7"/>
       </g>
       <g id="LWPOLYLINE-58">
-        <line class="st0" x1="178.3" y1="1642.2" x2="183.3" y2="1642.2"/>
+        <line class="st14" x1="178.3" y1="1642.2" x2="183.3" y2="1642.2"/>
       </g>
       <g id="LINE-7">
-        <line class="st0" x1="386.9" y1="1338.3" x2="386.9" y2="1314.3"/>
+        <line class="st14" x1="386.9" y1="1338.3" x2="386.9" y2="1314.3"/>
       </g>
       <g id="LWPOLYLINE-59">
-        <line class="st4" x1="453.2" y1="1381" x2="453.2" y2="1358"/>
+        <line class="st10" x1="453.2" y1="1381" x2="453.2" y2="1358"/>
       </g>
       <g id="LWPOLYLINE-60">
-        <line class="st4" x1="328.3" y1="1338.3" x2="351" y2="1338.3"/>
+        <line class="st10" x1="328.3" y1="1338.3" x2="351" y2="1338.3"/>
       </g>
       <g id="LWPOLYLINE-61">
-        <line class="st4" x1="328.3" y1="1338.3" x2="328.3" y2="1314.3"/>
+        <line class="st10" x1="328.3" y1="1338.3" x2="328.3" y2="1314.3"/>
       </g>
       <g id="LWPOLYLINE-62">
-        <line class="st4" x1="453.2" y1="1381" x2="477.2" y2="1381"/>
+        <line class="st10" x1="453.2" y1="1381" x2="477.2" y2="1381"/>
       </g>
       <g id="LWPOLYLINE-63">
-        <line class="st4" x1="453.2" y1="1358" x2="433.5" y2="1338.3"/>
+        <line class="st10" x1="453.2" y1="1358" x2="433.5" y2="1338.3"/>
       </g>
       <g id="LWPOLYLINE-64">
-        <line class="st4" x1="328.3" y1="1377.3" x2="367.3" y2="1377.3"/>
+        <line class="st10" x1="328.3" y1="1377.3" x2="367.3" y2="1377.3"/>
       </g>
       <g id="LWPOLYLINE-65">
-        <line class="st4" x1="328.3" y1="1377.3" x2="328.3" y2="1440"/>
+        <line class="st10" x1="328.3" y1="1377.3" x2="328.3" y2="1440"/>
       </g>
       <g id="LWPOLYLINE-66">
-        <line class="st4" x1="367.3" y1="1377.3" x2="367.3" y2="1440"/>
+        <line class="st10" x1="367.3" y1="1377.3" x2="367.3" y2="1440"/>
       </g>
       <g id="LWPOLYLINE-67">
-        <line class="st4" x1="367.3" y1="1416" x2="477.2" y2="1416"/>
+        <line class="st10" x1="367.3" y1="1416" x2="477.2" y2="1416"/>
       </g>
       <g id="LINE-8">
-        <line class="st4" x1="386.9" y1="1314.3" x2="386.9" y2="1338.3"/>
+        <line class="st10" x1="386.9" y1="1314.3" x2="386.9" y2="1338.3"/>
       </g>
       <g id="LINE-9">
-        <line class="st4" x1="351" y1="1314.3" x2="351" y2="1338.3"/>
+        <line class="st10" x1="351" y1="1314.3" x2="351" y2="1338.3"/>
       </g>
       <g id="LINE-10">
-        <line class="st2" x1="367.9" y1="1416" x2="368.1" y2="1416"/>
+        <line class="st11" x1="367.9" y1="1416" x2="368.1" y2="1416"/>
       </g>
       <g id="LINE-11">
-        <line class="st4" x1="398.7" y1="1416" x2="397.7" y2="1416"/>
+        <line class="st10" x1="398.7" y1="1416" x2="397.7" y2="1416"/>
       </g>
       <g id="LWPOLYLINE-68">
-        <line class="st4" x1="386.9" y1="1338.3" x2="433.5" y2="1338.3"/>
+        <line class="st10" x1="386.9" y1="1338.3" x2="433.5" y2="1338.3"/>
       </g>
       <g id="ARC">
-        <path class="st5" d="M351.7,1342.4c.1,0,.2-.1.2-.2"/>
+        <path class="st12" d="M351.7,1342.4c.1,0,.2,0,.2-.2"/>
       </g>
       <g id="LINE-12">
-        <line class="st5" x1="386.4" y1="1314.3" x2="386.4" y2="1339.2"/>
+        <line class="st12" x1="386.4" y1="1314.3" x2="386.4" y2="1339.2"/>
       </g>
       <g id="ARC-2">
-        <path class="st5" d="M383.4,1344.3h0"/>
+        <path class="st12" d="M383.4,1344.3h0"/>
       </g>
       <g id="ARC-3">
-        <path class="st5" d="M354.9,1342.4c0,0,.1-.2.2-.3"/>
+        <path class="st12" d="M354.9,1342.4s.1-.2.2-.3"/>
       </g>
       <g id="ARC-4">
-        <path class="st5" d="M368.8,1344.1h0"/>
+        <path class="st12" d="M368.8,1344.1h0"/>
       </g>
       <g id="ARC-5">
-        <path class="st5" d="M356.7,1339.2s0,0,0,.1"/>
+        <path class="st12" d="M356.7,1339.2h0"/>
       </g>
       <g id="ARC-6">
-        <path class="st5" d="M351,1342.5h0"/>
+        <path class="st12" d="M351,1342.5h0"/>
       </g>
       <g id="CIRCLE">
-        <circle class="st5" cx="365.1" cy="1345.6" r=".2"/>
+        <circle class="st12" cx="365.1" cy="1345.6" r=".2"/>
       </g>
       <g id="LINE-13">
-        <line class="st5" x1="366.5" y1="1342.4" x2="366.5" y2="1342.1"/>
+        <line class="st12" x1="366.5" y1="1342.4" x2="366.5" y2="1342.1"/>
       </g>
       <g id="ARC-7">
-        <path class="st5" d="M386.5,1340.2h0"/>
+        <path class="st12" d="M386.5,1340.2h0"/>
       </g>
       <g id="LINE-14">
-        <line class="st5" x1="386.5" y1="1339.5" x2="386.5" y2="1340"/>
+        <line class="st12" x1="386.5" y1="1339.5" x2="386.5" y2="1340"/>
       </g>
       <g id="ARC-8">
-        <path class="st5" d="M386.5,1339.5h0"/>
+        <path class="st12" d="M386.5,1339.5h0"/>
       </g>
       <g id="LINE-15">
-        <line class="st5" x1="386.4" y1="1339.2" x2="386.5" y2="1339.2"/>
+        <line class="st12" x1="386.4" y1="1339.2" x2="386.5" y2="1339.2"/>
       </g>
       <g id="ARC-9">
-        <path class="st5" d="M351,1342.4h0"/>
+        <path class="st12" d="M351,1342.4h0"/>
       </g>
       <g id="ARC-10">
-        <path class="st5" d="M386.2,1342.1s0,0,0,0"/>
+        <path class="st12" d="M386.2,1342.1h0"/>
       </g>
       <g id="LINE-16">
-        <line class="st5" x1="386.2" y1="1339.4" x2="386.2" y2="1341.9"/>
+        <line class="st12" x1="386.2" y1="1339.4" x2="386.2" y2="1341.9"/>
       </g>
       <g id="ARC-11">
-        <path class="st5" d="M365.5,1344.1h0"/>
+        <path class="st12" d="M365.5,1344.1h0"/>
       </g>
       <g id="ARC-12">
-        <path class="st5" d="M351,1342.5s0,0,0,0"/>
+        <path class="st12" d="M351,1342.5h0"/>
       </g>
       <g id="ARC-13">
-        <path class="st5" d="M379.9,1344.3h0"/>
+        <path class="st12" d="M379.9,1344.3h0"/>
       </g>
       <g id="ARC-14">
-        <path class="st5" d="M383.3,1344.4h0"/>
+        <path class="st12" d="M383.3,1344.4h0"/>
       </g>
       <g id="ARC-15">
-        <path class="st5" d="M380.1,1344.4h0"/>
+        <path class="st12" d="M380.1,1344.4h0"/>
       </g>
       <g id="LINE-17">
-        <line class="st5" x1="351.5" y1="1314.3" x2="351.5" y2="1339.1"/>
+        <line class="st12" x1="351.5" y1="1314.3" x2="351.5" y2="1339.1"/>
       </g>
       <g id="ARC-16">
-        <path class="st5" d="M351,1343.4h0"/>
+        <path class="st12" d="M351,1343.4h0"/>
       </g>
       <g id="LINE-18">
-        <line class="st5" x1="351.9" y1="1342.2" x2="351.9" y2="1342.1"/>
+        <line class="st12" x1="351.9" y1="1342.2" x2="351.9" y2="1342.1"/>
       </g>
       <g id="ARC-17">
-        <path class="st5" d="M351,1342.7h0"/>
+        <path class="st12" d="M351,1342.7h0"/>
       </g>
       <g id="LINE-19">
-        <line class="st5" x1="356.8" y1="1339.1" x2="356.7" y2="1339.2"/>
+        <line class="st12" x1="356.8" y1="1339.1" x2="356.7" y2="1339.2"/>
       </g>
       <g id="ARC-18">
-        <path class="st5" d="M386.9,1342.3c0,0,0-.1,0-.2"/>
+        <path class="st12" d="M386.9,1342.3v-.2"/>
       </g>
       <g id="ARC-19">
-        <path class="st5" d="M351,1342.2s0,.1,0,.2"/>
+        <path class="st12" d="M351,1342.2v.2"/>
       </g>
       <g id="LINE-20">
-        <line class="st5" x1="366.5" y1="1342.1" x2="366.5" y2="1342.4"/>
+        <line class="st12" x1="366.5" y1="1342.1" x2="366.5" y2="1342.4"/>
       </g>
       <g id="LINE-21">
-        <line class="st5" x1="366.6" y1="1342.4" x2="366.6" y2="1342.1"/>
+        <line class="st12" x1="366.6" y1="1342.4" x2="366.6" y2="1342.1"/>
       </g>
       <g id="ARC-20">
-        <path class="st5" d="M364.8,1344.1h0"/>
+        <path class="st12" d="M364.8,1344.1h0"/>
       </g>
       <g id="LINE-22">
-        <line class="st5" x1="351" y1="1343.4" x2="351" y2="1344"/>
+        <line class="st12" x1="351" y1="1343.4" x2="351" y2="1344"/>
       </g>
       <g id="CIRCLE-2">
-        <circle class="st5" cx="365.1" cy="1345.6" r=".5"/>
+        <circle class="st12" cx="365.1" cy="1345.6" r=".5"/>
       </g>
       <g id="LINE-23">
-        <line class="st5" x1="367" y1="1342.1" x2="366.9" y2="1342.4"/>
+        <line class="st12" x1="367" y1="1342.1" x2="366.9" y2="1342.4"/>
       </g>
       <g id="LINE-24">
-        <line class="st5" x1="367" y1="1342.4" x2="367" y2="1342.1"/>
+        <line class="st12" x1="367" y1="1342.4" x2="367" y2="1342.1"/>
       </g>
       <g id="LINE-25">
-        <line class="st5" x1="386.9" y1="1344" x2="386.9" y2="1343.4"/>
+        <line class="st12" x1="386.9" y1="1344" x2="386.9" y2="1343.4"/>
       </g>
       <g id="CIRCLE-3">
-        <circle class="st5" cx="368.4" cy="1345.6" r=".5"/>
+        <circle class="st12" cx="368.4" cy="1345.6" r=".5"/>
       </g>
       <g id="LINE-26">
-        <line class="st5" x1="367" y1="1342.4" x2="367" y2="1342.1"/>
+        <line class="st12" x1="367" y1="1342.4" x2="367" y2="1342.1"/>
       </g>
       <g id="ARC-21">
-        <path class="st5" d="M386.9,1342.5h0"/>
+        <path class="st12" d="M386.9,1342.5h0"/>
       </g>
       <g id="ARC-22">
-        <path class="st5" d="M368,1344.1h0"/>
+        <path class="st12" d="M368,1344.1h0"/>
       </g>
       <g id="CIRCLE-4">
-        <circle class="st5" cx="368.4" cy="1345.6" r=".2"/>
+        <circle class="st12" cx="368.4" cy="1345.6" r=".2"/>
       </g>
       <g id="ARC-23">
-        <path class="st5" d="M386.9,1344.1s0,0,0,0"/>
+        <path class="st12" d="M386.9,1344.1h0"/>
       </g>
       <g id="ARC-24">
-        <path class="st5" d="M351,1344.1s0,0,0,0"/>
+        <path class="st12" d="M351,1344.1h0"/>
       </g>
       <g id="ARC-25">
-        <path class="st5" d="M386.9,1342.4s0,0,0,0"/>
+        <path class="st12" d="M386.9,1342.4h0"/>
       </g>
       <g id="ARC-26">
-        <path class="st5" d="M386.9,1342.4h0"/>
+        <path class="st12" d="M386.9,1342.4h0"/>
       </g>
       <g id="ARC-27">
-        <path class="st5" d="M351,1342.4h0"/>
+        <path class="st12" d="M351,1342.4h0"/>
       </g>
       <g id="ARC-28">
-        <path class="st5" d="M386.5,1340.2h0"/>
+        <path class="st12" d="M386.5,1340.2h0"/>
       </g>
       <g id="ARC-29">
-        <path class="st5" d="M351,1344.1h0"/>
+        <path class="st12" d="M351,1344.1h0"/>
       </g>
       <g id="ARC-30">
-        <path class="st5" d="M386.9,1344.1h0"/>
+        <path class="st12" d="M386.9,1344.1h0"/>
       </g>
       <g id="ARC-31">
-        <path class="st5" d="M351.4,1340.2h0"/>
+        <path class="st12" d="M351.4,1340.2h0"/>
       </g>
       <g id="LINE-27">
-        <line class="st5" x1="386.4" y1="1340.8" x2="386.3" y2="1340.8"/>
+        <line class="st12" x1="386.4" y1="1340.8" x2="386.3" y2="1340.8"/>
       </g>
       <g id="LINE-28">
-        <line class="st5" x1="351.5" y1="1339.2" x2="351.4" y2="1339.2"/>
+        <line class="st12" x1="351.5" y1="1339.2" x2="351.4" y2="1339.2"/>
       </g>
       <g id="ARC-32">
-        <path class="st5" d="M386.4,1340.8s0,0,0,0"/>
+        <path class="st12" d="M386.4,1340.8h0"/>
       </g>
       <g id="LINE-29">
-        <line class="st5" x1="386.4" y1="1340.7" x2="386.4" y2="1340.1"/>
+        <line class="st12" x1="386.4" y1="1340.7" x2="386.4" y2="1340.1"/>
       </g>
       <g id="ARC-33">
-        <path class="st5" d="M351,1344.1s0,0,0,0"/>
+        <path class="st12" d="M351,1344.1h0"/>
       </g>
       <g id="LINE-30">
-        <line class="st5" x1="386.5" y1="1339.5" x2="386.5" y2="1339.3"/>
+        <line class="st12" x1="386.5" y1="1339.5" x2="386.5" y2="1339.3"/>
       </g>
       <g id="ARC-34">
-        <path class="st5" d="M386.5,1339.5h0"/>
+        <path class="st12" d="M386.5,1339.5h0"/>
       </g>
       <g id="ARC-35">
-        <path class="st5" d="M386.4,1339.2h0"/>
+        <path class="st12" d="M386.4,1339.2h0"/>
       </g>
       <g id="ARC-36">
-        <path class="st5" d="M382.8,1342.1c0,0,.1.2.2.3"/>
+        <path class="st12" d="M382.8,1342.1s.1.2.2.3"/>
       </g>
       <g id="ARC-37">
-        <path class="st5" d="M386.9,1343.5h0"/>
+        <path class="st12" d="M386.9,1343.5h0"/>
       </g>
       <g id="ARC-38">
-        <path class="st5" d="M380,1344.2c1.1.2,2.2.2,3.3,0"/>
+        <path class="st12" d="M380,1344.2c1.1.2,2.2.2,3.3,0"/>
       </g>
       <g id="LINE-31">
-        <line class="st5" x1="386" y1="1342.2" x2="386" y2="1342.1"/>
+        <line class="st12" x1="386" y1="1342.2" x2="386" y2="1342.1"/>
       </g>
       <g id="ARC-39">
-        <path class="st5" d="M386.9,1342.7h0"/>
+        <path class="st12" d="M386.9,1342.7h0"/>
       </g>
       <g id="ARC-40">
-        <path class="st5" d="M386,1342.2c0,.1,0,.2.2.2"/>
+        <path class="st12" d="M386,1342.2c0,0,0,.2.2.2"/>
       </g>
       <g id="LWPOLYLINE-69">
-        <polyline class="st5" points="383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.3 383.4 1344.3"/>
+        <polyline class="st12" points="383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.3 383.4 1344.3"/>
       </g>
       <g id="LWPOLYLINE-70">
-        <polyline class="st5" points="383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2"/>
+        <polyline class="st12" points="383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2 383.4 1344.2"/>
       </g>
       <g id="LWPOLYLINE-71">
-        <polyline class="st5" points="380 1344.3 380 1344.3 380 1344.2 380 1344.2 380 1344.2 380 1344.2 380 1344.2"/>
+        <polyline class="st12" points="380 1344.3 380 1344.3 380 1344.2 380 1344.2 380 1344.2 380 1344.2 380 1344.2"/>
       </g>
       <g id="LWPOLYLINE-72">
-        <polyline class="st5" points="380 1344.2 380 1344.2 380 1344.2 380 1344.2 379.9 1344.2 379.9 1344.2"/>
+        <polyline class="st12" points="380 1344.2 380 1344.2 380 1344.2 380 1344.2 379.9 1344.2 379.9 1344.2"/>
       </g>
       <g id="ARC-41">
-        <path class="st5" d="M380,1344.2c1.1.2,2.3.2,3.4,0"/>
+        <path class="st12" d="M380,1344.2c1.1.2,2.3.2,3.4,0"/>
       </g>
       <g id="LINE-32">
-        <line class="st5" x1="380" y1="1344.1" x2="380" y2="1344.2"/>
+        <line class="st12" x1="380" y1="1344.1" x2="380" y2="1344.2"/>
       </g>
       <g id="LWPOLYLINE-73">
-        <polyline class="st5" points="380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3"/>
+        <polyline class="st12" points="380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3 380 1344.3"/>
       </g>
       <g id="LWPOLYLINE-74">
-        <polyline class="st5" points="383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3"/>
+        <polyline class="st12" points="383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3 383.4 1344.3"/>
       </g>
       <g id="LINE-33">
-        <line class="st5" x1="383.4" y1="1344.2" x2="383.4" y2="1344.1"/>
+        <line class="st12" x1="383.4" y1="1344.2" x2="383.4" y2="1344.1"/>
       </g>
       <g id="ARC-42">
-        <path class="st5" d="M380,1344.3c1.1.1,2.2.1,3.3,0"/>
+        <path class="st12" d="M380,1344.3c1.1,0,2.2,0,3.3,0"/>
       </g>
       <g id="LWPOLYLINE-75">
-        <polyline class="st5" points="383.3 1344.4 383.3 1344.4 383.3 1344.4 383.4 1344.4 383.4 1344.3"/>
+        <polyline class="st12" points="383.3 1344.4 383.3 1344.4 383.3 1344.4 383.4 1344.4 383.4 1344.3"/>
       </g>
       <g id="LWPOLYLINE-76">
-        <polyline class="st5" points="380 1344.3 380 1344.4 380.1 1344.4 380.1 1344.4"/>
+        <polyline class="st12" points="380 1344.3 380 1344.4 380.1 1344.4 380.1 1344.4"/>
       </g>
       <g id="ARC-43">
-        <path class="st5" d="M386.9,1344.1h0"/>
+        <path class="st12" d="M386.9,1344.1h0"/>
       </g>
       <g id="LWPOLYLINE-77">
-        <polyline class="st5" points="383.3 1344.4 383.3 1344.4 383.3 1344.4 383.2 1344.4 383.2 1344.4 383.1 1344.4 382.9 1344.4 382.7 1344.5 382.5 1344.5 382.3 1344.5 381.9 1344.5 381.5 1344.5 381.1 1344.5 380.8 1344.5 380.6 1344.4 380.4 1344.4 380.3 1344.4 380.3 1344.4 380.2 1344.4 380.2 1344.4 380.2 1344.4 380.1 1344.4 380.1 1344.4 380.1 1344.4"/>
+        <polyline class="st12" points="383.3 1344.4 383.3 1344.4 383.3 1344.4 383.2 1344.4 383.2 1344.4 383.1 1344.4 382.9 1344.4 382.7 1344.5 382.5 1344.5 382.3 1344.5 381.9 1344.5 381.5 1344.5 381.1 1344.5 380.8 1344.5 380.6 1344.4 380.4 1344.4 380.3 1344.4 380.3 1344.4 380.2 1344.4 380.2 1344.4 380.2 1344.4 380.1 1344.4 380.1 1344.4 380.1 1344.4"/>
       </g>
       <g id="ARC-44">
-        <path class="st5" d="M386.9,1342.4h0"/>
+        <path class="st12" d="M386.9,1342.4h0"/>
       </g>
       <g id="ARC-45">
-        <path class="st5" d="M386.9,1344.1s0,0,0,0"/>
+        <path class="st12" d="M386.9,1344.1h0"/>
       </g>
       <g id="ARC-46">
-        <path class="st5" d="M386.9,1342.5s0,0,0,0"/>
+        <path class="st12" d="M386.9,1342.5h0"/>
       </g>
       <g id="LINE-34">
-        <line class="st5" x1="386.9" y1="1341.9" x2="386.9" y2="1342.1"/>
+        <line class="st12" x1="386.9" y1="1341.9" x2="386.9" y2="1342.1"/>
       </g>
       <g id="ARC-47">
-        <path class="st5" d="M386.9,1342.2s0,0,0,0h0"/>
+        <path class="st12" d="M386.9,1342.2h0"/>
       </g>
       <g id="ARC-48">
-        <path class="st5" d="M386.9,1342.2c-.1,0-.2,0-.4,0"/>
+        <path class="st12" d="M386.9,1342.2h-.4"/>
       </g>
       <g id="LINE-35">
-        <line class="st5" x1="386.2" y1="1341.9" x2="386.2" y2="1342.1"/>
+        <line class="st12" x1="386.2" y1="1341.9" x2="386.2" y2="1342.1"/>
       </g>
       <g id="LINE-36">
-        <line class="st5" x1="386.3" y1="1341.9" x2="386.3" y2="1339.4"/>
+        <line class="st12" x1="386.3" y1="1341.9" x2="386.3" y2="1339.4"/>
       </g>
       <g id="ARC-49">
-        <path class="st5" d="M351.4,1342.1c-.1,0-.2,0-.4,0"/>
+        <path class="st12" d="M351.4,1342.1h-.4"/>
       </g>
       <g id="ARC-50">
-        <path class="st5" d="M351,1342.1s0,0,0,0,0,0,0,0"/>
+        <path class="st12" d="M351,1342.1h0"/>
       </g>
       <g id="ARC-51">
-        <path class="st5" d="M351.7,1342.1s0,0,0,0"/>
+        <path class="st12" d="M351.7,1342.1h0"/>
       </g>
       <g id="LINE-37">
-        <line class="st5" x1="351" y1="1342.1" x2="351" y2="1341.9"/>
+        <line class="st12" x1="351" y1="1342.1" x2="351" y2="1341.9"/>
       </g>
       <g id="LINE-38">
-        <line class="st5" x1="351.7" y1="1342.1" x2="351.7" y2="1341.9"/>
+        <line class="st12" x1="351.7" y1="1342.1" x2="351.7" y2="1341.9"/>
       </g>
       <g id="LINE-39">
-        <line class="st5" x1="351.6" y1="1340.8" x2="351.5" y2="1340.8"/>
+        <line class="st12" x1="351.6" y1="1340.8" x2="351.5" y2="1340.8"/>
       </g>
       <g id="ARC-52">
-        <path class="st5" d="M351.4,1340.2h0"/>
+        <path class="st12" d="M351.4,1340.2h0"/>
       </g>
       <g id="ARC-53">
-        <path class="st5" d="M351.4,1340.7s0,0,0,0"/>
+        <path class="st12" d="M351.4,1340.7h0"/>
       </g>
       <g id="ARC-54">
-        <path class="st5" d="M351.4,1339.5h0"/>
+        <path class="st12" d="M351.4,1339.5h0"/>
       </g>
       <g id="ARC-55">
-        <path class="st5" d="M351.4,1339.5h0"/>
+        <path class="st12" d="M351.4,1339.5h0"/>
       </g>
       <g id="ARC-56">
-        <path class="st5" d="M351.5,1339.2h0"/>
+        <path class="st12" d="M351.5,1339.2h0"/>
       </g>
       <g id="LINE-40">
-        <line class="st5" x1="351.5" y1="1339.3" x2="351.5" y2="1340.7"/>
+        <line class="st12" x1="351.5" y1="1339.3" x2="351.5" y2="1340.7"/>
       </g>
       <g id="ARC-57">
-        <path class="st5" d="M351,1342.4s0,0,0,0"/>
+        <path class="st12" d="M351,1342.4h0"/>
       </g>
       <g id="ARC-58">
-        <path class="st5" d="M351,1344.1h0"/>
+        <path class="st12" d="M351,1344.1h0"/>
       </g>
       <g id="LINE-41">
-        <line class="st5" x1="351.8" y1="1314.3" x2="351.8" y2="1339.1"/>
+        <line class="st12" x1="351.8" y1="1314.3" x2="351.8" y2="1339.1"/>
       </g>
       <g id="LINE-42">
-        <line class="st5" x1="386" y1="1314.3" x2="386" y2="1339.1"/>
+        <line class="st12" x1="386" y1="1314.3" x2="386" y2="1339.1"/>
       </g>
       <g id="POLYLINE">
-        <line class="st5" x1="385.7" y1="1415.4" x2="385.7" y2="1415.3"/>
+        <line class="st12" x1="385.7" y1="1415.4" x2="385.7" y2="1415.3"/>
       </g>
       <g id="LINE-43">
-        <line class="st5" x1="386.5" y1="1415.4" x2="386.5" y2="1415.4"/>
+        <line class="st12" x1="386.5" y1="1415.4" x2="386.5" y2="1415.4"/>
       </g>
       <g id="LINE-44">
-        <line class="st5" x1="386.7" y1="1415.4" x2="386.7" y2="1415.4"/>
+        <line class="st12" x1="386.7" y1="1415.4" x2="386.7" y2="1415.4"/>
       </g>
       <g id="SPLINE">
-        <path class="st5" d="M397.6,1415.4s0,0,0,0"/>
+        <path class="st12" d="M397.6,1415.4h0"/>
       </g>
       <g id="SPLINE-2">
-        <path class="st5" d="M367.8,1415.4s0,0,0,0"/>
+        <path class="st12" d="M367.8,1415.4h0"/>
       </g>
       <g id="SPLINE-3">
-        <path class="st5" d="M367.9,1416s0,0,0,0"/>
+        <path class="st12" d="M367.9,1416h0"/>
       </g>
       <g id="SPLINE-4">
-        <path class="st5" d="M397.6,1416s0,0,0,0"/>
+        <path class="st12" d="M397.6,1416h0"/>
       </g>
       <g id="POLYLINE-2">
-        <line class="st5" x1="397.7" y1="1415.3" x2="397.7" y2="1415.3"/>
+        <line class="st12" x1="397.7" y1="1415.3" x2="397.7" y2="1415.3"/>
       </g>
       <g id="SPLINE-5">
-        <path class="st5" d="M368.5,1415.3h-.6"/>
+        <path class="st12" d="M368.5,1415.3h-.6"/>
       </g>
       <g id="SPLINE-6">
-        <path class="st5" d="M397,1415.3h.6"/>
+        <path class="st12" d="M397,1415.3h.6"/>
       </g>
       <g id="SPLINE-7">
-        <path class="st5" d="M367.8,1415.2s0,0,0,0"/>
+        <path class="st12" d="M367.8,1415.2h0"/>
       </g>
       <g id="SPLINE-8">
-        <path class="st5" d="M397.6,1415.1s0,0,0,0"/>
+        <path class="st12" d="M397.6,1415.1h0"/>
       </g>
       <g id="SPLINE-9">
-        <path class="st5" d="M397.6,1415.4h0"/>
+        <path class="st12" d="M397.6,1415.4h0"/>
       </g>
       <g id="POLYLINE-3">
-        <polyline class="st5" points="367.9 1415.4 367.9 1415.3 367.8 1415.3 367.8 1415.3 367.8 1415.3 367.8 1415.3"/>
+        <polyline class="st12" points="367.9 1415.4 367.9 1415.3 367.8 1415.3 367.8 1415.3 367.8 1415.3 367.8 1415.3"/>
       </g>
       <g id="SPLINE-10">
-        <path class="st5" d="M368.8,1415.4h0"/>
+        <path class="st12" d="M368.8,1415.4h0"/>
       </g>
       <g id="POLYLINE-4">
-        <line class="st5" x1="396.8" y1="1416.3" x2="396.8" y2="1416.3"/>
+        <line class="st12" x1="396.8" y1="1416.3" x2="396.8" y2="1416.3"/>
       </g>
       <g id="POLYLINE-5">
-        <line class="st5" x1="396.8" y1="1416.3" x2="396.9" y2="1418.8"/>
+        <line class="st12" x1="396.8" y1="1416.3" x2="396.9" y2="1418.8"/>
       </g>
       <g id="SPLINE-11">
-        <path class="st5" d="M396.8,1416.1s0,0,0,0"/>
+        <path class="st12" d="M396.8,1416.1h0"/>
       </g>
       <g id="POLYLINE-6">
-        <line class="st5" x1="368.6" y1="1418.8" x2="368.6" y2="1416.4"/>
+        <line class="st12" x1="368.6" y1="1418.8" x2="368.6" y2="1416.4"/>
       </g>
       <g id="POLYLINE-7">
-        <line class="st5" x1="368.6" y1="1416.3" x2="368.6" y2="1416.4"/>
+        <line class="st12" x1="368.6" y1="1416.3" x2="368.6" y2="1416.4"/>
       </g>
       <g id="POLYLINE-8">
-        <line class="st5" x1="368.7" y1="1416.3" x2="368.6" y2="1416.3"/>
+        <line class="st12" x1="368.7" y1="1416.3" x2="368.6" y2="1416.3"/>
       </g>
       <g id="SPLINE-12">
-        <path class="st5" d="M368.7,1416.1s0,0,0,0"/>
+        <path class="st12" d="M368.7,1416.1h0"/>
       </g>
       <g id="SPLINE-13">
-        <path class="st5" d="M396.7,1437.6s0,0,0,0,0,0,0,0h0"/>
+        <path class="st12" d="M396.7,1437.6h0"/>
       </g>
       <g id="SPLINE-14">
-        <path class="st5" d="M368.8,1437.6h0s0,0,0,0h0"/>
+        <path class="st12" d="M368.8,1437.6h0"/>
       </g>
       <g id="POLYLINE-9">
-        <polyline class="st5" points="370.6 1437.6 370.6 1437.6 370.6 1437.6 370.6 1437.6"/>
+        <polyline class="st12" points="370.6 1437.6 370.6 1437.6 370.6 1437.6 370.6 1437.6"/>
       </g>
       <g id="SPLINE-15">
-        <path class="st5" d="M394.9,1439h0"/>
+        <path class="st12" d="M394.9,1439h0"/>
       </g>
       <g id="SPLINE-16">
-        <path class="st5" d="M370.6,1438.9s0,0,0,0"/>
+        <path class="st12" d="M370.6,1438.9h0"/>
       </g>
       <g id="SPLINE-17">
-        <path class="st5" d="M370.6,1439h0"/>
+        <path class="st12" d="M370.6,1439h0"/>
       </g>
       <g id="SPLINE-18">
-        <path class="st5" d="M394.8,1438.9s0,0,0,0"/>
+        <path class="st12" d="M394.8,1438.9h0"/>
       </g>
       <g id="POLYLINE-10">
-        <line class="st5" x1="370.6" y1="1437.7" x2="370.6" y2="1437.6"/>
+        <line class="st12" x1="370.6" y1="1437.7" x2="370.6" y2="1437.6"/>
       </g>
       <g id="POLYLINE-11">
-        <line class="st5" x1="368.8" y1="1437.7" x2="368.8" y2="1437.6"/>
+        <line class="st12" x1="368.8" y1="1437.7" x2="368.8" y2="1437.6"/>
       </g>
       <g id="POLYLINE-12">
-        <line class="st5" x1="394.9" y1="1439" x2="394.9" y2="1438"/>
+        <line class="st12" x1="394.9" y1="1439" x2="394.9" y2="1438"/>
       </g>
       <g id="POLYLINE-13">
-        <line class="st5" x1="370.6" y1="1438" x2="370.6" y2="1439"/>
+        <line class="st12" x1="370.6" y1="1438" x2="370.6" y2="1439"/>
       </g>
       <g id="SPLINE-19">
-        <path class="st5" d="M370.6,1437.7s0,0,0,0"/>
+        <path class="st12" d="M370.6,1437.7h0"/>
       </g>
       <g id="SPLINE-20">
-        <path class="st5" d="M394.9,1437.6s0,0,0,0"/>
+        <path class="st12" d="M394.9,1437.6h0"/>
       </g>
       <g id="SPLINE-21">
-        <path class="st5" d="M394.8,1439h0s0,0,0,0"/>
+        <path class="st12" d="M394.8,1439h0"/>
       </g>
       <g id="POLYLINE-14">
-        <line class="st5" x1="394.8" y1="1438" x2="394.8" y2="1437.7"/>
+        <line class="st12" x1="394.8" y1="1438" x2="394.8" y2="1437.7"/>
       </g>
       <g id="SPLINE-22">
-        <path class="st5" d="M370.6,1439s0,0,0,0"/>
+        <path class="st12" d="M370.6,1439h0"/>
       </g>
       <g id="POLYLINE-15">
-        <line class="st5" x1="368.7" y1="1429.3" x2="368.7" y2="1429.3"/>
+        <line class="st12" x1="368.7" y1="1429.3" x2="368.7" y2="1429.3"/>
       </g>
       <g id="POLYLINE-16">
-        <line class="st5" x1="368.7" y1="1429.7" x2="368.7" y2="1429.7"/>
+        <line class="st12" x1="368.7" y1="1429.7" x2="368.7" y2="1429.7"/>
       </g>
       <g id="POLYLINE-17">
-        <line class="st5" x1="396.7" y1="1431.6" x2="396.7" y2="1431.6"/>
+        <line class="st12" x1="396.7" y1="1431.6" x2="396.7" y2="1431.6"/>
       </g>
       <g id="POLYLINE-18">
-        <line class="st5" x1="371.6" y1="1415.4" x2="371.6" y2="1415.3"/>
+        <line class="st12" x1="371.6" y1="1415.4" x2="371.6" y2="1415.3"/>
       </g>
       <g id="SPLINE-23">
-        <path class="st5" d="M371.9,1413.8s0,0,0,0"/>
+        <path class="st12" d="M371.9,1413.8h0"/>
       </g>
       <g id="SPLINE-24">
-        <path class="st5" d="M372.6,1413.8s0,0,0,0"/>
+        <path class="st12" d="M372.6,1413.8h0"/>
       </g>
       <g id="POLYLINE-19">
-        <polyline class="st5" points="371.9 1413.8 371.9 1414.1 371.9 1414.3"/>
+        <polyline class="st12" points="371.9 1413.8 371.9 1414.1 371.9 1414.3"/>
       </g>
       <g id="POLYLINE-20">
-        <polyline class="st5" points="372.6 1414.3 372.6 1414.1 372.6 1413.8"/>
+        <polyline class="st12" points="372.6 1414.3 372.6 1414.1 372.6 1413.8"/>
       </g>
       <g id="SPLINE-25">
-        <path class="st5" d="M372.6,1414.3s0,0,0,0"/>
+        <path class="st12" d="M372.6,1414.3h0"/>
       </g>
       <g id="SPLINE-26">
-        <path class="st5" d="M371.8,1414.4s0,0,0,0"/>
+        <path class="st12" d="M371.8,1414.4h0"/>
       </g>
       <g id="SPLINE-27">
-        <path class="st5" d="M371.1,1414.6s0,0,0,0"/>
+        <path class="st12" d="M371.1,1414.6h0"/>
       </g>
       <g id="SPLINE-28">
-        <path class="st5" d="M373.4,1414.5s0,0,0,0"/>
+        <path class="st12" d="M373.4,1414.5h0"/>
       </g>
       <g id="SPLINE-29">
-        <path class="st5" d="M371,1415.1c0,0,0-.2,0-.3,0,0,0-.2,0-.3"/>
+        <path class="st12" d="M371,1415.1v-.6"/>
       </g>
       <g id="SPLINE-30">
-        <path class="st5" d="M373.4,1414.6c0,0,0,.2,0,.3s0,.2,0,.3"/>
+        <path class="st12" d="M373.4,1414.6v.6"/>
       </g>
       <g id="SPLINE-31">
-        <path class="st5" d="M371.2,1414.4s0,0,0,0"/>
+        <path class="st12" d="M371.2,1414.4h0"/>
       </g>
       <g id="SPLINE-32">
-        <path class="st5" d="M373.3,1414.4s0,0,0,0"/>
+        <path class="st12" d="M373.3,1414.4h0"/>
       </g>
       <g id="SPLINE-33">
-        <path class="st5" d="M373.3,1414.4h0"/>
+        <path class="st12" d="M373.3,1414.4h0"/>
       </g>
       <g id="SPLINE-34">
-        <path class="st5" d="M371.2,1414.5h0"/>
+        <path class="st12" d="M371.2,1414.5h0"/>
       </g>
       <g id="SPLINE-35">
-        <path class="st5" d="M376.3,1413.8s0,0,0,0"/>
+        <path class="st12" d="M376.3,1413.8h0"/>
       </g>
       <g id="SPLINE-36">
-        <path class="st5" d="M377,1413.8s0,0,0,0"/>
+        <path class="st12" d="M377,1413.8h0"/>
       </g>
       <g id="POLYLINE-21">
-        <polyline class="st5" points="376.3 1413.8 376.3 1414.1 376.3 1414.3"/>
+        <polyline class="st12" points="376.3 1413.8 376.3 1414.1 376.3 1414.3"/>
       </g>
       <g id="POLYLINE-22">
-        <polyline class="st5" points="377 1414.3 377 1414.1 377 1413.8"/>
+        <polyline class="st12" points="377 1414.3 377 1414.1 377 1413.8"/>
       </g>
       <g id="SPLINE-37">
-        <path class="st5" d="M377,1414.3s0,0,0,0"/>
+        <path class="st12" d="M377,1414.3h0"/>
       </g>
       <g id="SPLINE-38">
-        <path class="st5" d="M376.2,1414.4s0,0,0,0"/>
+        <path class="st12" d="M376.2,1414.4h0"/>
       </g>
       <g id="SPLINE-39">
-        <path class="st5" d="M375.5,1414.6s0,0,0,0"/>
+        <path class="st12" d="M375.5,1414.6h0"/>
       </g>
       <g id="SPLINE-40">
-        <path class="st5" d="M377.8,1414.5s0,0,0,0"/>
+        <path class="st12" d="M377.8,1414.5h0"/>
       </g>
       <g id="SPLINE-41">
-        <path class="st5" d="M375.4,1415.1c0,0,0-.2,0-.3,0,0,0-.2,0-.3"/>
+        <path class="st12" d="M375.4,1415.1v-.6"/>
       </g>
       <g id="SPLINE-42">
-        <path class="st5" d="M377.8,1414.6c0,0,0,.2,0,.3s0,.2,0,.3"/>
+        <path class="st12" d="M377.8,1414.6v.6"/>
       </g>
       <g id="SPLINE-43">
-        <path class="st5" d="M375.6,1414.4s0,0,0,0"/>
+        <path class="st12" d="M375.6,1414.4h0"/>
       </g>
       <g id="SPLINE-44">
-        <path class="st5" d="M377.7,1414.4s0,0,0,0"/>
+        <path class="st12" d="M377.7,1414.4h0"/>
       </g>
       <g id="SPLINE-45">
-        <path class="st5" d="M377.7,1414.4h0"/>
+        <path class="st12" d="M377.7,1414.4h0"/>
       </g>
       <g id="SPLINE-46">
-        <path class="st5" d="M375.6,1414.5h0"/>
+        <path class="st12" d="M375.6,1414.5h0"/>
       </g>
       <g id="SPLINE-47">
-        <path class="st5" d="M388.5,1413.8s0,0,0,0"/>
+        <path class="st12" d="M388.5,1413.8h0"/>
       </g>
       <g id="SPLINE-48">
-        <path class="st5" d="M389.1,1413.8s0,0,0,0"/>
+        <path class="st12" d="M389.1,1413.8h0"/>
       </g>
       <g id="POLYLINE-23">
-        <polyline class="st5" points="388.5 1413.8 388.4 1414.1 388.4 1414.3"/>
+        <polyline class="st12" points="388.5 1413.8 388.4 1414.1 388.4 1414.3"/>
       </g>
       <g id="POLYLINE-24">
-        <polyline class="st5" points="389.2 1414.3 389.2 1414.1 389.2 1413.8"/>
+        <polyline class="st12" points="389.2 1414.3 389.2 1414.1 389.2 1413.8"/>
       </g>
       <g id="SPLINE-49">
-        <path class="st5" d="M389.2,1414.3s0,0,0,0"/>
+        <path class="st12" d="M389.2,1414.3h0"/>
       </g>
       <g id="SPLINE-50">
-        <path class="st5" d="M388.4,1414.4s0,0,0,0"/>
+        <path class="st12" d="M388.4,1414.4h0"/>
       </g>
       <g id="SPLINE-51">
-        <path class="st5" d="M387.7,1414.6s0,0,0,0"/>
+        <path class="st12" d="M387.7,1414.6h0"/>
       </g>
       <g id="SPLINE-52">
-        <path class="st5" d="M389.9,1414.5s0,0,0,0"/>
+        <path class="st12" d="M389.9,1414.5h0"/>
       </g>
       <g id="SPLINE-53">
-        <path class="st5" d="M387.6,1415.1c0,0,0-.2,0-.3,0,0,0-.2,0-.3"/>
+        <path class="st12" d="M387.6,1415.1v-.6"/>
       </g>
       <g id="SPLINE-54">
-        <path class="st5" d="M390,1414.6c0,0,0,.2,0,.3s0,.2,0,.3"/>
+        <path class="st12" d="M390,1414.6v.6"/>
       </g>
       <g id="SPLINE-55">
-        <path class="st5" d="M387.8,1414.4s0,0,0,0"/>
+        <path class="st12" d="M387.8,1414.4h0"/>
       </g>
       <g id="SPLINE-56">
-        <path class="st5" d="M389.8,1414.4s0,0,0,0"/>
+        <path class="st12" d="M389.8,1414.4h0"/>
       </g>
       <g id="SPLINE-57">
-        <path class="st5" d="M389.8,1414.4h0"/>
+        <path class="st12" d="M389.8,1414.4h0"/>
       </g>
       <g id="SPLINE-58">
-        <path class="st5" d="M387.8,1414.5h0"/>
+        <path class="st12" d="M387.8,1414.5h0"/>
       </g>
       <g id="SPLINE-59">
-        <path class="st5" d="M392.9,1413.8s0,0,0,0"/>
+        <path class="st12" d="M392.9,1413.8h0"/>
       </g>
       <g id="SPLINE-60">
-        <path class="st5" d="M393.5,1413.8s0,0,0,0"/>
+        <path class="st12" d="M393.5,1413.8h0"/>
       </g>
       <g id="POLYLINE-25">
-        <polyline class="st5" points="392.9 1413.8 392.8 1414.1 392.8 1414.3"/>
+        <polyline class="st12" points="392.9 1413.8 392.8 1414.1 392.8 1414.3"/>
       </g>
       <g id="POLYLINE-26">
-        <polyline class="st5" points="393.6 1414.3 393.6 1414.1 393.6 1413.8"/>
+        <polyline class="st12" points="393.6 1414.3 393.6 1414.1 393.6 1413.8"/>
       </g>
       <g id="SPLINE-61">
-        <path class="st5" d="M393.6,1414.3s0,0,0,0"/>
+        <path class="st12" d="M393.6,1414.3h0"/>
       </g>
       <g id="SPLINE-62">
-        <path class="st5" d="M392.8,1414.4s0,0,0,0"/>
+        <path class="st12" d="M392.8,1414.4h0"/>
       </g>
       <g id="SPLINE-63">
-        <path class="st5" d="M392.1,1414.6s0,0,0,0"/>
+        <path class="st12" d="M392.1,1414.6h0"/>
       </g>
       <g id="SPLINE-64">
-        <path class="st5" d="M394.3,1414.5s0,0,0,0"/>
+        <path class="st12" d="M394.3,1414.5h0"/>
       </g>
       <g id="SPLINE-65">
-        <path class="st5" d="M392,1415.1c0,0,0-.2,0-.3,0,0,0-.2,0-.3"/>
+        <path class="st12" d="M392,1415.1v-.6"/>
       </g>
       <g id="SPLINE-66">
-        <path class="st5" d="M394.4,1414.6c0,0,0,.2,0,.3s0,.2,0,.3"/>
+        <path class="st12" d="M394.4,1414.6v.6"/>
       </g>
       <g id="SPLINE-67">
-        <path class="st5" d="M392.2,1414.4s0,0,0,0"/>
+        <path class="st12" d="M392.2,1414.4h0"/>
       </g>
       <g id="SPLINE-68">
-        <path class="st5" d="M394.2,1414.4s0,0,0,0"/>
+        <path class="st12" d="M394.2,1414.4h0"/>
       </g>
       <g id="SPLINE-69">
-        <path class="st5" d="M394.2,1414.4h0"/>
+        <path class="st12" d="M394.2,1414.4h0"/>
       </g>
       <g id="SPLINE-70">
-        <path class="st5" d="M392.2,1414.5h0"/>
+        <path class="st12" d="M392.2,1414.5h0"/>
       </g>
       <g id="POLYLINE-27">
-        <line class="st5" x1="393.4" y1="1412.9" x2="393.4" y2="1413.8"/>
+        <line class="st12" x1="393.4" y1="1412.9" x2="393.4" y2="1413.8"/>
       </g>
       <g id="SPLINE-71">
-        <path class="st5" d="M394.3,1414.5c0-.2,0-.3,0-.5,0-.2,0-.4,0-.5s0-.4,0-.5h0"/>
+        <path class="st12" d="M394.3,1414.5v-1.5h0"/>
       </g>
       <g id="SPLINE-72">
-        <path class="st5" d="M371.3,1412.9c0,.2,0,.3,0,.5,0,.2,0,.4,0,.5,0,.2,0,.4,0,.5"/>
+        <path class="st12" d="M371.3,1412.9v1.5"/>
       </g>
       <g id="POLYLINE-28">
-        <line class="st5" x1="372.1" y1="1413.8" x2="372.1" y2="1412.9"/>
+        <line class="st12" x1="372.1" y1="1413.8" x2="372.1" y2="1412.9"/>
       </g>
       <g id="SPLINE-73">
-        <path class="st5" d="M394,1412.8c0,0,0,0,.1,0"/>
+        <path class="st12" d="M394,1412.8h.1"/>
       </g>
       <g id="SPLINE-74">
-        <path class="st5" d="M393.4,1412.8s0,0,0,0"/>
+        <path class="st12" d="M393.4,1412.8h0"/>
       </g>
       <g id="SPLINE-75">
-        <path class="st5" d="M371.3,1412.9s0,0,.1,0"/>
+        <path class="st12" d="M371.3,1412.9h.1"/>
       </g>
       <g id="SPLINE-76">
-        <path class="st5" d="M372.1,1412.9s0,0,0,0"/>
+        <path class="st12" d="M372.1,1412.9h0"/>
       </g>
       <g id="SPLINE-77">
-        <path class="st5" d="M368.7,1434.1s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M368.7,1434.1v.4"/>
       </g>
       <g id="SPLINE-78">
-        <path class="st5" d="M368.7,1421.2c0,0-.1.1-.1.2s0,.2.1.2"/>
+        <path class="st12" d="M368.7,1421.2s-.1,0-.1.2,0,.2.1.2"/>
       </g>
       <g id="SPLINE-79">
-        <path class="st5" d="M368.7,1423s0,.1,0,.2,0,.2,0,.2"/>
+        <path class="st12" d="M368.7,1423v.4"/>
       </g>
       <g id="SPLINE-80">
-        <path class="st5" d="M368.7,1433.3h0c0,0-.1.1-.1.2s0,.2.1.2h0"/>
+        <path class="st12" d="M368.7,1433.3h0s-.1,0-.1.2,0,.2.1.2h0"/>
       </g>
       <g id="POLYLINE-29">
-        <line class="st5" x1="368.7" y1="1431.2" x2="368.7" y2="1431.2"/>
+        <line class="st12" x1="368.7" y1="1431.2" x2="368.7" y2="1431.2"/>
       </g>
       <g id="SPLINE-81">
-        <path class="st5" d="M368.7,1431.6c0,0-.1-.1-.1-.2s0-.2.1-.2"/>
+        <path class="st12" d="M368.7,1431.6s-.1,0-.1-.2,0-.2.1-.2"/>
       </g>
       <g id="SPLINE-82">
-        <path class="st5" d="M368.7,1430.9c0,0-.1-.1-.1-.2s0-.2.1-.2"/>
+        <path class="st12" d="M368.7,1430.9s-.1,0-.1-.2,0-.2.1-.2"/>
       </g>
       <g id="SPLINE-83">
-        <path class="st5" d="M368.7,1431.2s0-.1,0-.2,0-.1,0-.2"/>
+        <path class="st12" d="M368.7,1431.2v-.4"/>
       </g>
       <g id="SPLINE-84">
-        <path class="st5" d="M368.7,1428.7s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M368.7,1428.7v.4"/>
       </g>
       <g id="SPLINE-85">
-        <path class="st5" d="M368.7,1429.3c0,0-.1.1-.1.2s0,.2.1.2"/>
+        <path class="st12" d="M368.7,1429.3s-.1,0-.1.2,0,.2.1.2"/>
       </g>
       <g id="POLYLINE-30">
-        <line class="st5" x1="368.7" y1="1419.7" x2="368.7" y2="1419.7"/>
+        <line class="st12" x1="368.7" y1="1419.7" x2="368.7" y2="1419.7"/>
       </g>
       <g id="POLYLINE-31">
-        <line class="st5" x1="368.7" y1="1420" x2="368.7" y2="1420"/>
+        <line class="st12" x1="368.7" y1="1420" x2="368.7" y2="1420"/>
       </g>
       <g id="SPLINE-86">
-        <path class="st5" d="M368.7,1419.3c0,0-.1.1-.1.2s0,.2.1.2"/>
+        <path class="st12" d="M368.7,1419.3s-.1,0-.1.2,0,.2.1.2"/>
       </g>
       <g id="SPLINE-87">
-        <path class="st5" d="M368.7,1420c0,0-.1.1-.1.2s0,.2.1.2"/>
+        <path class="st12" d="M368.7,1420s-.1,0-.1.2,0,.2.1.2"/>
       </g>
       <g id="SPLINE-88">
-        <path class="st5" d="M368.7,1419.7s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M368.7,1419.7v.4"/>
       </g>
       <g id="SPLINE-89">
-        <path class="st5" d="M368.6,1418.8s0,0,0,0h0"/>
+        <path class="st12" d="M368.6,1418.8h0"/>
       </g>
       <g id="POLYLINE-32">
-        <line class="st5" x1="368.7" y1="1418.9" x2="368.7" y2="1419"/>
+        <line class="st12" x1="368.7" y1="1418.9" x2="368.7" y2="1419"/>
       </g>
       <g id="SPLINE-90">
-        <path class="st5" d="M396.9,1418.8s0,0,0,0h0"/>
+        <path class="st12" d="M396.9,1418.8h0"/>
       </g>
       <g id="SPLINE-91">
-        <path class="st5" d="M396.7,1419v-.2"/>
+        <path class="st12" d="M396.7,1419v-.2"/>
       </g>
       <g id="SPLINE-92">
-        <path class="st5" d="M396.7,1421.2c0,0,.1.1.1.2s0,.2-.1.2"/>
+        <path class="st12" d="M396.7,1421.2s.1,0,.1.2,0,.2-.1.2"/>
       </g>
       <g id="SPLINE-93">
-        <path class="st5" d="M396.7,1419.3c0,0,.1.1.1.2s0,.2-.1.2"/>
+        <path class="st12" d="M396.7,1419.3s.1,0,.1.2,0,.2-.1.2"/>
       </g>
       <g id="SPLINE-94">
-        <path class="st5" d="M396.7,1420c0,0,.1.1.1.2s0,.2-.1.2"/>
+        <path class="st12" d="M396.7,1420s.1,0,.1.2,0,.2-.1.2"/>
       </g>
       <g id="SPLINE-95">
-        <path class="st5" d="M396.8,1419.7s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M396.8,1419.7v.4"/>
       </g>
       <g id="SPLINE-96">
-        <path class="st5" d="M396.7,1428.7s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M396.7,1428.7v.4"/>
       </g>
       <g id="SPLINE-97">
-        <path class="st5" d="M396.7,1429.3c0,0,.1.1.1.2s0,.2-.1.2"/>
+        <path class="st12" d="M396.7,1429.3s.1,0,.1.2,0,.2-.1.2"/>
       </g>
       <g id="SPLINE-98">
-        <path class="st5" d="M396.7,1431.6c0,0,.1-.1.1-.2s0-.2-.1-.2"/>
+        <path class="st12" d="M396.7,1431.6s.1,0,.1-.2,0-.2-.1-.2"/>
       </g>
       <g id="SPLINE-99">
-        <path class="st5" d="M396.7,1430.9c0,0,.1-.1.1-.2s0-.2-.1-.2"/>
+        <path class="st12" d="M396.7,1430.9s.1,0,.1-.2,0-.2-.1-.2"/>
       </g>
       <g id="SPLINE-100">
-        <path class="st5" d="M396.8,1431.2s0-.1,0-.2,0-.1,0-.2"/>
+        <path class="st12" d="M396.8,1431.2v-.4"/>
       </g>
       <g id="SPLINE-101">
-        <path class="st5" d="M396.7,1433.3h0c0,0,.1.1.1.2s0,.2-.1.2h0"/>
+        <path class="st12" d="M396.7,1433.3h0s.1,0,.1.2,0,.2-.1.2h0"/>
       </g>
       <g id="SPLINE-102">
-        <path class="st5" d="M396.7,1434.1s0,.1,0,.2,0,.1,0,.2"/>
+        <path class="st12" d="M396.7,1434.1v.4"/>
       </g>
       <g id="LINE-45">
-        <line class="st7" x1="455.9" y1="1336.9" x2="454.6" y2="1338.3"/>
+        <line class="st9" x1="455.9" y1="1336.9" x2="454.6" y2="1338.3"/>
       </g>
       <g id="LWPOLYLINE-78">
-        <rect class="st11" x="443.8" y="1325.7" width="16" height="28" transform="translate(-814.9 711.9) rotate(-45)"/>
+        <rect class="st4" x="443.9" y="1325.7" width="16" height="28" transform="translate(-815 711.9) rotate(-45)"/>
       </g>
       <g id="CIRCLE-5">
-        <circle class="st7" cx="455.4" cy="1337.4" r=".8"/>
+        <circle class="st9" cx="455.4" cy="1337.4" r=".8"/>
       </g>
       <g id="CIRCLE-6">
-        <circle class="st7" cx="455.4" cy="1337.4" r="1.2"/>
+        <circle class="st9" cx="455.4" cy="1337.4" r="1.2"/>
       </g>
       <g id="LWPOLYLINE-79">
-        <rect class="st11" x="442.8" y="1324.7" width="18" height="30" transform="translate(-814.9 711.9) rotate(-45)"/>
+        <rect class="st4" x="442.9" y="1324.7" width="18" height="30" transform="translate(-815 711.9) rotate(-45)"/>
       </g>
       <g id="LWPOLYLINE-80">
-        <rect class="st5" x="408.5" y="1417.4" width="30" height="21" rx="1.6" ry="1.6"/>
+        <rect class="st12" x="408.5" y="1417.4" width="30" height="21" rx="1.6" ry="1.6"/>
       </g>
       <g id="LWPOLYLINE-81">
-        <rect class="st5" x="409" y="1417.9" width="29" height="20" rx="1.6" ry="1.6"/>
+        <rect class="st12" x="409" y="1417.9" width="29" height="20" rx="1.6" ry="1.6"/>
       </g>
       <g id="SPLINE-103">
-        <path class="st5" d="M433.9,1431.6s0,0,0,0c0,0,0,0,0-.2"/>
+        <path class="st12" d="M433.9,1431.6h0v-.2"/>
       </g>
       <g id="CIRCLE-7">
-        <circle class="st5" cx="415.3" cy="1432.4" r="3"/>
+        <circle class="st12" cx="415.3" cy="1432.4" r="3"/>
       </g>
       <g id="CIRCLE-8">
-        <circle class="st5" cx="415.3" cy="1432.4" r="3.1"/>
+        <circle class="st12" cx="415.3" cy="1432.4" r="3.1"/>
       </g>
       <g id="CIRCLE-9">
-        <circle class="st5" cx="415.3" cy="1432.4" r="4"/>
+        <circle class="st12" cx="415.3" cy="1432.4" r="4"/>
       </g>
       <g id="CIRCLE-10">
-        <circle class="st5" cx="415.3" cy="1432.4" r="3.9"/>
+        <circle class="st12" cx="415.3" cy="1432.4" r="3.9"/>
       </g>
       <g id="CIRCLE-11">
-        <circle class="st5" cx="427.3" cy="1432.3" r="4"/>
+        <circle class="st12" cx="427.3" cy="1432.3" r="4"/>
       </g>
       <g id="CIRCLE-12">
-        <circle class="st5" cx="427.3" cy="1432.3" r="4.1"/>
+        <circle class="st12" cx="427.3" cy="1432.3" r="4.1"/>
       </g>
       <g id="CIRCLE-13">
-        <circle class="st5" cx="427.3" cy="1432.3" r="5"/>
+        <circle class="st12" cx="427.3" cy="1432.3" r="5"/>
       </g>
       <g id="CIRCLE-14">
-        <circle class="st5" cx="427.3" cy="1432.3" r="4.9"/>
+        <circle class="st12" cx="427.3" cy="1432.3" r="4.9"/>
       </g>
       <g id="CIRCLE-15">
-        <circle class="st5" cx="415.3" cy="1422.3" r="3"/>
+        <circle class="st12" cx="415.3" cy="1422.3" r="3"/>
       </g>
       <g id="CIRCLE-16">
-        <circle class="st5" cx="415.3" cy="1422.3" r="3.1"/>
+        <circle class="st12" cx="415.3" cy="1422.3" r="3.1"/>
       </g>
       <g id="CIRCLE-17">
-        <circle class="st5" cx="415.3" cy="1422.3" r="4"/>
+        <circle class="st12" cx="415.3" cy="1422.3" r="4"/>
       </g>
       <g id="CIRCLE-18">
-        <circle class="st5" cx="415.3" cy="1422.3" r="4.1"/>
+        <circle class="st12" cx="415.3" cy="1422.3" r="4.1"/>
       </g>
       <g id="CIRCLE-19">
-        <circle class="st5" cx="426.9" cy="1422.3" r="3"/>
+        <circle class="st12" cx="426.9" cy="1422.3" r="3"/>
       </g>
       <g id="CIRCLE-20">
-        <circle class="st5" cx="426.9" cy="1422.3" r="3.1"/>
+        <circle class="st12" cx="426.9" cy="1422.3" r="3.1"/>
       </g>
       <g id="CIRCLE-21">
-        <circle class="st5" cx="426.9" cy="1422.3" r="4"/>
+        <circle class="st12" cx="426.9" cy="1422.3" r="4"/>
       </g>
       <g id="CIRCLE-22">
-        <circle class="st5" cx="426.9" cy="1422.3" r="3.9"/>
+        <circle class="st12" cx="426.9" cy="1422.3" r="3.9"/>
       </g>
       <g id="LINE-46">
-        <line class="st5" x1="460.7" y1="1330.9" x2="462.9" y2="1333"/>
+        <line class="st12" x1="460.7" y1="1330.9" x2="462.9" y2="1333"/>
       </g>
       <g id="LINE-47">
-        <line class="st5" x1="459.4" y1="1332.1" x2="460.7" y2="1330.9"/>
+        <line class="st12" x1="459.4" y1="1332.1" x2="460.7" y2="1330.9"/>
       </g>
       <g id="LINE-48">
-        <line class="st5" x1="461.6" y1="1334.3" x2="462.9" y2="1333"/>
+        <line class="st12" x1="461.6" y1="1334.3" x2="462.9" y2="1333"/>
       </g>
       <g id="LINE-49">
-        <line class="st5" x1="461.6" y1="1334.3" x2="462.9" y2="1333.1"/>
+        <line class="st12" x1="461.6" y1="1334.3" x2="462.9" y2="1333.1"/>
       </g>
       <g id="LINE-50">
-        <line class="st5" x1="462.9" y1="1333.1" x2="463.5" y2="1333.6"/>
+        <line class="st12" x1="462.9" y1="1333.1" x2="463.5" y2="1333.6"/>
       </g>
       <g id="LINE-51">
-        <line class="st5" x1="461.6" y1="1334.3" x2="462.2" y2="1334.9"/>
+        <line class="st12" x1="461.6" y1="1334.3" x2="462.2" y2="1334.9"/>
       </g>
       <g id="LINE-52">
-        <line class="st5" x1="461.6" y1="1334.3" x2="460.5" y2="1333.2"/>
+        <line class="st12" x1="461.6" y1="1334.3" x2="460.5" y2="1333.2"/>
       </g>
       <g id="LINE-53">
-        <line class="st5" x1="459.6" y1="1332.3" x2="459.4" y2="1332.2"/>
+        <line class="st12" x1="459.6" y1="1332.3" x2="459.4" y2="1332.2"/>
       </g>
       <g id="ARC-59">
-        <path class="st5" d="M459.4,1332.1h0"/>
+        <path class="st12" d="M459.4,1332.1h0"/>
       </g>
       <g id="ARC-60">
-        <path class="st5" d="M460.7,1330.9h0"/>
+        <path class="st12" d="M460.7,1330.9h0"/>
       </g>
       <g id="ARC-61">
-        <path class="st5" d="M462.9,1333h0"/>
+        <path class="st12" d="M462.9,1333h0"/>
       </g>
       <g id="ARC-62">
-        <path class="st5" d="M461.6,1334.3h0"/>
+        <path class="st12" d="M461.6,1334.3h0"/>
       </g>
       <g id="ARC-63">
-        <path class="st5" d="M461.6,1334.3h0"/>
+        <path class="st12" d="M461.6,1334.3h0"/>
       </g>
       <g id="ARC-64">
-        <path class="st5" d="M462.2,1334.9h0"/>
+        <path class="st12" d="M462.2,1334.9h0"/>
       </g>
       <g id="ARC-65">
-        <path class="st5" d="M463.5,1333.7h0"/>
+        <path class="st12" d="M463.5,1333.7h0"/>
       </g>
       <g id="ARC-66">
-        <path class="st5" d="M462.9,1333.1h0"/>
+        <path class="st12" d="M462.9,1333.1h0"/>
       </g>
       <g id="LINE-54">
-        <line class="st5" x1="462.8" y1="1333.1" x2="462.8" y2="1333.1"/>
+        <line class="st12" x1="462.8" y1="1333.1" x2="462.8" y2="1333.1"/>
       </g>
       <g id="LINE-55">
-        <line class="st5" x1="461.6" y1="1334.3" x2="461.6" y2="1334.3"/>
+        <line class="st12" x1="461.6" y1="1334.3" x2="461.6" y2="1334.3"/>
       </g>
       <g id="CIRCLE-23">
-        <circle class="st5" cx="462.8" cy="1334.3" r=".2"/>
+        <circle class="st12" cx="462.8" cy="1334.3" r=".2"/>
       </g>
       <g id="ARC-67">
-        <path class="st5" d="M463,1334.1c0,0-.2,0-.3,0s0,.2,0,.3h0"/>
+        <path class="st12" d="M463,1334.1h-.3c0,0,0,.2,0,.3h0"/>
       </g>
       <g id="ARC-68">
-        <path class="st5" d="M463,1334.1h0"/>
+        <path class="st12" d="M463,1334.1h0"/>
       </g>
       <g id="ARC-69">
-        <path class="st5" d="M462.7,1334.5h0"/>
+        <path class="st12" d="M462.7,1334.5h0"/>
       </g>
       <g id="LINE-56">
-        <line class="st5" x1="463" y1="1334.2" x2="462.9" y2="1334.1"/>
+        <line class="st12" x1="463" y1="1334.2" x2="462.9" y2="1334.1"/>
       </g>
       <g id="LINE-57">
-        <line class="st5" x1="462.7" y1="1334.4" x2="462.6" y2="1334.3"/>
+        <line class="st12" x1="462.7" y1="1334.4" x2="462.6" y2="1334.3"/>
       </g>
       <g id="ARC-70">
-        <path class="st5" d="M453.6,1339.2s0,0,.1,0"/>
+        <path class="st12" d="M453.6,1339.2h.1"/>
       </g>
       <g id="ARC-71">
-        <path class="st5" d="M453.7,1339.1s0,0,.1,0"/>
+        <path class="st12" d="M453.7,1339.1h.1"/>
       </g>
       <g id="LINE-58">
-        <line class="st5" x1="453.6" y1="1338.9" x2="453.5" y2="1339"/>
+        <line class="st12" x1="453.6" y1="1338.9" x2="453.5" y2="1339"/>
       </g>
       <g id="LINE-59">
-        <line class="st5" x1="453.9" y1="1339.1" x2="453.8" y2="1339.3"/>
+        <line class="st12" x1="453.9" y1="1339.1" x2="453.8" y2="1339.3"/>
       </g>
       <g id="ARC-72">
-        <path class="st5" d="M453.7,1339.3h0"/>
+        <path class="st12" d="M453.7,1339.3h0"/>
       </g>
       <g id="ARC-73">
-        <path class="st5" d="M453.8,1339.2h0"/>
+        <path class="st12" d="M453.8,1339.2h0"/>
       </g>
       <g id="ARC-74">
-        <path class="st5" d="M453.5,1339s0,0,0,.1"/>
+        <path class="st12" d="M453.5,1339h0"/>
       </g>
       <g id="ARC-75">
-        <path class="st5" d="M453.6,1339s0,0,0,.1"/>
+        <path class="st12" d="M453.6,1339h0"/>
       </g>
       <g id="ARC-76">
-        <path class="st5" d="M453.5,1339h0"/>
+        <path class="st12" d="M453.5,1339h0"/>
       </g>
       <g id="ARC-77">
-        <path class="st5" d="M453.6,1339h0"/>
+        <path class="st12" d="M453.6,1339h0"/>
       </g>
       <g id="ARC-78">
-        <path class="st5" d="M453.9,1338.1c-.2.2-.2.6,0,.8h0"/>
+        <path class="st12" d="M453.9,1338.1c-.2.2-.2.6,0,.8h0"/>
       </g>
       <g id="ARC-79">
-        <path class="st5" d="M453.9,1338.9c.2.2.6.2.8,0"/>
+        <path class="st12" d="M453.9,1338.9c.2.2.6.2.8,0"/>
       </g>
       <g id="ARC-80">
-        <path class="st5" d="M461.1,1331.7c-.2-.2-.6-.2-.9,0,0,0,0,.1-.1.2"/>
+        <path class="st12" d="M461.1,1331.7c-.2-.2-.6-.2-.9,0,0,0,0,0-.1.2"/>
       </g>
       <g id="ARC-81">
-        <path class="st5" d="M461,1332.7c.3-.1.4-.5.3-.8,0,0,0-.1-.1-.2"/>
+        <path class="st12" d="M461,1332.7c.3,0,.4-.5.3-.8,0,0,0,0-.1-.2"/>
       </g>
       <g id="LINE-60">
-        <line class="st5" x1="461" y1="1331.6" x2="461" y2="1331.6"/>
+        <line class="st12" x1="461" y1="1331.6" x2="461" y2="1331.6"/>
       </g>
       <g id="LINE-61">
-        <line class="st5" x1="461.2" y1="1331.8" x2="461.2" y2="1331.8"/>
+        <line class="st12" x1="461.2" y1="1331.8" x2="461.2" y2="1331.8"/>
       </g>
       <g id="ARC-82">
-        <path class="st5" d="M461.1,1331.7c-.2-.2-.6-.2-.8,0,0,0,0,0,0,0"/>
+        <path class="st12" d="M461.1,1331.7c-.2-.2-.6-.2-.8,0h0"/>
       </g>
       <g id="ARC-83">
-        <path class="st5" d="M461.1,1332.6c.3-.2.3-.6,0-.8,0,0,0,0,0,0"/>
+        <path class="st12" d="M461.1,1332.6c.3-.2.3-.6,0-.8h0"/>
       </g>
       <g id="ARC-84">
-        <path class="st5" d="M461.8,1331.9c0-.5-.4-.8-.9-.9"/>
+        <path class="st12" d="M461.8,1331.9c0-.5-.4-.8-.9-.9"/>
       </g>
       <g id="LINE-62">
-        <line class="st5" x1="460.2" y1="1331.7" x2="453.9" y2="1338.1"/>
+        <line class="st12" x1="460.2" y1="1331.7" x2="453.9" y2="1338.1"/>
       </g>
       <g id="LINE-63">
-        <line class="st5" x1="461.1" y1="1332.6" x2="454.7" y2="1338.9"/>
+        <line class="st12" x1="461.1" y1="1332.6" x2="454.7" y2="1338.9"/>
       </g>
       <g id="ARC-85">
-        <path class="st5" d="M460.5,1331c-.5,0-.9.4-.9.9"/>
+        <path class="st12" d="M460.5,1331c-.5,0-.9.4-.9.9"/>
       </g>
       <g id="ARC-86">
-        <path class="st5" d="M460.8,1332.9c.4,0,.7-.4.7-.8s-.4-.7-.8-.7c-.4,0-.7.3-.7.7"/>
+        <path class="st12" d="M460.8,1332.9c.4,0,.7-.4.7-.8s-.4-.7-.8-.7-.7.3-.7.7"/>
       </g>
       <g id="LINE-64">
-        <line class="st5" x1="462.2" y1="1334.9" x2="462.7" y2="1334.5"/>
+        <line class="st12" x1="462.2" y1="1334.9" x2="462.7" y2="1334.5"/>
       </g>
       <g id="LINE-65">
-        <line class="st5" x1="463" y1="1334.1" x2="463.5" y2="1333.7"/>
+        <line class="st12" x1="463" y1="1334.1" x2="463.5" y2="1333.7"/>
       </g>
       <g id="ARC-87">
-        <path class="st5" d="M454.2,1337.7c-.4,0-.7.4-.7.8s.4.7.8.7c.3,0,.6-.3.7-.7"/>
+        <path class="st12" d="M454.2,1337.7c-.4,0-.7.4-.7.8s.4.7.8.7.6-.3.7-.7"/>
       </g>
       <g id="ARC-88">
-        <path class="st5" d="M454.1,1337.8c-.4.1-.6.5-.4.8s.5.6.8.4c.2,0,.4-.2.4-.4"/>
+        <path class="st12" d="M454.1,1337.8c-.4,0-.6.5-.4.8s.5.6.8.4c.2,0,.4-.2.4-.4"/>
       </g>
     </g>
     <g id="LWPOLYLINE-82">
-      <line class="st0" x1="51.8" y1="1643.7" x2="208.3" y2="1643.7"/>
+      <line class="st14" x1="51.8" y1="1643.7" x2="208.3" y2="1643.7"/>
     </g>
     <g id="LWPOLYLINE-83">
-      <line class="st0" x1="46.8" y1="1648.7" x2="46.8" y2="1309.3"/>
+      <line class="st14" x1="46.8" y1="1648.7" x2="46.8" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-84">
-      <line class="st0" x1="46.8" y1="1309.3" x2="482.2" y2="1309.3"/>
+      <line class="st14" x1="46.8" y1="1309.3" x2="482.2" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-85">
-      <line class="st0" x1="51.8" y1="1643.7" x2="51.8" y2="1518.2"/>
+      <line class="st14" x1="51.8" y1="1643.7" x2="51.8" y2="1518.2"/>
     </g>
     <g id="LWPOLYLINE-86">
-      <line class="st0" x1="651.2" y1="1648.7" x2="651.2" y2="1576.7"/>
+      <line class="st14" x1="651.2" y1="1648.7" x2="651.2" y2="1576.7"/>
     </g>
     <g id="LWPOLYLINE-87">
-      <line class="st0" x1="651.2" y1="1576.7" x2="708.2" y2="1576.7"/>
+      <line class="st14" x1="651.2" y1="1576.7" x2="708.2" y2="1576.7"/>
     </g>
     <g id="LWPOLYLINE-88">
-      <line class="st0" x1="646.2" y1="1571.7" x2="708.2" y2="1571.7"/>
+      <line class="st14" x1="646.2" y1="1571.7" x2="708.2" y2="1571.7"/>
     </g>
     <g id="LWPOLYLINE-89">
-      <line class="st0" x1="817.9" y1="1576.7" x2="817.9" y2="1661.2"/>
+      <line class="st14" x1="817.9" y1="1576.7" x2="817.9" y2="1661.2"/>
     </g>
     <g id="LWPOLYLINE-90">
-      <line class="st0" x1="822.9" y1="1576.7" x2="822.9" y2="1656.2"/>
+      <line class="st14" x1="822.9" y1="1576.7" x2="822.9" y2="1656.2"/>
     </g>
     <g id="LWPOLYLINE-91">
-      <line class="st0" x1="817.9" y1="1661.2" x2="891.7" y2="1661.2"/>
+      <line class="st14" x1="817.9" y1="1661.2" x2="891.7" y2="1661.2"/>
     </g>
     <g id="LWPOLYLINE-92">
-      <line class="st0" x1="822.9" y1="1656.2" x2="886.7" y2="1656.2"/>
+      <line class="st14" x1="822.9" y1="1656.2" x2="886.7" y2="1656.2"/>
     </g>
     <g id="LWPOLYLINE-93">
-      <line class="st0" x1="891.7" y1="1661.2" x2="891.7" y2="1296.8"/>
+      <line class="st14" x1="891.7" y1="1661.2" x2="891.7" y2="1296.8"/>
     </g>
     <g id="LWPOLYLINE-94">
-      <line class="st0" x1="51.8" y1="1314.3" x2="178.3" y2="1314.3"/>
+      <line class="st14" x1="51.8" y1="1314.3" x2="178.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-95">
-      <line class="st0" x1="482.2" y1="1346" x2="493.2" y2="1346"/>
+      <line class="st14" x1="482.2" y1="1346" x2="493.2" y2="1346"/>
     </g>
     <g id="LWPOLYLINE-96">
-      <line class="st0" x1="482.2" y1="1351" x2="493.2" y2="1351"/>
+      <line class="st14" x1="482.2" y1="1351" x2="493.2" y2="1351"/>
     </g>
     <g id="LWPOLYLINE-97">
-      <line class="st0" x1="545.2" y1="1488" x2="545.2" y2="1479"/>
+      <line class="st14" x1="545.2" y1="1488" x2="545.2" y2="1479"/>
     </g>
     <g id="LWPOLYLINE-98">
-      <line class="st0" x1="540.2" y1="1483" x2="540.2" y2="1479"/>
+      <line class="st14" x1="540.2" y1="1483" x2="540.2" y2="1479"/>
     </g>
     <g id="LWPOLYLINE-99">
-      <line class="st0" x1="891.7" y1="1296.8" x2="540.2" y2="1296.8"/>
+      <line class="st14" x1="891.7" y1="1296.8" x2="540.2" y2="1296.8"/>
     </g>
     <g id="LWPOLYLINE-100">
-      <line class="st0" x1="886.7" y1="1301.8" x2="825.7" y2="1301.8"/>
+      <line class="st14" x1="886.7" y1="1301.8" x2="825.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-101">
-      <line class="st0" x1="886.7" y1="1656.2" x2="886.7" y2="1576.7"/>
+      <line class="st14" x1="886.7" y1="1656.2" x2="886.7" y2="1576.7"/>
     </g>
     <g id="LWPOLYLINE-102">
-      <line class="st0" x1="493.2" y1="1351" x2="493.2" y2="1346"/>
+      <line class="st14" x1="493.2" y1="1351" x2="493.2" y2="1346"/>
     </g>
     <g id="LWPOLYLINE-103">
-      <line class="st0" x1="530.2" y1="1351" x2="530.2" y2="1346"/>
+      <line class="st14" x1="530.2" y1="1351" x2="530.2" y2="1346"/>
     </g>
     <g id="LWPOLYLINE-104">
-      <line class="st0" x1="530.2" y1="1351" x2="540.2" y2="1351"/>
+      <line class="st14" x1="530.2" y1="1351" x2="540.2" y2="1351"/>
     </g>
     <g id="LWPOLYLINE-105">
-      <line class="st0" x1="530.2" y1="1346" x2="540.2" y2="1346"/>
+      <line class="st14" x1="530.2" y1="1346" x2="540.2" y2="1346"/>
     </g>
     <g id="ARC-89">
-      <path class="st0" d="M495.6,1348.4c0,17.4,13.6,31.8,30.9,32.8"/>
+      <path class="st14" d="M495.6,1348.4c0,17.4,13.6,31.8,30.9,32.8"/>
     </g>
     <g id="LWPOLYLINE-106">
-      <rect class="st0" x="526.6" y="1348.4" width="1.9" height="32.8"/>
+      <rect class="st14" x="526.6" y="1348.4" width="1.9" height="32.8"/>
     </g>
     <g id="LWPOLYLINE-107">
-      <line class="st0" x1="540.2" y1="1396" x2="545.2" y2="1396"/>
+      <line class="st14" x1="540.2" y1="1396" x2="545.2" y2="1396"/>
     </g>
     <g id="LWPOLYLINE-108">
-      <line class="st0" x1="540.2" y1="1346" x2="540.2" y2="1338"/>
+      <line class="st14" x1="540.2" y1="1346" x2="540.2" y2="1338"/>
     </g>
     <g id="LWPOLYLINE-109">
-      <line class="st0" x1="540.2" y1="1422" x2="545.2" y2="1422"/>
+      <line class="st14" x1="540.2" y1="1422" x2="545.2" y2="1422"/>
     </g>
     <g id="LWPOLYLINE-110">
-      <line class="st0" x1="540.2" y1="1446" x2="545.2" y2="1446"/>
+      <line class="st14" x1="540.2" y1="1446" x2="545.2" y2="1446"/>
     </g>
     <g id="LWPOLYLINE-111">
-      <line class="st0" x1="545.2" y1="1396" x2="545.2" y2="1394"/>
+      <line class="st14" x1="545.2" y1="1396" x2="545.2" y2="1394"/>
     </g>
     <g id="LWPOLYLINE-112">
-      <line class="st0" x1="540.2" y1="1396" x2="540.2" y2="1351"/>
+      <line class="st14" x1="540.2" y1="1396" x2="540.2" y2="1351"/>
     </g>
     <g id="ARC-90">
-      <path class="st0" d="M543.3,1396.8c-13,0-23.8,10.2-24.6,23.2"/>
+      <path class="st14" d="M543.3,1396.8c-13,0-23.8,10.2-24.6,23.2"/>
     </g>
     <g id="LWPOLYLINE-113">
-      <rect class="st0" x="518.7" y="1420" width="24.6" height="1.4"/>
+      <rect class="st14" x="518.7" y="1420" width="24.6" height="1.4"/>
     </g>
     <g id="LWPOLYLINE-114">
-      <line class="st0" x1="540.2" y1="1479" x2="545.2" y2="1479"/>
+      <line class="st14" x1="540.2" y1="1479" x2="545.2" y2="1479"/>
     </g>
     <g id="LWPOLYLINE-115">
-      <line class="st0" x1="474.2" y1="1483" x2="540.2" y2="1483"/>
+      <line class="st14" x1="474.2" y1="1483" x2="540.2" y2="1483"/>
     </g>
     <g id="LWPOLYLINE-116">
-      <line class="st0" x1="479.2" y1="1488" x2="545.2" y2="1488"/>
+      <line class="st14" x1="479.2" y1="1488" x2="545.2" y2="1488"/>
     </g>
     <g id="LWPOLYLINE-117">
-      <line class="st0" x1="545.2" y1="1441" x2="545.2" y2="1422"/>
+      <line class="st14" x1="545.2" y1="1441" x2="545.2" y2="1422"/>
     </g>
     <g id="LWPOLYLINE-118">
-      <line class="st0" x1="540.2" y1="1446" x2="540.2" y2="1422"/>
+      <line class="st14" x1="540.2" y1="1446" x2="540.2" y2="1422"/>
     </g>
     <g id="LWPOLYLINE-119">
-      <rect class="st0" x="499.4" y="1363.9" width="24" height="48"/>
+      <rect class="st14" x="499.4" y="1363.9" width="24" height="48"/>
     </g>
     <g id="LWPOLYLINE-120">
-      <line class="st0" x1="499.4" y1="1363.9" x2="523.4" y2="1411.9"/>
+      <line class="st14" x1="499.4" y1="1363.9" x2="523.4" y2="1411.9"/>
     </g>
     <g id="LWPOLYLINE-121">
-      <line class="st0" x1="523.4" y1="1363.9" x2="499.4" y2="1411.9"/>
+      <line class="st14" x1="523.4" y1="1363.9" x2="499.4" y2="1411.9"/>
     </g>
     <g id="LWPOLYLINE-122">
-      <line class="st0" x1="232.3" y1="1314.3" x2="232.3" y2="1309.3"/>
+      <line class="st14" x1="232.3" y1="1314.3" x2="232.3" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-123">
-      <line class="st0" x1="292.3" y1="1311.8" x2="232.3" y2="1311.8"/>
+      <line class="st14" x1="292.3" y1="1311.8" x2="232.3" y2="1311.8"/>
     </g>
     <g id="LWPOLYLINE-124">
-      <line class="st0" x1="262.3" y1="1310.3" x2="232.3" y2="1310.3"/>
+      <line class="st14" x1="262.3" y1="1310.3" x2="232.3" y2="1310.3"/>
     </g>
     <g id="LWPOLYLINE-125">
-      <line class="st0" x1="213.3" y1="1314.3" x2="232.3" y2="1314.3"/>
+      <line class="st14" x1="213.3" y1="1314.3" x2="232.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-126">
-      <line class="st0" x1="178.3" y1="1480.3" x2="183.3" y2="1480.3"/>
+      <line class="st14" x1="178.3" y1="1480.3" x2="183.3" y2="1480.3"/>
     </g>
     <g id="LWPOLYLINE-127">
-      <line class="st0" x1="51.8" y1="1513.3" x2="134.3" y2="1513.3"/>
+      <line class="st14" x1="51.8" y1="1513.3" x2="134.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-128">
-      <line class="st0" x1="213.3" y1="1585.2" x2="277.3" y2="1643.7"/>
+      <line class="st14" x1="213.3" y1="1585.2" x2="277.3" y2="1643.7"/>
     </g>
     <g id="LWPOLYLINE-129">
-      <line class="st0" x1="240.2" y1="1642.3" x2="256.4" y2="1624.6"/>
+      <line class="st14" x1="240.2" y1="1642.3" x2="256.4" y2="1624.6"/>
     </g>
     <g id="LWPOLYLINE-130">
-      <line class="st0" x1="218" y1="1622.1" x2="234.2" y2="1604.4"/>
+      <line class="st14" x1="218" y1="1622.1" x2="234.2" y2="1604.4"/>
     </g>
     <g id="LWPOLYLINE-131">
-      <line class="st0" x1="218" y1="1622.1" x2="240.2" y2="1642.3"/>
+      <line class="st14" x1="218" y1="1622.1" x2="240.2" y2="1642.3"/>
     </g>
     <g id="LWPOLYLINE-132">
-      <line class="st0" x1="234.3" y1="1576" x2="285.4" y2="1622.7"/>
+      <line class="st14" x1="234.3" y1="1576" x2="285.4" y2="1622.7"/>
     </g>
     <g id="LWPOLYLINE-133">
-      <line class="st0" x1="51.8" y1="1451.3" x2="134.3" y2="1451.3"/>
+      <line class="st14" x1="51.8" y1="1451.3" x2="134.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-134">
-      <line class="st0" x1="51.8" y1="1446.3" x2="143.3" y2="1446.3"/>
+      <line class="st14" x1="51.8" y1="1446.3" x2="143.3" y2="1446.3"/>
     </g>
     <g id="LWPOLYLINE-135">
-      <line class="st0" x1="139.3" y1="1513.3" x2="139.3" y2="1487.3"/>
+      <line class="st14" x1="139.3" y1="1513.3" x2="139.3" y2="1487.3"/>
     </g>
     <g id="LWPOLYLINE-136">
-      <line class="st0" x1="134.3" y1="1513.3" x2="134.3" y2="1487.3"/>
+      <line class="st14" x1="134.3" y1="1513.3" x2="134.3" y2="1487.3"/>
     </g>
     <g id="LWPOLYLINE-137">
-      <line class="st0" x1="139.3" y1="1451.3" x2="143.3" y2="1451.3"/>
+      <line class="st14" x1="139.3" y1="1451.3" x2="143.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-138">
-      <line class="st0" x1="183.3" y1="1451.3" x2="208.3" y2="1451.3"/>
+      <line class="st14" x1="183.3" y1="1451.3" x2="208.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-139">
-      <line class="st0" x1="174.3" y1="1451.3" x2="174.3" y2="1446.3"/>
+      <line class="st14" x1="174.3" y1="1451.3" x2="174.3" y2="1446.3"/>
     </g>
     <g id="LWPOLYLINE-140">
-      <line class="st0" x1="143.3" y1="1451.3" x2="143.3" y2="1446.3"/>
+      <line class="st14" x1="143.3" y1="1451.3" x2="143.3" y2="1446.3"/>
     </g>
     <g id="LWPOLYLINE-141">
-      <line class="st0" x1="174.3" y1="1451.3" x2="178.3" y2="1451.3"/>
+      <line class="st14" x1="174.3" y1="1451.3" x2="178.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-142">
-      <line class="st0" x1="174.3" y1="1446.3" x2="178.3" y2="1446.3"/>
+      <line class="st14" x1="174.3" y1="1446.3" x2="178.3" y2="1446.3"/>
     </g>
     <g id="LWPOLYLINE-143">
-      <line class="st0" x1="208.3" y1="1480.3" x2="213.3" y2="1480.3"/>
+      <line class="st14" x1="208.3" y1="1480.3" x2="213.3" y2="1480.3"/>
     </g>
     <g id="ARC-91">
-      <path class="st0" d="M185.3,1498.7c12.4-.7,22-11,22-23.4"/>
+      <path class="st14" d="M185.3,1498.7c12.4-.7,22-11,22-23.4"/>
     </g>
     <g id="LWPOLYLINE-144">
-      <rect class="st0" x="184" y="1475.3" width="1.4" height="23.4"/>
+      <rect class="st14" x="184" y="1475.3" width="1.4" height="23.4"/>
     </g>
     <g id="LWPOLYLINE-145">
-      <line class="st6" x1="213.3" y1="1480.3" x2="213.3" y2="1513.3"/>
+      <line class="st15" x1="213.3" y1="1480.3" x2="213.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-146">
-      <line class="st0" x1="51.8" y1="1518.2" x2="144.3" y2="1518.2"/>
+      <line class="st14" x1="51.8" y1="1518.2" x2="144.3" y2="1518.2"/>
     </g>
     <g id="ARC-92">
-      <path class="st0" d="M171.7,1421.4c-14.8.8-26.5,13.1-26.4,28"/>
+      <path class="st14" d="M171.7,1421.4c-14.8.8-26.5,13.1-26.4,28"/>
     </g>
     <g id="LWPOLYLINE-147">
-      <rect class="st0" x="171.7" y="1421.4" width="1.6" height="28"/>
+      <rect class="st14" x="171.7" y="1421.4" width="1.6" height="28"/>
     </g>
     <g id="LWPOLYLINE-148">
-      <line class="st0" x1="139.3" y1="1513.3" x2="144.3" y2="1513.3"/>
+      <line class="st14" x1="139.3" y1="1513.3" x2="144.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-149">
-      <line class="st0" x1="134.3" y1="1456.3" x2="139.3" y2="1456.3"/>
+      <line class="st14" x1="134.3" y1="1456.3" x2="139.3" y2="1456.3"/>
     </g>
     <g id="LWPOLYLINE-150">
-      <line class="st0" x1="139.3" y1="1456.3" x2="139.3" y2="1451.3"/>
+      <line class="st14" x1="139.3" y1="1456.3" x2="139.3" y2="1451.3"/>
     </g>
     <g id="LWPOLYLINE-151">
-      <line class="st0" x1="134.3" y1="1456.3" x2="134.3" y2="1451.3"/>
+      <line class="st14" x1="134.3" y1="1456.3" x2="134.3" y2="1451.3"/>
     </g>
     <g id="ARC-93">
-      <path class="st0" d="M108.9,1459.4c.8,14.8,13.1,26.5,28,26.4"/>
+      <path class="st14" d="M108.9,1459.4c.8,14.8,13.1,26.5,28,26.4"/>
     </g>
     <g id="LWPOLYLINE-152">
-      <rect class="st0" x="108.9" y="1457.8" width="28" height="1.6"/>
+      <rect class="st14" x="108.9" y="1457.8" width="28" height="1.6"/>
     </g>
     <g id="LWPOLYLINE-153">
-      <line class="st0" x1="178.3" y1="1446.3" x2="178.3" y2="1404.3"/>
+      <line class="st14" x1="178.3" y1="1446.3" x2="178.3" y2="1404.3"/>
     </g>
     <g id="LWPOLYLINE-154">
-      <line class="st0" x1="183.3" y1="1446.3" x2="183.3" y2="1404.3"/>
+      <line class="st14" x1="183.3" y1="1446.3" x2="183.3" y2="1404.3"/>
     </g>
     <g id="LWPOLYLINE-155">
-      <line class="st0" x1="208.3" y1="1446.3" x2="208.3" y2="1314.3"/>
+      <line class="st14" x1="208.3" y1="1446.3" x2="208.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-156">
-      <line class="st0" x1="144.3" y1="1518.2" x2="144.3" y2="1513.3"/>
+      <line class="st14" x1="144.3" y1="1518.2" x2="144.3" y2="1513.3"/>
     </g>
     <g id="LINE-66">
-      <line class="st0" x1="540.2" y1="1446" x2="547.2" y2="1446"/>
+      <line class="st14" x1="540.2" y1="1446" x2="547.2" y2="1446"/>
     </g>
     <g id="LINE-67">
-      <line class="st0" x1="646.2" y1="1446" x2="646.2" y2="1448"/>
+      <line class="st14" x1="646.2" y1="1446" x2="646.2" y2="1448"/>
     </g>
     <g id="LWPOLYLINE-157">
-      <polyline class="st0" points="479.2 1570 519.2 1570 519.2 1558 479.2 1558"/>
+      <polyline class="st14" points="479.2 1570 519.2 1570 519.2 1558 479.2 1558"/>
     </g>
     <g id="LINE-68">
-      <line class="st6" x1="519.2" y1="1558" x2="519.2" y2="1488"/>
+      <line class="st15" x1="519.2" y1="1558" x2="519.2" y2="1488"/>
     </g>
     <g id="LINE-69">
-      <line class="st6" x1="519.2" y1="1570" x2="519.2" y2="1643.7"/>
+      <line class="st15" x1="519.2" y1="1570" x2="519.2" y2="1643.7"/>
     </g>
     <g id="LINE-70">
-      <line class="st0" x1="545.2" y1="1643.7" x2="545.2" y2="1648.7"/>
+      <line class="st14" x1="545.2" y1="1643.7" x2="545.2" y2="1648.7"/>
     </g>
     <g id="LINE-71">
-      <line class="st0" x1="611.2" y1="1643.7" x2="611.2" y2="1648.7"/>
+      <line class="st14" x1="611.2" y1="1643.7" x2="611.2" y2="1648.7"/>
     </g>
     <g id="LINE-72">
-      <line class="st0" x1="545.2" y1="1646.2" x2="611.2" y2="1646.2"/>
+      <line class="st14" x1="545.2" y1="1646.2" x2="611.2" y2="1646.2"/>
     </g>
     <g id="LWPOLYLINE-158">
-      <line class="st0" x1="611.2" y1="1648.7" x2="651.2" y2="1648.7"/>
+      <line class="st14" x1="611.2" y1="1648.7" x2="651.2" y2="1648.7"/>
     </g>
     <g id="LINE-73">
-      <line class="st0" x1="611.2" y1="1643.7" x2="646.2" y2="1643.7"/>
+      <line class="st14" x1="611.2" y1="1643.7" x2="646.2" y2="1643.7"/>
     </g>
     <g id="LINE-74">
-      <line class="st0" x1="646.2" y1="1643.7" x2="646.2" y2="1571.7"/>
+      <line class="st14" x1="646.2" y1="1643.7" x2="646.2" y2="1571.7"/>
     </g>
     <g id="LINE-75">
-      <line class="st0" x1="545.2" y1="1647.7" x2="578.2" y2="1647.7"/>
+      <line class="st14" x1="545.2" y1="1647.7" x2="578.2" y2="1647.7"/>
     </g>
     <g id="LINE-76">
-      <line class="st0" x1="578.2" y1="1647.7" x2="578.2" y2="1644.7"/>
+      <line class="st14" x1="578.2" y1="1647.7" x2="578.2" y2="1644.7"/>
     </g>
     <g id="LINE-77">
-      <line class="st0" x1="578.2" y1="1644.7" x2="611.2" y2="1644.7"/>
+      <line class="st14" x1="578.2" y1="1644.7" x2="611.2" y2="1644.7"/>
     </g>
     <g id="LINE-78">
-      <line class="st0" x1="646.2" y1="1640.7" x2="651.2" y2="1640.7"/>
+      <line class="st14" x1="646.2" y1="1640.7" x2="651.2" y2="1640.7"/>
     </g>
     <g id="LINE-79">
-      <line class="st0" x1="646.2" y1="1582.7" x2="651.2" y2="1582.7"/>
+      <line class="st14" x1="646.2" y1="1582.7" x2="651.2" y2="1582.7"/>
     </g>
     <g id="LINE-80">
-      <line class="st0" x1="648.7" y1="1640.7" x2="648.7" y2="1582.7"/>
+      <line class="st14" x1="648.7" y1="1640.7" x2="648.7" y2="1582.7"/>
     </g>
     <g id="LWPOLYLINE-159">
-      <line class="st0" x1="479.2" y1="1643.7" x2="545.2" y2="1643.7"/>
+      <line class="st14" x1="479.2" y1="1643.7" x2="545.2" y2="1643.7"/>
     </g>
     <g id="LINE-81">
-      <line class="st0" x1="586.2" y1="1479" x2="646.2" y2="1479"/>
+      <line class="st14" x1="586.2" y1="1479" x2="646.2" y2="1479"/>
     </g>
     <g id="LINE-82">
-      <line class="st0" x1="646.2" y1="1448" x2="651.2" y2="1448"/>
+      <line class="st14" x1="646.2" y1="1448" x2="651.2" y2="1448"/>
     </g>
     <g id="LINE-83">
-      <line class="st0" x1="646.2" y1="1478" x2="651.2" y2="1478"/>
+      <line class="st14" x1="646.2" y1="1478" x2="651.2" y2="1478"/>
     </g>
     <g id="LINE-84">
-      <line class="st0" x1="651.2" y1="1301.8" x2="651.2" y2="1413"/>
+      <line class="st14" x1="651.2" y1="1301.8" x2="651.2" y2="1413"/>
     </g>
     <g id="LINE-85">
-      <line class="st0" x1="651.2" y1="1478" x2="651.2" y2="1571.7"/>
+      <line class="st14" x1="651.2" y1="1478" x2="651.2" y2="1571.7"/>
     </g>
     <g id="LINE-86">
-      <line class="st0" x1="646.2" y1="1478" x2="646.2" y2="1571.7"/>
+      <line class="st14" x1="646.2" y1="1478" x2="646.2" y2="1571.7"/>
     </g>
     <g id="LINE-87">
-      <line class="st0" x1="646.2" y1="1484" x2="586.2" y2="1484"/>
+      <line class="st14" x1="646.2" y1="1484" x2="586.2" y2="1484"/>
     </g>
     <g id="LINE-88">
-      <line class="st0" x1="586.2" y1="1484" x2="586.2" y2="1479"/>
+      <line class="st14" x1="586.2" y1="1484" x2="586.2" y2="1479"/>
     </g>
     <g id="LINE-89">
-      <line class="st0" x1="545.2" y1="1441" x2="547.2" y2="1441"/>
+      <line class="st14" x1="545.2" y1="1441" x2="547.2" y2="1441"/>
     </g>
     <g id="LINE-90">
-      <line class="st0" x1="619.2" y1="1441" x2="619.2" y2="1446"/>
+      <line class="st14" x1="619.2" y1="1441" x2="619.2" y2="1446"/>
     </g>
     <g id="LINE-91">
-      <line class="st0" x1="589.2" y1="1441" x2="589.2" y2="1446"/>
+      <line class="st14" x1="589.2" y1="1441" x2="589.2" y2="1446"/>
     </g>
     <g id="LINE-92">
-      <line class="st0" x1="619.2" y1="1446" x2="646.2" y2="1446"/>
+      <line class="st14" x1="619.2" y1="1446" x2="646.2" y2="1446"/>
     </g>
     <g id="LINE-93">
-      <line class="st0" x1="619.2" y1="1441" x2="646.2" y2="1441"/>
+      <line class="st14" x1="619.2" y1="1441" x2="646.2" y2="1441"/>
     </g>
     <g id="LINE-94">
-      <line class="st0" x1="646.2" y1="1441" x2="646.2" y2="1353"/>
+      <line class="st14" x1="646.2" y1="1441" x2="646.2" y2="1353"/>
     </g>
     <g id="LINE-95">
-      <line class="st0" x1="545.2" y1="1353" x2="586.2" y2="1353"/>
+      <line class="st14" x1="545.2" y1="1353" x2="586.2" y2="1353"/>
     </g>
     <g id="LINE-96">
-      <line class="st0" x1="610.2" y1="1353" x2="610.2" y2="1348"/>
+      <line class="st14" x1="610.2" y1="1353" x2="610.2" y2="1348"/>
     </g>
     <g id="LINE-97">
-      <line class="st0" x1="545.2" y1="1348" x2="578.2" y2="1348"/>
+      <line class="st14" x1="545.2" y1="1348" x2="578.2" y2="1348"/>
     </g>
     <g id="LINE-98">
-      <line class="st0" x1="586.2" y1="1353" x2="586.2" y2="1348"/>
+      <line class="st14" x1="586.2" y1="1353" x2="586.2" y2="1348"/>
     </g>
     <g id="LINE-99">
-      <line class="st0" x1="586.2" y1="1441" x2="586.2" y2="1389"/>
+      <line class="st14" x1="586.2" y1="1441" x2="586.2" y2="1389"/>
     </g>
     <g id="LINE-100">
-      <line class="st0" x1="586.2" y1="1389" x2="545.2" y2="1389"/>
+      <line class="st14" x1="586.2" y1="1389" x2="545.2" y2="1389"/>
     </g>
     <g id="LINE-101">
-      <line class="st0" x1="581.2" y1="1394" x2="545.2" y2="1394"/>
+      <line class="st14" x1="581.2" y1="1394" x2="545.2" y2="1394"/>
     </g>
     <g id="LINE-102">
-      <line class="st0" x1="581.2" y1="1441" x2="581.2" y2="1394"/>
+      <line class="st14" x1="581.2" y1="1441" x2="581.2" y2="1394"/>
     </g>
     <g id="LINE-103">
-      <line class="st0" x1="610.2" y1="1348" x2="646.2" y2="1348"/>
+      <line class="st14" x1="610.2" y1="1348" x2="646.2" y2="1348"/>
     </g>
     <g id="LINE-104">
-      <line class="st0" x1="610.2" y1="1353" x2="646.2" y2="1353"/>
+      <line class="st14" x1="610.2" y1="1353" x2="646.2" y2="1353"/>
     </g>
     <g id="LINE-105">
-      <line class="st0" x1="651.2" y1="1479" x2="675.2" y2="1479"/>
+      <line class="st14" x1="651.2" y1="1479" x2="675.2" y2="1479"/>
     </g>
     <g id="LINE-106">
-      <line class="st0" x1="675.2" y1="1479" x2="675.2" y2="1571.7"/>
+      <line class="st14" x1="675.2" y1="1479" x2="675.2" y2="1571.7"/>
     </g>
     <g id="LINE-107">
-      <line class="st0" x1="822.9" y1="1571.7" x2="844.7" y2="1571.7"/>
+      <line class="st14" x1="822.9" y1="1571.7" x2="844.7" y2="1571.7"/>
     </g>
     <g id="LWPOLYLINE-160">
-      <line class="st0" x1="868.7" y1="1576.7" x2="868.7" y2="1571.7"/>
+      <line class="st14" x1="868.7" y1="1576.7" x2="868.7" y2="1571.7"/>
     </g>
     <g id="LWPOLYLINE-161">
-      <line class="st0" x1="844.7" y1="1576.7" x2="844.7" y2="1571.7"/>
+      <line class="st14" x1="844.7" y1="1576.7" x2="844.7" y2="1571.7"/>
     </g>
     <g id="LINE-108">
-      <line class="st0" x1="822.9" y1="1576.7" x2="844.7" y2="1576.7"/>
+      <line class="st14" x1="822.9" y1="1576.7" x2="844.7" y2="1576.7"/>
     </g>
     <g id="LINE-109">
-      <line class="st0" x1="868.7" y1="1576.7" x2="886.7" y2="1576.7"/>
+      <line class="st14" x1="868.7" y1="1576.7" x2="886.7" y2="1576.7"/>
     </g>
     <g id="LINE-110">
-      <line class="st0" x1="868.7" y1="1571.7" x2="886.7" y2="1571.7"/>
+      <line class="st14" x1="868.7" y1="1571.7" x2="886.7" y2="1571.7"/>
     </g>
     <g id="LINE-111">
-      <line class="st0" x1="708.2" y1="1571.7" x2="708.2" y2="1576.7"/>
+      <line class="st14" x1="708.2" y1="1571.7" x2="708.2" y2="1576.7"/>
     </g>
     <g id="LINE-112">
-      <line class="st0" x1="816.2" y1="1571.7" x2="816.2" y2="1576.7"/>
+      <line class="st14" x1="816.2" y1="1571.7" x2="816.2" y2="1576.7"/>
     </g>
     <g id="LWPOLYLINE-162">
-      <line class="st0" x1="816.2" y1="1576.7" x2="817.9" y2="1576.7"/>
+      <line class="st14" x1="816.2" y1="1576.7" x2="817.9" y2="1576.7"/>
     </g>
     <g id="LWPOLYLINE-163">
-      <line class="st0" x1="816.2" y1="1571.7" x2="822.9" y2="1571.7"/>
+      <line class="st14" x1="816.2" y1="1571.7" x2="822.9" y2="1571.7"/>
     </g>
     <g id="LINE-113">
-      <line class="st0" x1="708.2" y1="1574.2" x2="816.2" y2="1574.2"/>
+      <line class="st14" x1="708.2" y1="1574.2" x2="816.2" y2="1574.2"/>
     </g>
     <g id="LINE-114">
-      <line class="st0" x1="744.2" y1="1572.7" x2="780.2" y2="1572.7"/>
+      <line class="st14" x1="744.2" y1="1572.7" x2="780.2" y2="1572.7"/>
     </g>
     <g id="LINE-115">
-      <line class="st0" x1="708.2" y1="1575.7" x2="744.2" y2="1575.7"/>
+      <line class="st14" x1="708.2" y1="1575.7" x2="744.2" y2="1575.7"/>
     </g>
     <g id="LINE-116">
-      <line class="st0" x1="744.2" y1="1572.7" x2="744.2" y2="1575.7"/>
+      <line class="st14" x1="744.2" y1="1572.7" x2="744.2" y2="1575.7"/>
     </g>
     <g id="LINE-117">
-      <line class="st0" x1="780.2" y1="1572.7" x2="780.2" y2="1575.7"/>
+      <line class="st14" x1="780.2" y1="1572.7" x2="780.2" y2="1575.7"/>
     </g>
     <g id="LINE-118">
-      <line class="st0" x1="780.2" y1="1575.7" x2="816.2" y2="1575.7"/>
+      <line class="st14" x1="780.2" y1="1575.7" x2="816.2" y2="1575.7"/>
     </g>
     <g id="LINE-119">
-      <line class="st0" x1="545.2" y1="1648.7" x2="611.2" y2="1648.7"/>
+      <line class="st14" x1="545.2" y1="1648.7" x2="611.2" y2="1648.7"/>
     </g>
     <g id="LINE-120">
-      <line class="st0" x1="708.2" y1="1576.7" x2="816.2" y2="1576.7"/>
+      <line class="st14" x1="708.2" y1="1576.7" x2="816.2" y2="1576.7"/>
     </g>
     <g id="LINE-121">
-      <line class="st0" x1="820.7" y1="1395.8" x2="886.7" y2="1395.8"/>
+      <line class="st14" x1="820.7" y1="1395.8" x2="886.7" y2="1395.8"/>
     </g>
     <g id="LWPOLYLINE-164">
-      <line class="st0" x1="820.7" y1="1395.8" x2="820.7" y2="1365.8"/>
+      <line class="st14" x1="820.7" y1="1395.8" x2="820.7" y2="1365.8"/>
     </g>
     <g id="LINE-122">
-      <line class="st0" x1="651.2" y1="1418" x2="683.7" y2="1418"/>
+      <line class="st14" x1="651.2" y1="1418" x2="683.7" y2="1418"/>
     </g>
     <g id="LINE-123">
-      <line class="st0" x1="758.7" y1="1418" x2="758.7" y2="1370.8"/>
+      <line class="st14" x1="758.7" y1="1418" x2="758.7" y2="1370.8"/>
     </g>
     <g id="LINE-124">
-      <line class="st0" x1="825.7" y1="1390.8" x2="886.7" y2="1390.8"/>
+      <line class="st14" x1="825.7" y1="1390.8" x2="886.7" y2="1390.8"/>
     </g>
     <g id="LWPOLYLINE-165">
-      <line class="st0" x1="825.7" y1="1390.8" x2="825.7" y2="1365.8"/>
+      <line class="st14" x1="825.7" y1="1390.8" x2="825.7" y2="1365.8"/>
     </g>
     <g id="LINE-125">
-      <line class="st0" x1="820.7" y1="1365.8" x2="825.7" y2="1365.8"/>
+      <line class="st14" x1="820.7" y1="1365.8" x2="825.7" y2="1365.8"/>
     </g>
     <g id="LINE-126">
-      <line class="st0" x1="820.7" y1="1335.8" x2="825.7" y2="1335.8"/>
+      <line class="st14" x1="820.7" y1="1335.8" x2="825.7" y2="1335.8"/>
     </g>
     <g id="LWPOLYLINE-166">
-      <line class="st0" x1="825.7" y1="1335.8" x2="825.7" y2="1301.8"/>
+      <line class="st14" x1="825.7" y1="1335.8" x2="825.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-167">
-      <line class="st0" x1="820.7" y1="1335.8" x2="820.7" y2="1301.8"/>
+      <line class="st14" x1="820.7" y1="1335.8" x2="820.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-168">
-      <line class="st0" x1="758.7" y1="1343.8" x2="753.7" y2="1343.8"/>
+      <line class="st14" x1="758.7" y1="1343.8" x2="753.7" y2="1343.8"/>
     </g>
     <g id="LINE-127">
-      <line class="st0" x1="753.7" y1="1413" x2="753.7" y2="1370.8"/>
+      <line class="st14" x1="753.7" y1="1413" x2="753.7" y2="1370.8"/>
     </g>
     <g id="LWPOLYLINE-169">
-      <line class="st0" x1="758.7" y1="1370.8" x2="753.7" y2="1370.8"/>
+      <line class="st14" x1="758.7" y1="1370.8" x2="753.7" y2="1370.8"/>
     </g>
     <g id="LINE-128">
-      <line class="st0" x1="717.7" y1="1413" x2="717.7" y2="1301.8"/>
+      <line class="st14" x1="717.7" y1="1413" x2="717.7" y2="1301.8"/>
     </g>
     <g id="LINE-129">
-      <line class="st0" x1="712.7" y1="1413" x2="712.7" y2="1301.8"/>
+      <line class="st14" x1="712.7" y1="1413" x2="712.7" y2="1301.8"/>
     </g>
     <g id="LINE-130">
-      <line class="st0" x1="710.7" y1="1418" x2="710.7" y2="1413"/>
+      <line class="st14" x1="710.7" y1="1418" x2="710.7" y2="1413"/>
     </g>
     <g id="LINE-131">
-      <line class="st0" x1="683.7" y1="1418" x2="683.7" y2="1413"/>
+      <line class="st14" x1="683.7" y1="1418" x2="683.7" y2="1413"/>
     </g>
     <g id="LINE-132">
-      <line class="st0" x1="651.2" y1="1413" x2="683.7" y2="1413"/>
+      <line class="st14" x1="651.2" y1="1413" x2="683.7" y2="1413"/>
     </g>
     <g id="LINE-133">
-      <line class="st0" x1="710.7" y1="1418" x2="758.7" y2="1418"/>
+      <line class="st14" x1="710.7" y1="1418" x2="758.7" y2="1418"/>
     </g>
     <g id="LINE-134">
-      <line class="st0" x1="710.7" y1="1413" x2="712.7" y2="1413"/>
+      <line class="st14" x1="710.7" y1="1413" x2="712.7" y2="1413"/>
     </g>
     <g id="LINE-135">
-      <line class="st0" x1="717.7" y1="1413" x2="753.7" y2="1413"/>
+      <line class="st14" x1="717.7" y1="1413" x2="753.7" y2="1413"/>
     </g>
     <g id="LINE-136">
-      <line class="st0" x1="758.7" y1="1343.8" x2="758.7" y2="1301.8"/>
+      <line class="st14" x1="758.7" y1="1343.8" x2="758.7" y2="1301.8"/>
     </g>
     <g id="LINE-137">
-      <line class="st0" x1="753.7" y1="1343.8" x2="753.7" y2="1301.8"/>
+      <line class="st14" x1="753.7" y1="1343.8" x2="753.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-170">
-      <line class="st0" x1="886.7" y1="1390.8" x2="886.7" y2="1301.8"/>
+      <line class="st14" x1="886.7" y1="1390.8" x2="886.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-171">
-      <line class="st0" x1="820.7" y1="1301.8" x2="758.7" y2="1301.8"/>
+      <line class="st14" x1="820.7" y1="1301.8" x2="758.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-172">
-      <line class="st0" x1="753.7" y1="1301.8" x2="717.7" y2="1301.8"/>
+      <line class="st14" x1="753.7" y1="1301.8" x2="717.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-173">
-      <line class="st0" x1="712.7" y1="1301.8" x2="651.2" y2="1301.8"/>
+      <line class="st14" x1="712.7" y1="1301.8" x2="651.2" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-174">
-      <polyline class="st0" points="646.2 1301.8 583.2 1301.8 583.2 1348"/>
+      <polyline class="st14" points="646.2 1301.8 583.2 1301.8 583.2 1348"/>
     </g>
     <g id="ARC-94">
-      <path class="st0" d="M823.2,1365.2c15.2,0,27.8-11.9,28.7-27.1"/>
+      <path class="st14" d="M823.2,1365.2c15.2,0,27.8-11.9,28.7-27.1"/>
     </g>
     <g id="LWPOLYLINE-175">
-      <rect class="st0" x="823.2" y="1336.5" width="28.7" height="1.7"/>
+      <rect class="st14" x="823.2" y="1336.5" width="28.7" height="1.7"/>
     </g>
     <g id="ARC-95">
-      <path class="st0" d="M782,1368.6c-.8-13.7-12.1-24.3-25.8-24.3"/>
+      <path class="st14" d="M782,1368.6c-.8-13.7-12.1-24.3-25.8-24.3"/>
     </g>
     <g id="LWPOLYLINE-176">
-      <rect class="st0" x="756.2" y="1368.6" width="25.8" height="1.5"/>
+      <rect class="st14" x="756.2" y="1368.6" width="25.8" height="1.5"/>
     </g>
     <g id="ARC-96">
-      <path class="st0" d="M845.4,1574.2c0,12.1,9.4,22.1,21.5,22.8"/>
+      <path class="st14" d="M845.4,1574.2c0,12.1,9.4,22.1,21.5,22.8"/>
     </g>
     <g id="LWPOLYLINE-177">
-      <rect class="st0" x="866.9" y="1574.2" width="1.3" height="22.8"/>
+      <rect class="st14" x="866.9" y="1574.2" width="1.3" height="22.8"/>
     </g>
     <g id="ARC-97">
-      <path class="st0" d="M708.4,1390.9c-13.4.8-23.9,11.9-23.9,25.4"/>
+      <path class="st14" d="M708.4,1390.9c-13.4.8-23.9,11.9-23.9,25.4"/>
     </g>
     <g id="LWPOLYLINE-178">
-      <rect class="st0" x="708.4" y="1390.9" width="1.5" height="25.4"/>
+      <rect class="st14" x="708.4" y="1390.9" width="1.5" height="25.4"/>
     </g>
     <g id="ARC-98">
-      <path class="st0" d="M648.7,1476.9c14.7,0,26.8-11.4,27.6-26.1"/>
+      <path class="st14" d="M648.7,1476.9c14.7,0,26.8-11.4,27.6-26.1"/>
     </g>
     <g id="LWPOLYLINE-179">
-      <rect class="st0" x="648.7" y="1449.2" width="27.6" height="1.6"/>
+      <rect class="st14" x="648.7" y="1449.2" width="27.6" height="1.6"/>
     </g>
     <g id="LINE-138">
-      <line class="st0" x1="651.2" y1="1521" x2="675.2" y2="1521"/>
+      <line class="st14" x1="651.2" y1="1521" x2="675.2" y2="1521"/>
     </g>
     <g id="LINE-139">
-      <line class="st0" x1="651.2" y1="1557" x2="675.2" y2="1557"/>
+      <line class="st14" x1="651.2" y1="1557" x2="675.2" y2="1557"/>
     </g>
     <g id="LINE-140">
-      <line class="st6" x1="820.7" y1="1395.8" x2="758.7" y2="1395.8"/>
+      <line class="st15" x1="820.7" y1="1395.8" x2="758.7" y2="1395.8"/>
     </g>
     <g id="LINE-141">
-      <line class="st6" x1="820.7" y1="1390.8" x2="758.7" y2="1390.8"/>
+      <line class="st15" x1="820.7" y1="1390.8" x2="758.7" y2="1390.8"/>
     </g>
     <g id="LINE-142">
-      <line class="st0" x1="634.2" y1="1301.8" x2="634.2" y2="1296.8"/>
+      <line class="st14" x1="634.2" y1="1301.8" x2="634.2" y2="1296.8"/>
     </g>
     <g id="LINE-143">
-      <line class="st0" x1="588.2" y1="1301.8" x2="588.2" y2="1296.8"/>
+      <line class="st14" x1="588.2" y1="1301.8" x2="588.2" y2="1296.8"/>
     </g>
     <g id="LINE-144">
-      <line class="st0" x1="588.2" y1="1299.3" x2="634.2" y2="1299.3"/>
+      <line class="st14" x1="588.2" y1="1299.3" x2="634.2" y2="1299.3"/>
     </g>
     <g id="LINE-145">
-      <line class="st0" x1="583.2" y1="1348" x2="586.2" y2="1348"/>
+      <line class="st14" x1="583.2" y1="1348" x2="586.2" y2="1348"/>
     </g>
     <g id="LWPOLYLINE-180">
-      <polyline class="st0" points="578.2 1348 578.2 1301.8 545.2 1301.8"/>
+      <polyline class="st14" points="578.2 1348 578.2 1301.8 545.2 1301.8"/>
     </g>
     <g id="LINE-146">
-      <line class="st0" x1="886.7" y1="1529.7" x2="891.7" y2="1529.7"/>
+      <line class="st14" x1="886.7" y1="1529.7" x2="891.7" y2="1529.7"/>
     </g>
     <g id="LINE-147">
-      <line class="st0" x1="886.7" y1="1437.8" x2="891.7" y2="1437.8"/>
+      <line class="st14" x1="886.7" y1="1437.8" x2="891.7" y2="1437.8"/>
     </g>
     <g id="LINE-148">
-      <line class="st0" x1="889.2" y1="1529.7" x2="889.2" y2="1437.8"/>
+      <line class="st14" x1="889.2" y1="1529.7" x2="889.2" y2="1437.8"/>
     </g>
     <g id="LINE-149">
-      <line class="st0" x1="766.7" y1="1301.8" x2="766.7" y2="1296.8"/>
+      <line class="st14" x1="766.7" y1="1301.8" x2="766.7" y2="1296.8"/>
     </g>
     <g id="LWPOLYLINE-181">
-      <line class="st0" x1="812.7" y1="1301.8" x2="812.7" y2="1296.8"/>
+      <line class="st14" x1="812.7" y1="1301.8" x2="812.7" y2="1296.8"/>
     </g>
     <g id="LINE-150">
-      <line class="st0" x1="766.7" y1="1299.3" x2="812.7" y2="1299.3"/>
+      <line class="st14" x1="766.7" y1="1299.3" x2="812.7" y2="1299.3"/>
     </g>
     <g id="LINE-151">
-      <line class="st0" x1="751.7" y1="1301.8" x2="751.7" y2="1296.8"/>
+      <line class="st14" x1="751.7" y1="1301.8" x2="751.7" y2="1296.8"/>
     </g>
     <g id="LINE-152">
-      <line class="st0" x1="721.7" y1="1301.8" x2="721.7" y2="1296.8"/>
+      <line class="st14" x1="721.7" y1="1301.8" x2="721.7" y2="1296.8"/>
     </g>
     <g id="LINE-153">
-      <line class="st0" x1="751.7" y1="1299.3" x2="721.7" y2="1299.3"/>
+      <line class="st14" x1="751.7" y1="1299.3" x2="721.7" y2="1299.3"/>
     </g>
     <g id="LWPOLYLINE-182">
-      <line class="st0" x1="886.7" y1="1571.7" x2="886.7" y2="1395.8"/>
+      <line class="st14" x1="886.7" y1="1571.7" x2="886.7" y2="1395.8"/>
     </g>
     <g id="LINE-154">
-      <line class="st0" x1="651.2" y1="1418" x2="651.2" y2="1448"/>
+      <line class="st14" x1="651.2" y1="1418" x2="651.2" y2="1448"/>
     </g>
     <g id="LINE-155">
-      <line class="st0" x1="646.2" y1="1348" x2="646.2" y2="1301.8"/>
+      <line class="st14" x1="646.2" y1="1348" x2="646.2" y2="1301.8"/>
     </g>
     <g id="LINE-156">
-      <line class="st0" x1="646.2" y1="1557.1" x2="622.2" y2="1557.1"/>
+      <line class="st14" x1="646.2" y1="1557.1" x2="622.2" y2="1557.1"/>
     </g>
     <g id="LINE-157">
-      <line class="st0" x1="622.2" y1="1484" x2="622.2" y2="1557.1"/>
+      <line class="st14" x1="622.2" y1="1484" x2="622.2" y2="1557.1"/>
     </g>
     <g id="LINE-158">
-      <line class="st0" x1="651.2" y1="1521" x2="646.2" y2="1521"/>
+      <line class="st14" x1="651.2" y1="1521" x2="646.2" y2="1521"/>
     </g>
     <g id="LINE-159">
-      <line class="st0" x1="651.2" y1="1491" x2="646.2" y2="1491"/>
+      <line class="st14" x1="651.2" y1="1491" x2="646.2" y2="1491"/>
     </g>
     <g id="LINE-160">
-      <line class="st0" x1="547.2" y1="1446" x2="547.2" y2="1441"/>
+      <line class="st14" x1="547.2" y1="1446" x2="547.2" y2="1441"/>
     </g>
     <g id="LINE-161">
-      <line class="st0" x1="577.2" y1="1446" x2="577.2" y2="1441"/>
+      <line class="st14" x1="577.2" y1="1446" x2="577.2" y2="1441"/>
     </g>
     <g id="LINE-162">
-      <line class="st0" x1="577.2" y1="1446" x2="589.2" y2="1446"/>
+      <line class="st14" x1="577.2" y1="1446" x2="589.2" y2="1446"/>
     </g>
     <g id="LINE-163">
-      <line class="st0" x1="577.2" y1="1441" x2="589.2" y2="1441"/>
+      <line class="st14" x1="577.2" y1="1441" x2="589.2" y2="1441"/>
     </g>
     <g id="LWPOLYLINE-183">
-      <line class="st0" x1="545.2" y1="1389" x2="545.2" y2="1353"/>
+      <line class="st14" x1="545.2" y1="1389" x2="545.2" y2="1353"/>
     </g>
     <g id="LWPOLYLINE-184">
-      <line class="st0" x1="545.2" y1="1348" x2="545.2" y2="1338"/>
+      <line class="st14" x1="545.2" y1="1348" x2="545.2" y2="1338"/>
     </g>
     <g id="ARC-99">
-      <path class="st0" d="M548.8,1457.7c7.5-.4,13.4-6.6,13.4-14.2"/>
+      <path class="st14" d="M548.8,1457.7c7.5-.4,13.4-6.6,13.4-14.2"/>
     </g>
     <g id="LWPOLYLINE-185">
-      <rect class="st0" x="548" y="1443.5" width=".8" height="14.2"/>
+      <rect class="st14" x="548" y="1443.5" width=".8" height="14.2"/>
     </g>
     <g id="ARC-100">
-      <path class="st0" d="M562.2,1443.5c0,7.5,5.9,13.7,13.4,14.2"/>
+      <path class="st14" d="M562.2,1443.5c0,7.5,5.9,13.7,13.4,14.2"/>
     </g>
     <g id="LWPOLYLINE-186">
-      <rect class="st0" x="575.5" y="1443.5" width=".8" height="14.2"/>
+      <rect class="st14" x="575.5" y="1443.5" width=".8" height="14.2"/>
     </g>
     <g id="LINE-164">
-      <line class="st0" x1="545.2" y1="1422" x2="581.2" y2="1422"/>
+      <line class="st14" x1="545.2" y1="1422" x2="581.2" y2="1422"/>
     </g>
     <g id="LINE-165">
-      <line class="st0" x1="545.2" y1="1426" x2="581.2" y2="1426"/>
+      <line class="st14" x1="545.2" y1="1426" x2="581.2" y2="1426"/>
     </g>
     <g id="LWPOLYLINE-187">
-      <line class="st0" x1="142.3" y1="1314.3" x2="142.3" y2="1309.3"/>
+      <line class="st14" x1="142.3" y1="1314.3" x2="142.3" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-188">
-      <line class="st0" x1="94.3" y1="1314.3" x2="94.3" y2="1309.3"/>
+      <line class="st14" x1="94.3" y1="1314.3" x2="94.3" y2="1309.3"/>
     </g>
     <g id="LWPOLYLINE-189">
-      <line class="st0" x1="178.3" y1="1332.3" x2="183.3" y2="1332.3"/>
+      <line class="st14" x1="178.3" y1="1332.3" x2="183.3" y2="1332.3"/>
     </g>
     <g id="LWPOLYLINE-190">
-      <line class="st0" x1="178.3" y1="1404.3" x2="183.3" y2="1404.3"/>
+      <line class="st14" x1="178.3" y1="1404.3" x2="183.3" y2="1404.3"/>
     </g>
     <g id="LWPOLYLINE-191">
-      <line class="st0" x1="183.3" y1="1332.3" x2="183.3" y2="1314.3"/>
+      <line class="st14" x1="183.3" y1="1332.3" x2="183.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-192">
-      <line class="st0" x1="178.3" y1="1332.3" x2="178.3" y2="1314.3"/>
+      <line class="st14" x1="178.3" y1="1332.3" x2="178.3" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-193">
-      <line class="st0" x1="46.8" y1="1356.3" x2="51.8" y2="1356.3"/>
+      <line class="st14" x1="46.8" y1="1356.3" x2="51.8" y2="1356.3"/>
     </g>
     <g id="LWPOLYLINE-194">
-      <line class="st0" x1="46.8" y1="1404.3" x2="51.8" y2="1404.3"/>
+      <line class="st14" x1="46.8" y1="1404.3" x2="51.8" y2="1404.3"/>
     </g>
     <g id="LINE-166">
-      <line class="st0" x1="183.3" y1="1518.2" x2="183.3" y2="1530.7"/>
+      <line class="st14" x1="183.3" y1="1518.2" x2="183.3" y2="1530.7"/>
     </g>
     <g id="LINE-167">
-      <line class="st0" x1="183.3" y1="1530.7" x2="208.3" y2="1530.7"/>
+      <line class="st14" x1="183.3" y1="1530.7" x2="208.3" y2="1530.7"/>
     </g>
     <g id="LINE-168">
-      <line class="st0" x1="178.3" y1="1518.2" x2="178.3" y2="1535.7"/>
+      <line class="st14" x1="178.3" y1="1518.2" x2="178.3" y2="1535.7"/>
     </g>
     <g id="LINE-169">
-      <line class="st0" x1="178.3" y1="1535.7" x2="208.3" y2="1535.7"/>
+      <line class="st14" x1="178.3" y1="1535.7" x2="208.3" y2="1535.7"/>
     </g>
     <g id="LWPOLYLINE-195">
-      <line class="st0" x1="208.3" y1="1530.7" x2="208.3" y2="1513.3"/>
+      <line class="st14" x1="208.3" y1="1530.7" x2="208.3" y2="1513.3"/>
     </g>
     <g id="LWPOLYLINE-196">
-      <line class="st0" x1="51.8" y1="1446.3" x2="51.8" y2="1314.3"/>
+      <line class="st14" x1="51.8" y1="1446.3" x2="51.8" y2="1314.3"/>
     </g>
     <g id="LWPOLYLINE-197">
-      <line class="st0" x1="183.3" y1="1446.3" x2="208.3" y2="1446.3"/>
+      <line class="st14" x1="183.3" y1="1446.3" x2="208.3" y2="1446.3"/>
     </g>
     <g id="LWPOLYLINE-198">
-      <line class="st0" x1="183.3" y1="1314.3" x2="208.3" y2="1314.3"/>
+      <line class="st14" x1="183.3" y1="1314.3" x2="208.3" y2="1314.3"/>
     </g>
     <g id="ARC-101">
-      <path class="st0" d="M145.5,1515.8c0,14.9,11.6,27.2,26.4,28"/>
+      <path class="st14" d="M145.5,1515.8c0,14.9,11.6,27.2,26.4,28"/>
     </g>
     <g id="LWPOLYLINE-199">
-      <rect class="st0" x="171.9" y="1515.8" width="1.6" height="28"/>
+      <rect class="st14" x="171.9" y="1515.8" width="1.6" height="28"/>
     </g>
     <g id="LWPOLYLINE-200">
-      <line class="st0" x1="46.8" y1="1458.3" x2="51.8" y2="1458.3"/>
+      <line class="st14" x1="46.8" y1="1458.3" x2="51.8" y2="1458.3"/>
     </g>
     <g id="LWPOLYLINE-201">
-      <line class="st0" x1="46.8" y1="1506.3" x2="51.8" y2="1506.3"/>
+      <line class="st14" x1="46.8" y1="1506.3" x2="51.8" y2="1506.3"/>
     </g>
     <g id="LWPOLYLINE-202">
-      <path class="st0" d="M96,1488.8c-.9,0-1.7.3-2.4.7-.8.7-1.5,1.6-2,2.6-.5,1.4-.8,2.9-.7,4.4,0,1.3.4,2.5.8,3.7v1.7h2.4v1.7h4v-1.7h2.4v-1.7c.5-1.2.7-2.4.8-3.7,0-1.5-.2-3-.8-4.4-.6-.9-1.3-1.8-2.1-2.5-.7-.4-1.6-.7-2.4-.7"/>
+      <path class="st14" d="M96,1488.8c-.9,0-1.7.3-2.4.7-.8.7-1.5,1.6-2,2.6-.5,1.4-.8,2.9-.7,4.4,0,1.3.4,2.5.8,3.7v1.7h2.4v1.7h4v-1.7h2.4v-1.7c.5-1.2.7-2.4.8-3.7,0-1.5-.2-3-.8-4.4-.6-.9-1.3-1.8-2.1-2.5-.7-.4-1.6-.7-2.4-.7"/>
     </g>
     <g id="LWPOLYLINE-203">
-      <path class="st0" d="M96,1488c-1,0-1.9.3-2.8.8-.9.9-1.7,1.8-2.4,2.9-.6,1.6-.9,3.3-.8,5.1,0,1.5.4,2.9,1,4.2v2.8h5.1s5.1,0,5.1,0v-2.9c.5-1.3.9-2.8.9-4.2,0-1.7-.2-3.4-.9-5-.6-1.1-1.5-2.1-2.4-2.9-.9-.5-1.8-.8-2.8-.8"/>
+      <path class="st14" d="M96,1488c-1,0-1.9.3-2.8.8-.9.9-1.7,1.8-2.4,2.9-.6,1.6-.9,3.3-.8,5.1,0,1.5.4,2.9,1,4.2v2.8h10.2v-2.9c.5-1.3.9-2.8.9-4.2s-.2-3.4-.9-5c-.6-1.1-1.5-2.1-2.4-2.9-.9-.5-1.8-.8-2.8-.8"/>
     </g>
     <g id="LWPOLYLINE-204">
-      <path class="st0" d="M89.8,1504.7v-8.4c-.2-2.9,1-5.7,3.2-7.6.9-.5,1.9-.8,2.9-.9,1,0,2,.4,3,.8,2.2,1.9,3.5,4.7,3.3,7.6v8.4"/>
+      <path class="st14" d="M89.8,1504.7v-8.4c-.2-2.9,1-5.7,3.2-7.6.9-.5,1.9-.8,2.9-.9,1,0,2,.4,3,.8,2.2,1.9,3.5,4.7,3.3,7.6v8.4"/>
     </g>
     <g id="LWPOLYLINE-205">
-      <rect class="st9" x="86.1" y="1504.7" width="17.2" height="7.4" rx="1" ry="1" transform="translate(-5.3 .3) rotate(-.2)"/>
+      <rect class="st6" x="86.1" y="1504.7" width="17.2" height="7.4" rx="1" ry="1" transform="translate(-5.3 .3) rotate(-.2)"/>
     </g>
     <g id="LINE-170">
-      <line class="st0" x1="102.3" y1="1496.1" x2="102.3" y2="1504.6"/>
+      <line class="st14" x1="102.3" y1="1496.1" x2="102.3" y2="1504.6"/>
     </g>
     <g id="CIRCLE-24">
-      <circle class="st0" cx="93.1" cy="1502.8" r=".3"/>
+      <circle class="st14" cx="93.1" cy="1502.8" r=".3"/>
     </g>
     <g id="CIRCLE-25">
-      <circle class="st0" cx="98.8" cy="1502.8" r=".3"/>
+      <circle class="st14" cx="98.8" cy="1502.8" r=".3"/>
     </g>
     <g id="LWPOLYLINE-206">
-      <path class="st5" d="M113.1,1502c0,1,.2,2,.6,2.9.5,1,1.2,1.9,2,2.7.9.7,1.9,1.3,2.9,1.8,1.2.4,2.4.7,3.7.7,1.3,0,2.5-.1,3.7-.5,1.1-.3,2.1-.9,3-1.6.9-.7,1.6-1.5,2.2-2.5.5-.9.7-1.9.8-2.9s-.2-2-.6-2.9c-.5-1-1.2-1.9-2-2.7-.9-.7-1.9-1.3-2.9-1.8-1.2-.4-2.4-.7-3.7-.7-1.3,0-2.5.1-3.7.5-1.1.3-2.1.9-3,1.6-.9.7-1.6,1.5-2.2,2.5-.5.9-.7,1.9-.8,2.9Z"/>
+      <path class="st12" d="M113.1,1502c0,1,.2,2,.6,2.9.5,1,1.2,1.9,2,2.7.9.7,1.9,1.3,2.9,1.8,1.2.4,2.4.7,3.7.7s2.5,0,3.7-.5c1.1-.3,2.1-.9,3-1.6.9-.7,1.6-1.5,2.2-2.5.5-.9.7-1.9.8-2.9s-.2-2-.6-2.9c-.5-1-1.2-1.9-2-2.7-.9-.7-1.9-1.3-2.9-1.8-1.2-.4-2.4-.7-3.7-.7s-2.5,0-3.7.5c-1.1.3-2.1.9-3,1.6s-1.6,1.5-2.2,2.5c-.5.9-.7,1.9-.8,2.9Z"/>
     </g>
     <g id="LWPOLYLINE-207">
-      <path class="st5" d="M116.9,1502.2c0,.6.1,1.2.4,1.7.3.6.7,1.1,1.2,1.6.5.4,1.1.8,1.8,1,.7.2,1.5.4,2.2.4s1.5-.1,2.2-.3c.7-.2,1.3-.5,1.8-1,.5-.4,1-.9,1.3-1.5.3-.5.4-1.1.4-1.7s-.1-1.2-.4-1.7c-.3-.6-.7-1.1-1.2-1.6-.5-.4-1.1-.8-1.8-1-.7-.2-1.5-.4-2.2-.4s-1.5.1-2.2.3c-.7.2-1.3.5-1.8,1-.5.4-1,.9-1.3,1.5-.3.5-.4,1.1-.4,1.7Z"/>
+      <path class="st12" d="M116.9,1502.2c0,.6,0,1.2.4,1.7.3.6.7,1.1,1.2,1.6.5.4,1.1.8,1.8,1,.7.2,1.5.4,2.2.4s1.5,0,2.2-.3c.7-.2,1.3-.5,1.8-1,.5-.4,1-.9,1.3-1.5.3-.5.4-1.1.4-1.7s-.1-1.2-.4-1.7c-.3-.6-.7-1.1-1.2-1.6-.5-.4-1.1-.8-1.8-1-.7-.2-1.5-.4-2.2-.4s-1.5,0-2.2.3c-.7.2-1.3.5-1.8,1-.5.4-1,.9-1.3,1.5-.3.5-.4,1.1-.4,1.7Z"/>
     </g>
     <g id="LINE-171">
-      <line class="st5" x1="121.9" y1="1502.3" x2="123.4" y2="1502.3"/>
+      <line class="st12" x1="121.9" y1="1502.3" x2="123.4" y2="1502.3"/>
     </g>
     <g id="CIRCLE-26">
-      <circle class="st5" cx="122.6" cy="1502.3" r="1.2"/>
+      <circle class="st12" cx="122.6" cy="1502.3" r="1.2"/>
     </g>
     <g id="CIRCLE-27">
-      <circle class="st5" cx="122.6" cy="1502.3" r=".8"/>
+      <circle class="st12" cx="122.6" cy="1502.3" r=".8"/>
     </g>
     <g id="LINE-172">
-      <line class="st5" x1="122.6" y1="1501.5" x2="122.6" y2="1503.1"/>
+      <line class="st12" x1="122.6" y1="1501.5" x2="122.6" y2="1503.1"/>
     </g>
     <g id="ARC-102">
-      <path class="st5" d="M687.1,1313.5c0-.5.4-1,1-1"/>
+      <path class="st12" d="M687.1,1313.5c0-.5.4-1,1-1"/>
     </g>
     <g id="LWPOLYLINE-208">
-      <line class="st5" x1="687.1" y1="1313.5" x2="687.1" y2="1326.5"/>
+      <line class="st12" x1="687.1" y1="1313.5" x2="687.1" y2="1326.5"/>
     </g>
     <g id="ARC-103">
-      <path class="st5" d="M688.1,1327.5c-.5,0-1-.4-1-1"/>
+      <path class="st12" d="M688.1,1327.5c-.5,0-1-.4-1-1"/>
     </g>
     <g id="ARC-104">
-      <path class="st5" d="M706.1,1312.5c.5,0,1,.4,1,1"/>
+      <path class="st12" d="M706.1,1312.5c.5,0,1,.4,1,1"/>
     </g>
     <g id="LWPOLYLINE-209">
-      <line class="st5" x1="707.1" y1="1326.5" x2="707.1" y2="1313.5"/>
+      <line class="st12" x1="707.1" y1="1326.5" x2="707.1" y2="1313.5"/>
     </g>
     <g id="ARC-105">
-      <path class="st5" d="M707.1,1326.5c0,.5-.4,1-1,1"/>
+      <path class="st12" d="M707.1,1326.5c0,.5-.4,1-1,1"/>
     </g>
     <g id="LWPOLYLINE-210">
-      <line class="st5" x1="688.1" y1="1327.5" x2="706.1" y2="1327.5"/>
+      <line class="st12" x1="688.1" y1="1327.5" x2="706.1" y2="1327.5"/>
     </g>
     <g id="LWPOLYLINE-211">
-      <line class="st5" x1="706.1" y1="1312.5" x2="688.1" y2="1312.5"/>
+      <line class="st12" x1="706.1" y1="1312.5" x2="688.1" y2="1312.5"/>
     </g>
     <g id="LINE-173">
-      <line class="st5" x1="682.1" y1="1305.5" x2="712.1" y2="1305.5"/>
+      <line class="st12" x1="682.1" y1="1305.5" x2="712.1" y2="1305.5"/>
     </g>
     <g id="LINE-174">
-      <line class="st5" x1="712.1" y1="1310.5" x2="682.1" y2="1310.5"/>
+      <line class="st12" x1="712.1" y1="1310.5" x2="682.1" y2="1310.5"/>
     </g>
     <g id="LWPOLYLINE-212">
-      <rect class="st5" x="682.1" y="1304.5" width="30" height="25"/>
+      <rect class="st12" x="682.1" y="1304.5" width="30" height="25"/>
     </g>
     <g id="ARC-106">
-      <path class="st5" d="M656.9,1313.5c0-.5.4-1,1-1"/>
+      <path class="st12" d="M656.9,1313.5c0-.5.4-1,1-1"/>
     </g>
     <g id="LWPOLYLINE-213">
-      <line class="st5" x1="656.9" y1="1313.5" x2="656.9" y2="1326.5"/>
+      <line class="st12" x1="656.9" y1="1313.5" x2="656.9" y2="1326.5"/>
     </g>
     <g id="ARC-107">
-      <path class="st5" d="M657.9,1327.5c-.5,0-1-.4-1-1"/>
+      <path class="st12" d="M657.9,1327.5c-.5,0-1-.4-1-1"/>
     </g>
     <g id="ARC-108">
-      <path class="st5" d="M675.9,1312.5c.5,0,1,.4,1,1"/>
+      <path class="st12" d="M675.9,1312.5c.5,0,1,.4,1,1"/>
     </g>
     <g id="LWPOLYLINE-214">
-      <line class="st5" x1="676.9" y1="1326.5" x2="676.9" y2="1313.5"/>
+      <line class="st12" x1="676.9" y1="1326.5" x2="676.9" y2="1313.5"/>
     </g>
     <g id="ARC-109">
-      <path class="st5" d="M676.9,1326.5c0,.5-.4,1-1,1"/>
+      <path class="st12" d="M676.9,1326.5c0,.5-.4,1-1,1"/>
     </g>
     <g id="LWPOLYLINE-215">
-      <line class="st5" x1="657.9" y1="1327.5" x2="675.9" y2="1327.5"/>
+      <line class="st12" x1="657.9" y1="1327.5" x2="675.9" y2="1327.5"/>
     </g>
     <g id="LWPOLYLINE-216">
-      <line class="st5" x1="675.9" y1="1312.5" x2="657.9" y2="1312.5"/>
+      <line class="st12" x1="675.9" y1="1312.5" x2="657.9" y2="1312.5"/>
     </g>
     <g id="LINE-175">
-      <line class="st5" x1="651.9" y1="1305.5" x2="681.9" y2="1305.5"/>
+      <line class="st12" x1="651.9" y1="1305.5" x2="681.9" y2="1305.5"/>
     </g>
     <g id="LINE-176">
-      <line class="st5" x1="681.9" y1="1310.5" x2="651.9" y2="1310.5"/>
+      <line class="st12" x1="681.9" y1="1310.5" x2="651.9" y2="1310.5"/>
     </g>
     <g id="LWPOLYLINE-217">
-      <rect class="st5" x="651.9" y="1304.5" width="30" height="25"/>
+      <rect class="st12" x="651.9" y="1304.5" width="30" height="25"/>
     </g>
     <g id="LWPOLYLINE-218">
-      <line class="st0" x1="540.2" y1="1338" x2="545.2" y2="1338"/>
+      <line class="st14" x1="540.2" y1="1338" x2="545.2" y2="1338"/>
     </g>
     <g id="LWPOLYLINE-219">
-      <line class="st0" x1="545.2" y1="1307" x2="540.2" y2="1307"/>
+      <line class="st14" x1="545.2" y1="1307" x2="540.2" y2="1307"/>
     </g>
     <g id="LWPOLYLINE-220">
-      <line class="st0" x1="545.2" y1="1307" x2="545.2" y2="1301.8"/>
+      <line class="st14" x1="545.2" y1="1307" x2="545.2" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-221">
-      <line class="st0" x1="540.2" y1="1307" x2="540.2" y2="1296.8"/>
+      <line class="st14" x1="540.2" y1="1307" x2="540.2" y2="1296.8"/>
     </g>
     <g id="ARC-110">
-      <path class="st0" d="M513.8,1309.9c.9,15.3,13.5,27.2,28.9,27.2"/>
+      <path class="st14" d="M513.8,1309.9c.9,15.3,13.5,27.2,28.9,27.2"/>
     </g>
     <g id="LWPOLYLINE-222">
-      <rect class="st0" x="513.8" y="1308.2" width="28.9" height="1.7"/>
+      <rect class="st14" x="513.8" y="1308.2" width="28.9" height="1.7"/>
     </g>
     <g id="LWPOLYLINE-223">
-      <path class="st0" d="M570.5,1370.6c0-.9-.3-1.7-.7-2.4-.7-.8-1.6-1.5-2.6-2-1.4-.5-2.9-.8-4.4-.7-1.3,0-2.5.4-3.7.8h-1.7v2.4h-1.7v4h1.7v2.4h1.7c1.2.5,2.4.7,3.7.8,1.5,0,3-.2,4.4-.8.9-.6,1.8-1.3,2.5-2.1.4-.7.7-1.6.7-2.4"/>
+      <path class="st14" d="M570.5,1370.6c0-.9-.3-1.7-.7-2.4-.7-.8-1.6-1.5-2.6-2-1.4-.5-2.9-.8-4.4-.7-1.3,0-2.5.4-3.7.8h-1.7v2.4h-1.7v4h1.7v2.4h1.7c1.2.5,2.4.7,3.7.8,1.5,0,3-.2,4.4-.8.9-.6,1.8-1.3,2.5-2.1.4-.7.7-1.6.7-2.4"/>
     </g>
     <g id="LWPOLYLINE-224">
-      <path class="st0" d="M571.3,1370.6c0-1-.3-1.9-.8-2.8-.9-.9-1.8-1.7-2.9-2.4-1.6-.6-3.3-.9-5.1-.8-1.5,0-2.9.4-4.2,1h-2.8v5.1s0,5.1,0,5.1h2.9c1.3.5,2.8.9,4.2.9,1.7,0,3.4-.2,5-.9,1.1-.6,2.1-1.5,2.9-2.4.5-.9.8-1.8.8-2.8"/>
+      <path class="st14" d="M571.3,1370.6c0-1-.3-1.9-.8-2.8-.9-.9-1.8-1.7-2.9-2.4-1.6-.6-3.3-.9-5.1-.8-1.5,0-2.9.4-4.2,1h-2.8v10.2h2.9c1.3.5,2.8.9,4.2.9s3.4-.2,5-.9c1.1-.6,2.1-1.5,2.9-2.4.5-.9.8-1.8.8-2.8"/>
     </g>
     <g id="LWPOLYLINE-225">
-      <path class="st0" d="M554.7,1364.4h8.4c2.9-.2,5.7,1,7.6,3.2.5.9.8,1.9.9,2.9,0,1-.4,2-.8,3-1.9,2.2-4.7,3.5-7.6,3.3h-8.4"/>
+      <path class="st14" d="M554.7,1364.4h8.4c2.9-.2,5.7,1,7.6,3.2.5.9.8,1.9.9,2.9,0,1-.4,2-.8,3-1.9,2.2-4.7,3.5-7.6,3.3h-8.4"/>
     </g>
     <g id="LWPOLYLINE-226">
-      <rect class="st9" x="546.1" y="1362.6" width="7.4" height="17.2" rx="1" ry="1" transform="translate(-4.8 1.9) rotate(-.2)"/>
+      <rect class="st6" x="546.1" y="1362.6" width="7.4" height="17.2" rx="1" ry="1" transform="translate(-4.8 1.9) rotate(-.2)"/>
     </g>
     <g id="LINE-177">
-      <line class="st0" x1="563.2" y1="1376.9" x2="554.7" y2="1376.9"/>
+      <line class="st14" x1="563.2" y1="1376.9" x2="554.7" y2="1376.9"/>
     </g>
     <g id="CIRCLE-28">
-      <circle class="st0" cx="556.5" cy="1367.7" r=".3"/>
+      <circle class="st14" cx="556.5" cy="1367.7" r=".3"/>
     </g>
     <g id="CIRCLE-29">
-      <circle class="st0" cx="556.5" cy="1373.4" r=".3"/>
+      <circle class="st14" cx="556.5" cy="1373.4" r=".3"/>
     </g>
     <g id="LINE-178">
-      <line class="st0" x1="625.2" y1="1441" x2="625.2" y2="1353"/>
+      <line class="st14" x1="625.2" y1="1441" x2="625.2" y2="1353"/>
     </g>
     <g id="LWPOLYLINE-227">
-      <path class="st5" d="M635.8,1385.8c1,0,2-.2,2.9-.6,1-.5,1.9-1.2,2.7-2s1.3-1.9,1.8-2.9c.4-1.2.7-2.4.7-3.7s-.1-2.5-.5-3.7c-.3-1.1-.9-2.1-1.6-3s-1.5-1.6-2.5-2.2c-.9-.5-1.9-.7-2.9-.8s-2,.2-2.9.6c-1,.5-1.9,1.2-2.7,2-.7.9-1.3,1.9-1.8,2.9-.4,1.2-.7,2.4-.7,3.7,0,1.3.1,2.5.5,3.7.3,1.1.9,2.1,1.6,3,.7.9,1.5,1.6,2.5,2.2.9.5,1.9.7,2.9.8h0Z"/>
+      <path class="st12" d="M635.8,1385.8c1,0,2-.2,2.9-.6,1-.5,1.9-1.2,2.7-2s1.3-1.9,1.8-2.9c.4-1.2.7-2.4.7-3.7s0-2.5-.5-3.7c-.3-1.1-.9-2.1-1.6-3s-1.5-1.6-2.5-2.2c-.9-.5-1.9-.7-2.9-.8s-2,.2-2.9.6c-1,.5-1.9,1.2-2.7,2-.7.9-1.3,1.9-1.8,2.9-.4,1.2-.7,2.4-.7,3.7s0,2.5.5,3.7c.3,1.1.9,2.1,1.6,3,.7.9,1.5,1.6,2.5,2.2.9.5,1.9.7,2.9.8h0Z"/>
     </g>
     <g id="LWPOLYLINE-228">
-      <path class="st5" d="M636,1382c.6,0,1.2-.1,1.7-.4.6-.3,1.1-.7,1.6-1.2.4-.5.8-1.1,1-1.8.2-.7.4-1.5.4-2.2s0-1.5-.3-2.2c-.2-.7-.5-1.3-1-1.8-.4-.5-.9-1-1.5-1.3-.5-.3-1.1-.4-1.7-.4s-1.2.1-1.7.4c-.6.3-1.1.7-1.6,1.2-.4.5-.8,1.1-1,1.8-.2.7-.4,1.5-.4,2.2s0,1.5.3,2.2c.2.7.5,1.3,1,1.8.4.5.9,1,1.5,1.3.5.3,1.1.4,1.7.4h0Z"/>
+      <path class="st12" d="M636,1382c.6,0,1.2,0,1.7-.4.6-.3,1.1-.7,1.6-1.2.4-.5.8-1.1,1-1.8.2-.7.4-1.5.4-2.2s0-1.5-.3-2.2c-.2-.7-.5-1.3-1-1.8-.4-.5-.9-1-1.5-1.3-.5-.3-1.1-.4-1.7-.4s-1.2,0-1.7.4c-.6.3-1.1.7-1.6,1.2-.4.5-.8,1.1-1,1.8-.2.7-.4,1.5-.4,2.2s0,1.5.3,2.2c.2.7.5,1.3,1,1.8.4.5.9,1,1.5,1.3.5.3,1.1.4,1.7.4h0Z"/>
     </g>
     <g id="LINE-179">
-      <line class="st5" x1="636.1" y1="1377" x2="636.1" y2="1375.5"/>
+      <line class="st12" x1="636.1" y1="1377" x2="636.1" y2="1375.5"/>
     </g>
     <g id="CIRCLE-30">
-      <circle class="st5" cx="636.1" cy="1376.3" r="1.2"/>
+      <circle class="st12" cx="636.1" cy="1376.3" r="1.2"/>
     </g>
     <g id="CIRCLE-31">
-      <circle class="st5" cx="636.1" cy="1376.3" r=".8"/>
+      <circle class="st12" cx="636.1" cy="1376.3" r=".8"/>
     </g>
     <g id="LINE-180">
-      <line class="st5" x1="635.3" y1="1376.3" x2="636.9" y2="1376.3"/>
+      <line class="st12" x1="635.3" y1="1376.3" x2="636.9" y2="1376.3"/>
     </g>
     <g id="LWPOLYLINE-229">
-      <path class="st5" d="M635.8,1408.3c1,0,2,.2,2.9.6,1,.5,1.9,1.2,2.7,2,.7.9,1.3,1.9,1.8,2.9.4,1.2.7,2.4.7,3.7s-.1,2.5-.5,3.7c-.3,1.1-.9,2.1-1.6,3-.7.9-1.5,1.6-2.5,2.2-.9.5-1.9.7-2.9.8s-2-.2-2.9-.6c-1-.5-1.9-1.2-2.7-2-.7-.9-1.3-1.9-1.8-2.9-.4-1.2-.7-2.4-.7-3.7,0-1.3.1-2.5.5-3.7.3-1.1.9-2.1,1.6-3,.7-.9,1.5-1.6,2.5-2.2.9-.5,1.9-.7,2.9-.8Z"/>
+      <path class="st12" d="M635.8,1408.3c1,0,2,.2,2.9.6,1,.5,1.9,1.2,2.7,2,.7.9,1.3,1.9,1.8,2.9.4,1.2.7,2.4.7,3.7s0,2.5-.5,3.7c-.3,1.1-.9,2.1-1.6,3-.7.9-1.5,1.6-2.5,2.2-.9.5-1.9.7-2.9.8s-2-.2-2.9-.6c-1-.5-1.9-1.2-2.7-2-.7-.9-1.3-1.9-1.8-2.9-.4-1.2-.7-2.4-.7-3.7s0-2.5.5-3.7c.3-1.1.9-2.1,1.6-3,.7-.9,1.5-1.6,2.5-2.2.9-.5,1.9-.7,2.9-.8Z"/>
     </g>
     <g id="LWPOLYLINE-230">
-      <path class="st5" d="M636,1412c.6,0,1.2.1,1.7.4.6.3,1.1.7,1.6,1.2.4.5.8,1.1,1,1.8.2.7.4,1.5.4,2.2s0,1.5-.3,2.2c-.2.7-.5,1.3-1,1.8-.4.5-.9,1-1.5,1.3-.5.3-1.1.4-1.7.4s-1.2-.1-1.7-.4c-.6-.3-1.1-.7-1.6-1.2-.4-.5-.8-1.1-1-1.8-.2-.7-.4-1.5-.4-2.2s0-1.5.3-2.2c.2-.7.5-1.3,1-1.8.4-.5.9-1,1.5-1.3.5-.3,1.1-.4,1.7-.4Z"/>
+      <path class="st12" d="M636,1412c.6,0,1.2,0,1.7.4.6.3,1.1.7,1.6,1.2.4.5.8,1.1,1,1.8.2.7.4,1.5.4,2.2s0,1.5-.3,2.2c-.2.7-.5,1.3-1,1.8-.4.5-.9,1-1.5,1.3-.5.3-1.1.4-1.7.4s-1.2,0-1.7-.4c-.6-.3-1.1-.7-1.6-1.2-.4-.5-.8-1.1-1-1.8-.2-.7-.4-1.5-.4-2.2s0-1.5.3-2.2c.2-.7.5-1.3,1-1.8.4-.5.9-1,1.5-1.3.5-.3,1.1-.4,1.7-.4Z"/>
     </g>
     <g id="LINE-181">
-      <line class="st5" x1="636.1" y1="1417" x2="636.1" y2="1418.6"/>
+      <line class="st12" x1="636.1" y1="1417" x2="636.1" y2="1418.6"/>
     </g>
     <g id="CIRCLE-32">
-      <circle class="st5" cx="636.1" cy="1417.8" r="1.2"/>
+      <circle class="st12" cx="636.1" cy="1417.8" r="1.2"/>
     </g>
     <g id="CIRCLE-33">
-      <circle class="st5" cx="636.1" cy="1417.8" r=".8"/>
+      <circle class="st12" cx="636.1" cy="1417.8" r=".8"/>
     </g>
     <g id="LINE-182">
-      <line class="st5" x1="635.3" y1="1417.8" x2="636.9" y2="1417.8"/>
+      <line class="st12" x1="635.3" y1="1417.8" x2="636.9" y2="1417.8"/>
     </g>
     <g id="LINE-183">
-      <line class="st0" x1="586.2" y1="1348" x2="610.2" y2="1348"/>
+      <line class="st14" x1="586.2" y1="1348" x2="610.2" y2="1348"/>
     </g>
     <g id="LINE-184">
-      <line class="st0" x1="586.2" y1="1353" x2="610.2" y2="1353"/>
+      <line class="st14" x1="586.2" y1="1353" x2="610.2" y2="1353"/>
     </g>
     <g id="LWPOLYLINE-231">
-      <path class="st5" d="M782.4,1312.5c0-1-.2-2-.6-2.9-.5-1-1.2-1.9-2-2.7-.9-.7-1.9-1.3-2.9-1.8-1.2-.4-2.4-.7-3.7-.7s-2.5.1-3.7.5c-1.1.3-2.1.9-3,1.6-.9.7-1.6,1.5-2.2,2.5-.5.9-.7,1.9-.8,2.9s.2,2,.6,2.9c.5,1,1.2,1.9,2,2.7.9.7,1.9,1.3,2.9,1.8,1.2.4,2.4.7,3.7.7s2.5-.1,3.7-.5c1.1-.3,2.1-.9,3-1.6.9-.7,1.6-1.5,2.2-2.5.5-.9.7-1.9.8-2.9Z"/>
+      <path class="st12" d="M782.4,1312.5c0-1-.2-2-.6-2.9-.5-1-1.2-1.9-2-2.7-.9-.7-1.9-1.3-2.9-1.8-1.2-.4-2.4-.7-3.7-.7s-2.5,0-3.7.5c-1.1.3-2.1.9-3,1.6s-1.6,1.5-2.2,2.5c-.5.9-.7,1.9-.8,2.9s.2,2,.6,2.9c.5,1,1.2,1.9,2,2.7.9.7,1.9,1.3,2.9,1.8,1.2.4,2.4.7,3.7.7s2.5,0,3.7-.5c1.1-.3,2.1-.9,3-1.6s1.6-1.5,2.2-2.5c.5-.9.7-1.9.8-2.9Z"/>
     </g>
     <g id="LWPOLYLINE-232">
-      <path class="st5" d="M778.6,1312.3c0-.6-.1-1.2-.4-1.7-.3-.6-.7-1.1-1.2-1.6-.5-.4-1.1-.8-1.8-1-.7-.2-1.5-.4-2.2-.4s-1.5.1-2.2.3c-.7.2-1.3.5-1.8,1s-1,.9-1.3,1.5c-.3.5-.4,1.1-.4,1.7s.1,1.2.4,1.7c.3.6.7,1.1,1.2,1.6.5.4,1.1.8,1.8,1,.7.2,1.5.4,2.2.4s1.5-.1,2.2-.3c.7-.2,1.3-.5,1.8-1,.5-.4,1-.9,1.3-1.5.3-.5.4-1.1.4-1.7Z"/>
+      <path class="st12" d="M778.6,1312.3c0-.6,0-1.2-.4-1.7-.3-.6-.7-1.1-1.2-1.6-.5-.4-1.1-.8-1.8-1s-1.5-.4-2.2-.4-1.5,0-2.2.3c-.7.2-1.3.5-1.8,1s-1,.9-1.3,1.5c-.3.5-.4,1.1-.4,1.7s0,1.2.4,1.7c.3.6.7,1.1,1.2,1.6.5.4,1.1.8,1.8,1s1.5.4,2.2.4,1.5,0,2.2-.3c.7-.2,1.3-.5,1.8-1,.5-.4,1-.9,1.3-1.5.3-.5.4-1.1.4-1.7Z"/>
     </g>
     <g id="LINE-185">
-      <line class="st5" x1="773.6" y1="1312.2" x2="772.1" y2="1312.2"/>
+      <line class="st12" x1="773.6" y1="1312.2" x2="772.1" y2="1312.2"/>
     </g>
     <g id="CIRCLE-34">
-      <circle class="st5" cx="772.9" cy="1312.2" r="1.2"/>
+      <circle class="st12" cx="772.9" cy="1312.2" r="1.2"/>
     </g>
     <g id="CIRCLE-35">
-      <circle class="st5" cx="772.9" cy="1312.2" r=".8"/>
+      <circle class="st12" cx="772.9" cy="1312.2" r=".8"/>
     </g>
     <g id="LINE-186">
-      <line class="st5" x1="772.9" y1="1313" x2="772.9" y2="1311.5"/>
+      <line class="st12" x1="772.9" y1="1313" x2="772.9" y2="1311.5"/>
     </g>
     <g id="LWPOLYLINE-233">
-      <path class="st5" d="M797,1312.5c0-1,.2-2,.6-2.9.5-1,1.2-1.9,2-2.7.9-.7,1.9-1.3,2.9-1.8,1.2-.4,2.4-.7,3.7-.7s2.5.1,3.7.5c1.1.3,2.1.9,3,1.6.9.7,1.6,1.5,2.2,2.5.5.9.7,1.9.8,2.9s-.2,2-.6,2.9c-.5,1-1.2,1.9-2,2.7s-1.9,1.3-2.9,1.8c-1.2.4-2.4.7-3.7.7s-2.5-.1-3.7-.5c-1.1-.3-2.1-.9-3-1.6-.9-.7-1.6-1.5-2.2-2.5-.5-.9-.7-1.9-.8-2.9Z"/>
+      <path class="st12" d="M797,1312.5c0-1,.2-2,.6-2.9.5-1,1.2-1.9,2-2.7.9-.7,1.9-1.3,2.9-1.8,1.2-.4,2.4-.7,3.7-.7s2.5,0,3.7.5c1.1.3,2.1.9,3,1.6s1.6,1.5,2.2,2.5c.5.9.7,1.9.8,2.9s-.2,2-.6,2.9c-.5,1-1.2,1.9-2,2.7s-1.9,1.3-2.9,1.8c-1.2.4-2.4.7-3.7.7s-2.5,0-3.7-.5c-1.1-.3-2.1-.9-3-1.6s-1.6-1.5-2.2-2.5c-.5-.9-.7-1.9-.8-2.9Z"/>
     </g>
     <g id="LWPOLYLINE-234">
-      <path class="st5" d="M800.7,1312.3c0-.6.1-1.2.4-1.7.3-.6.7-1.1,1.2-1.6.5-.4,1.1-.8,1.8-1,.7-.2,1.5-.4,2.2-.4s1.5.1,2.2.3c.7.2,1.3.5,1.8,1,.5.4,1,.9,1.3,1.5.3.5.4,1.1.4,1.7s-.1,1.2-.4,1.7c-.3.6-.7,1.1-1.2,1.6-.5.4-1.1.8-1.8,1-.7.2-1.5.4-2.2.4s-1.5-.1-2.2-.3c-.7-.2-1.3-.5-1.8-1-.5-.4-1-.9-1.3-1.5-.3-.5-.4-1.1-.4-1.7Z"/>
+      <path class="st12" d="M800.7,1312.3c0-.6,0-1.2.4-1.7.3-.6.7-1.1,1.2-1.6.5-.4,1.1-.8,1.8-1s1.5-.4,2.2-.4,1.5,0,2.2.3c.7.2,1.3.5,1.8,1,.5.4,1,.9,1.3,1.5.3.5.4,1.1.4,1.7s0,1.2-.4,1.7c-.3.6-.7,1.1-1.2,1.6-.5.4-1.1.8-1.8,1s-1.5.4-2.2.4-1.5,0-2.2-.3c-.7-.2-1.3-.5-1.8-1-.5-.4-1-.9-1.3-1.5-.3-.5-.4-1.1-.4-1.7Z"/>
     </g>
     <g id="LINE-187">
-      <line class="st5" x1="805.7" y1="1312.2" x2="807.2" y2="1312.2"/>
+      <line class="st12" x1="805.7" y1="1312.2" x2="807.2" y2="1312.2"/>
     </g>
     <g id="CIRCLE-36">
-      <circle class="st5" cx="806.5" cy="1312.2" r="1.2"/>
+      <circle class="st12" cx="806.5" cy="1312.2" r="1.2"/>
     </g>
     <g id="CIRCLE-37">
-      <circle class="st5" cx="806.5" cy="1312.2" r=".8"/>
+      <circle class="st12" cx="806.5" cy="1312.2" r=".8"/>
     </g>
     <g id="LINE-188">
-      <line class="st5" x1="806.5" y1="1313" x2="806.5" y2="1311.5"/>
+      <line class="st12" x1="806.5" y1="1313" x2="806.5" y2="1311.5"/>
     </g>
     <g id="LWPOLYLINE-235">
-      <path class="st0" d="M735.9,1387.9c-.9,0-1.7.3-2.4.7-.8.7-1.5,1.6-2,2.6-.5,1.4-.8,2.9-.7,4.4,0,1.3.4,2.5.8,3.7v1.7h2.4v1.7h4v-1.7h2.4v-1.7c.5-1.2.7-2.4.8-3.7,0-1.5-.2-3-.8-4.4-.6-.9-1.3-1.8-2.1-2.5-.7-.4-1.6-.7-2.4-.7"/>
+      <path class="st14" d="M735.9,1387.9c-.9,0-1.7.3-2.4.7-.8.7-1.5,1.6-2,2.6-.5,1.4-.8,2.9-.7,4.4,0,1.3.4,2.5.8,3.7v1.7h2.4v1.7h4v-1.7h2.4v-1.7c.5-1.2.7-2.4.8-3.7,0-1.5-.2-3-.8-4.4-.6-.9-1.3-1.8-2.1-2.5-.7-.4-1.6-.7-2.4-.7"/>
     </g>
     <g id="LWPOLYLINE-236">
-      <path class="st0" d="M735.9,1387.1c-1,0-1.9.3-2.8.8-.9.9-1.7,1.8-2.4,2.9-.6,1.6-.9,3.3-.8,5.1,0,1.5.4,2.9,1,4.2v2.8h5.1s5.1,0,5.1,0v-2.9c.5-1.3.9-2.8.9-4.2,0-1.7-.2-3.4-.9-5-.6-1.1-1.5-2.1-2.4-2.9-.9-.5-1.8-.8-2.8-.8"/>
+      <path class="st14" d="M735.9,1387.1c-1,0-1.9.3-2.8.8-.9.9-1.7,1.8-2.4,2.9-.6,1.6-.9,3.3-.8,5.1,0,1.5.4,2.9,1,4.2v2.8h10.2v-2.9c.5-1.3.9-2.8.9-4.2s-.2-3.4-.9-5c-.6-1.1-1.5-2.1-2.4-2.9-.9-.5-1.8-.8-2.8-.8"/>
     </g>
     <g id="LWPOLYLINE-237">
-      <path class="st0" d="M729.6,1403.8v-8.4c-.2-2.9,1-5.7,3.2-7.6.9-.5,1.9-.8,2.9-.9,1,0,2,.4,3,.8,2.2,1.9,3.5,4.7,3.3,7.6v8.4"/>
+      <path class="st14" d="M729.6,1403.8v-8.4c-.2-2.9,1-5.7,3.2-7.6.9-.5,1.9-.8,2.9-.9,1,0,2,.4,3,.8,2.2,1.9,3.5,4.7,3.3,7.6v8.4"/>
     </g>
     <g id="LWPOLYLINE-238">
-      <rect class="st9" x="726.1" y="1404.4" width="17.2" height="7.4" rx="1" ry="1" transform="translate(-4.9 2.6) rotate(-.2)"/>
+      <rect class="st6" x="726.1" y="1404.4" width="17.2" height="7.4" rx="1" ry="1" transform="translate(-4.9 2.6) rotate(-.2)"/>
     </g>
     <g id="LINE-189">
-      <line class="st0" x1="742.2" y1="1395.3" x2="742.2" y2="1403.7"/>
+      <line class="st14" x1="742.2" y1="1395.3" x2="742.2" y2="1403.7"/>
     </g>
     <g id="CIRCLE-38">
-      <circle class="st0" cx="733" cy="1401.9" r=".3"/>
+      <circle class="st14" cx="733" cy="1401.9" r=".3"/>
     </g>
     <g id="CIRCLE-39">
-      <circle class="st0" cx="738.7" cy="1401.9" r=".3"/>
+      <circle class="st14" cx="738.7" cy="1401.9" r=".3"/>
     </g>
     <g id="LINE-190">
-      <line class="st4" x1="110.3" y1="1513.3" x2="110.3" y2="1492.3"/>
+      <line class="st10" x1="110.3" y1="1513.3" x2="110.3" y2="1492.3"/>
     </g>
     <g id="LWPOLYLINE-239">
-      <line class="st4" x1="820.7" y1="1322.8" x2="758.7" y2="1322.8"/>
+      <line class="st10" x1="820.7" y1="1322.8" x2="758.7" y2="1322.8"/>
     </g>
     <g id="LINE-191">
-      <line class="st4" x1="825.7" y1="1372.8" x2="868.7" y2="1372.8"/>
+      <line class="st10" x1="825.7" y1="1372.8" x2="868.7" y2="1372.8"/>
     </g>
     <g id="LWPOLYLINE-240">
-      <line class="st4" x1="868.7" y1="1372.8" x2="868.7" y2="1319.8"/>
+      <line class="st10" x1="868.7" y1="1372.8" x2="868.7" y2="1319.8"/>
     </g>
     <g id="LWPOLYLINE-241">
-      <line class="st4" x1="868.7" y1="1319.8" x2="825.7" y2="1319.8"/>
+      <line class="st10" x1="868.7" y1="1319.8" x2="825.7" y2="1319.8"/>
     </g>
     <g id="LINE-192">
-      <line class="st4" x1="837.9" y1="1576.7" x2="837.9" y2="1638.2"/>
+      <line class="st10" x1="837.9" y1="1576.7" x2="837.9" y2="1638.2"/>
     </g>
     <g id="LINE-193">
-      <line class="st4" x1="837.9" y1="1638.2" x2="871.7" y2="1638.2"/>
+      <line class="st10" x1="837.9" y1="1638.2" x2="871.7" y2="1638.2"/>
     </g>
     <g id="LINE-194">
-      <line class="st4" x1="871.7" y1="1638.2" x2="871.7" y2="1576.7"/>
+      <line class="st10" x1="871.7" y1="1638.2" x2="871.7" y2="1576.7"/>
     </g>
     <g id="CIRCLE-40">
-      <circle class="st5" cx="67" cy="1504.7" r="1"/>
+      <circle class="st12" cx="67" cy="1504.7" r="1"/>
     </g>
     <g id="LWPOLYLINE-242">
-      <line class="st5" x1="615.7" y1="1324.9" x2="646.2" y2="1301.8"/>
+      <line class="st12" x1="615.7" y1="1324.9" x2="646.2" y2="1301.8"/>
     </g>
     <g id="CIRCLE-41">
-      <circle class="st5" cx="614.7" cy="1324.9" r=".9"/>
+      <circle class="st12" cx="614.7" cy="1324.9" r=".9"/>
     </g>
     <g id="LWPOLYLINE-243">
-      <line class="st5" x1="614.7" y1="1324" x2="583.4" y2="1301.8"/>
+      <line class="st12" x1="614.7" y1="1324" x2="583.4" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-244">
-      <line class="st5" x1="614.7" y1="1325.9" x2="646.2" y2="1348"/>
+      <line class="st12" x1="614.7" y1="1325.9" x2="646.2" y2="1348"/>
     </g>
     <g id="LWPOLYLINE-245">
-      <line class="st5" x1="613.8" y1="1324.9" x2="583.4" y2="1348"/>
+      <line class="st12" x1="613.8" y1="1324.9" x2="583.4" y2="1348"/>
     </g>
     <g id="LWPOLYLINE-246">
-      <line class="st5" x1="753.7" y1="1337.8" x2="717.7" y2="1337.8"/>
+      <line class="st12" x1="753.7" y1="1337.8" x2="717.7" y2="1337.8"/>
     </g>
     <g id="LWPOLYLINE-247">
-      <line class="st5" x1="729.4" y1="1317.6" x2="753.7" y2="1301.8"/>
+      <line class="st12" x1="729.4" y1="1317.6" x2="753.7" y2="1301.8"/>
     </g>
     <g id="CIRCLE-42">
-      <circle class="st5" cx="728.4" cy="1317.6" r=".9"/>
+      <circle class="st12" cx="728.4" cy="1317.6" r=".9"/>
     </g>
     <g id="LWPOLYLINE-248">
-      <line class="st5" x1="728.4" y1="1316.7" x2="717.7" y2="1301.8"/>
+      <line class="st12" x1="728.4" y1="1316.7" x2="717.7" y2="1301.8"/>
     </g>
     <g id="LWPOLYLINE-249">
-      <line class="st5" x1="728.4" y1="1318.6" x2="753.7" y2="1332.8"/>
+      <line class="st12" x1="728.4" y1="1318.6" x2="753.7" y2="1332.8"/>
     </g>
     <g id="LWPOLYLINE-250">
-      <line class="st5" x1="727.5" y1="1317.6" x2="717.7" y2="1332.8"/>
+      <line class="st12" x1="727.5" y1="1317.6" x2="717.7" y2="1332.8"/>
     </g>
     <g id="LWPOLYLINE-251">
-      <line class="st5" x1="753.7" y1="1332.8" x2="717.7" y2="1332.8"/>
+      <line class="st12" x1="753.7" y1="1332.8" x2="717.7" y2="1332.8"/>
     </g>
     <g id="LINE-195">
-      <line class="st8" x1="703.5" y1="1595" x2="703.5" y2="1606.3"/>
+      <line class="st16" x1="703.5" y1="1595" x2="703.5" y2="1606.3"/>
     </g>
     <g id="LINE-196">
-      <line class="st8" x1="761.9" y1="1595" x2="761.9" y2="1606.3"/>
+      <line class="st16" x1="761.9" y1="1595" x2="761.9" y2="1606.3"/>
     </g>
     <g id="LINE-197">
-      <line class="st0" x1="703.5" y1="1606.1" x2="761.9" y2="1606.1"/>
+      <line class="st14" x1="703.5" y1="1606.1" x2="761.9" y2="1606.1"/>
     </g>
     <g id="MTEXT-3">
-      <g class="st16">
-        <g class="st16">
-          <text class="st17" transform="translate(714.1 1601.4)"><tspan x="0" y="0">4&apos;-10</tspan></text>
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st2" transform="translate(714.1 1601.4)"><tspan x="0" y="0">4&apos;-10</tspan></text>
+          </g>
         </g>
       </g>
-      <g class="st16">
-        <g class="st16">
-          <text class="st17" transform="translate(743.2 1596.7)"><tspan x="0" y="0">1</tspan></text>
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st2" transform="translate(743.2 1596.7)"><tspan x="0" y="0">1</tspan></text>
+          </g>
         </g>
       </g>
-      <line id="Polyline_x5F_0" class="st0" x1="742" y1="1597.9" x2="746.7" y2="1597.9"/>
-      <g class="st16">
-        <g class="st16">
-          <text class="st17" transform="translate(742 1606)"><tspan x="0" y="0">2</tspan></text>
+      <line id="Polyline_x5F_0" class="st14" x1="742" y1="1597.9" x2="746.7" y2="1597.9"/>
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st2" transform="translate(742 1606)"><tspan x="0" y="0">2</tspan></text>
+          </g>
         </g>
       </g>
-      <g class="st16">
-        <g class="st16">
-          <text class="st17" transform="translate(749 1601.4)"><tspan x="0" y="0">&quot;</tspan></text>
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st2" transform="translate(749 1601.4)"><tspan x="0" y="0">&quot;</tspan></text>
+          </g>
         </g>
       </g>
     </g>
     <g id="DIMENSION">
       <g id="LINE-198">
-        <line class="st8" x1="765.1" y1="1633.4" x2="765.1" y2="1633.7"/>
+        <line class="st16" x1="765.1" y1="1633.4" x2="765.1" y2="1633.7"/>
       </g>
       <g id="LINE-199">
-        <line class="st8" x1="670.3" y1="1634" x2="670.3" y2="1633.4"/>
+        <line class="st16" x1="670.3" y1="1634" x2="670.3" y2="1633.4"/>
       </g>
       <g id="LINE-200">
-        <line class="st0" x1="765.1" y1="1633.5" x2="670.3" y2="1633.5"/>
+        <line class="st14" x1="765.1" y1="1633.5" x2="670.3" y2="1633.5"/>
       </g>
       <g id="MTEXT-4">
-        <g class="st16">
-          <g class="st16">
-            <text class="st17" transform="translate(699 1628.8)"><tspan x="0" y="0">7&apos;-10</tspan></text>
+        <g class="st1">
+          <g class="st1">
+            <g class="st1">
+              <text class="st2" transform="translate(699 1628.8)"><tspan x="0" y="0">7&apos;-10</tspan></text>
+            </g>
           </g>
         </g>
-        <g class="st16">
-          <g class="st16">
-            <text class="st17" transform="translate(727 1624.1)"><tspan x="0" y="0">3</tspan></text>
+        <g class="st1">
+          <g class="st1">
+            <g class="st1">
+              <text class="st2" transform="translate(727 1624.1)"><tspan x="0" y="0">3</tspan></text>
+            </g>
           </g>
         </g>
-        <line id="Polyline_x5F_0-2" class="st0" x1="727" y1="1625.3" x2="731.7" y2="1625.3"/>
-        <g class="st16">
-          <g class="st16">
-            <text class="st17" transform="translate(727 1633.5)"><tspan x="0" y="0">4</tspan></text>
+        <line id="Polyline_x5F_0-2" class="st14" x1="727" y1="1625.3" x2="731.7" y2="1625.3"/>
+        <g class="st1">
+          <g class="st1">
+            <g class="st1">
+              <text class="st2" transform="translate(727 1633.5)"><tspan x="0" y="0">4</tspan></text>
+            </g>
           </g>
         </g>
-        <g class="st16">
-          <g class="st16">
-            <text class="st17" transform="translate(734 1628.8)"><tspan x="0" y="0">&quot;</tspan></text>
+        <g class="st1">
+          <g class="st1">
+            <g class="st1">
+              <text class="st2" transform="translate(734 1628.8)"><tspan x="0" y="0">&quot;</tspan></text>
+            </g>
           </g>
         </g>
       </g>
     </g>
     <g id="door.front">
-      <rect class="st0" x="495.7" y="1348.4" width="32.8" height="1.9"/>
+      <rect class="st14" x="495.7" y="1348.4" width="32.8" height="1.9"/>
     </g>
-    <line class="st14" x1="240.2" y1="1294.9" x2="221" y2="1309"/>
+    <line class="st3" x1="240.2" y1="1294.9" x2="221" y2="1309"/>
   </g>
   <g id="temperature.living_room.button">
-    <g id="temperature.living_room.text" class="st16">
-      <g class="st16">
-        <g class="st16">
-          <text class="st15" transform="translate(293.1 1567.3)"><tspan x="0" y="0">????</tspan></text>
+    <g id="temperature.living_room.text" class="st1">
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st0" transform="translate(293.1 1567.3)"><tspan x="0" y="0">????</tspan></text>
+          </g>
         </g>
       </g>
     </g>
   </g>
   <g id="temperature.front_porch.button">
-    <g id="temperature.front_porch.text" class="st16">
-      <g class="st16">
-        <g class="st16">
-          <text class="st15" transform="translate(185.7 1275.4)"><tspan x="0" y="0">????</tspan></text>
+    <g id="temperature.front_porch.text" class="st1">
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st0" transform="translate(185.7 1275.4)"><tspan x="0" y="0">????</tspan></text>
+          </g>
         </g>
       </g>
     </g>
   </g>
   <g id="temperature.lab.button">
-    <g id="temperature.lab.text" class="st16">
-      <g class="st16">
-        <g class="st16">
-          <text class="st15" transform="translate(75.6 1601)"><tspan x="0" y="0">????</tspan></text>
+    <g id="temperature.lab.text" class="st1">
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st0" transform="translate(75.6 1601)"><tspan x="0" y="0">????</tspan></text>
+          </g>
         </g>
       </g>
     </g>
   </g>
   <g id="window.lab1">
-    <line class="st0" x1="94.3" y1="1311.8" x2="142.3" y2="1311.8"/>
+    <line class="st14" x1="94.3" y1="1311.8" x2="142.3" y2="1311.8"/>
   </g>
   <g id="light.lab1">
-    <line class="st12" x1="55.6" y1="1318.1" x2="79.6" y2="1318.1"/>
-    <line class="st12" x1="55.6" y1="1318.1" x2="55.6" y2="1342.1"/>
+    <line class="st8" x1="55.6" y1="1318.1" x2="79.6" y2="1318.1"/>
+    <line class="st8" x1="55.6" y1="1318.1" x2="55.6" y2="1342.1"/>
   </g>
   <g id="window.lab2">
-    <line class="st0" x1="49.3" y1="1404.3" x2="49.3" y2="1356.3"/>
+    <line class="st14" x1="49.3" y1="1404.3" x2="49.3" y2="1356.3"/>
   </g>
-  <rect class="st14" x="284.2" y="1512.6" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
-  <line class="st14" x1="410.9" y1="1547.3" x2="474.2" y2="1490.8"/>
+  <rect class="st3" x="284.2" y="1512.6" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
+  <line class="st3" x1="410.9" y1="1547.3" x2="474.2" y2="1490.8"/>
   <g id="temperature.back_deck.button">
-    <g id="temperature.back_deck.text" class="st16">
-      <g class="st16">
-        <g class="st16">
-          <text class="st15" transform="translate(303.8 1753.1)"><tspan x="0" y="0">????</tspan></text>
+    <g id="temperature.back_deck.text" class="st1">
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st0" transform="translate(303.8 1753.1)"><tspan x="0" y="0">????</tspan></text>
+          </g>
         </g>
       </g>
     </g>
   </g>
-  <rect class="st14" x="294.9" y="1698.4" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
-  <line class="st14" x1="421.6" y1="1733.1" x2="479.2" y2="1753.1"/>
+  <rect class="st3" x="294.9" y="1698.4" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
+  <line class="st3" x1="421.6" y1="1733.1" x2="479.2" y2="1753.1"/>
   <g id="temperature.master.button">
-    <g id="temperature.master.text" class="st16">
-      <g class="st16">
-        <g class="st16">
-          <text class="st15" transform="translate(736.3 1483.9)"><tspan x="0" y="0">????</tspan></text>
+    <g id="temperature.master.text" class="st1">
+      <g class="st1">
+        <g class="st1">
+          <g class="st1">
+            <text class="st0" transform="translate(736.3 1483.9)"><tspan x="0" y="0">????</tspan></text>
+          </g>
         </g>
       </g>
     </g>
   </g>
-  <rect class="st14" x="727.4" y="1429.1" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
-  <line class="st14" x1="854.1" y1="1463.9" x2="878.7" y2="1425.1"/>
-  <rect class="st14" x="176.8" y="1225.4" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
-  <rect class="st14" x="66.7" y="1546.2" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
-  <line class="st14" x1="130.1" y1="1546.2" x2="139.3" y2="1518.2"/>
+  <rect class="st3" x="727.4" y="1429.1" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
+  <line class="st3" x1="854.1" y1="1463.9" x2="878.7" y2="1425.1"/>
+  <rect class="st3" x="176.8" y="1225.4" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
+  <rect class="st3" x="66.7" y="1546.2" width="126.7" height="69.5" rx="19.9" ry="19.9"/>
+  <line class="st3" x1="130.1" y1="1546.2" x2="139.3" y2="1518.2"/>
   <rect id="mailbox" class="st13" x="1440.7" y="32.5" width="30.3" height="70.4" transform="translate(875.6 1404.6) rotate(-69.2)"/>
-  <rect class="st1" x="600.4" y="2316.8" width="287.9" height="287.9"/>
-  <path id="property_x5F_line" class="st10" d="M1079.8,2932.7l-1655.8-358L-73.5,1358.4C87,969.7,234.2,575.6,367.7,176.8c92.2,64.8,185.3,128.4,279.2,190.7,555.2,368.3,817.3,1047,653.8,1692.9l-220.9,872.4Z"/>
-  <g id="MTEXT-41" data-name="MTEXT-4">
-    <g class="st16">
-      <g class="st16">
-        <text class="st17" transform="translate(701.3 1648.4)"><tspan x="0" y="0">1 pt = 1”</tspan></text>
+  <rect class="st17" x="600.4" y="2316.8" width="287.9" height="287.9"/>
+  <path id="property_x5F_line" class="st5" d="M1079.8,2932.7l-1655.8-358L-73.5,1358.4C87,969.7,234.2,575.6,367.7,176.8c92.2,64.8,185.3,128.4,279.2,190.7,555.2,368.3,817.3,1047,653.8,1692.9l-220.9,872.4h0Z"/>
+  <g id="MTEXT-41">
+    <g class="st1">
+      <g class="st1">
+        <g class="st1">
+          <text class="st2" transform="translate(701.3 1648.4)"><tspan x="0" y="0">1 pt = 1”</tspan></text>
+        </g>
       </g>
     </g>
   </g>
-  <rect class="st0" y="0" width="1556.7" height="2625.7"/>
 </svg>
