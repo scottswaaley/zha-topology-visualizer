@@ -1875,6 +1875,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
         svg.on('click', () => {{
             clearSelection();
+            hideCard();
         }});
 
         const tooltip = document.getElementById('tooltip');
@@ -1983,6 +1984,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div>Last seen: <span>${{formatLastSeen(d.last_seen)}}</span></div>
                 ${{d.neighbors && d.neighbors.length > 0 ? `<div>Neighbors: <span>${{d.neighbors.length}} (click to show)</span></div>` : ''}}
                 ${{haDeviceUrl ? `<div style="margin-top:5px"><a href="${{haDeviceUrl}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}
+                ${{(d.device_type === 'Router' || d.is_coordinator) ? `<div style="margin-top:6px"><button onclick="rescanRouter('${{d.id}}')" style="background:#00d4ff;color:#000;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">Rescan this router</button></div>` : ''}}
                 <div style="color:#666;margin-top:5px;font-size:10px">Drag to move | Click to select</div>
             `;
             return content;
@@ -2416,6 +2418,36 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 btn.textContent = originalText;
                 btn.classList.remove('loading');
                 btn.disabled = false;
+            }}
+        }}
+
+        // Rescan a single router (from the detail card), then reload with fresh data.
+        async function rescanRouter(ieee) {{
+            const node = nodeMap[ieee];
+            const label = node ? (node.user_given_name || node.name) : 'router';
+            showToast('Rescanning ' + label + '...');
+            try {{
+                const r = await fetch('/rescan', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ ieee: ieee }})
+                }});
+                if (!r.ok) {{ showToast('Rescan failed: ' + (await r.text())); return; }}
+                // Poll until the rescan + regenerate completes, then reload
+                for (let i = 0; i < 180; i++) {{
+                    await new Promise(res => setTimeout(res, 1000));
+                    try {{
+                        const sr = await fetch('/status');
+                        if (sr.ok) {{
+                            const s = await sr.json();
+                            if (s.refresh_error) {{ showToast('Rescan failed: ' + s.refresh_error); return; }}
+                            if (!s.is_refreshing) {{ window.location.reload(); return; }}
+                        }}
+                    }} catch (e) {{}}
+                }}
+                showToast('Rescan timed out');
+            }} catch (err) {{
+                showToast('Rescan failed: ' + err.message);
             }}
         }}
     </script>

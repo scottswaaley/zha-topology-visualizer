@@ -126,8 +126,12 @@ class ZHAExporter:
             log("      Authentication timeout")
             return False
 
-    async def export_all(self) -> dict:
-        """Export all ZHA data including topology."""
+    async def export_all(self, rescan_ieee=None) -> dict:
+        """Export all ZHA data including topology.
+
+        If rescan_ieee is set, only that one device is actively rescanned (fast);
+        otherwise the full per-router active scan runs (when enabled).
+        """
         log(f"      Connecting to WebSocket: {self.ws_url}")
         try:
             async with aiohttp.ClientSession() as session:
@@ -143,7 +147,11 @@ class ZHAExporter:
 
                     log("      Connected and authenticated!")
 
-                    if USE_ZHA_TOOLKIT:
+                    if rescan_ieee:
+                        set_progress('scan', 0, 1, 'Rescanning router...')
+                        await self.scan_single_device(ws, rescan_ieee)
+                        set_progress('scan', 1, 1, 'Rescan complete')
+                    elif USE_ZHA_TOOLKIT:
                         log("[scan] Active topology scan via zha-toolkit (live router LQIs)...")
                         await self.run_active_scan(ws)
 
@@ -301,6 +309,33 @@ class ZHAExporter:
         set_progress('scan', total, total, f'Scan complete ({scanned}/{total} routers)')
         log(f"      Active scan complete: {scanned}/{total} routers responded")
         return scanned > 0
+
+    async def scan_single_device(self, ws, ieee) -> bool:
+        """Actively rescan one device's routes + neighbour tables via zha-toolkit.
+
+        Used by the per-router "Rescan this router" action. Resilient: any failure
+        just leaves that device on its cached data.
+        """
+        log(f"      Rescanning single device {ieee}...")
+        try:
+            result = await self.ws_command(
+                ws,
+                {
+                    "type": "call_service",
+                    "domain": "zha_toolkit",
+                    "service": "get_routes_and_neighbours",
+                    "service_data": {"ieee": ieee},
+                },
+                timeout=ZHA_TOOLKIT_PER_DEVICE_TIMEOUT,
+            )
+            if result.get("success"):
+                log("      Rescan complete - using fresh data for this device")
+                return True
+            log(f"      Rescan not confirmed ({result.get('error')}); using cached data")
+            return False
+        except Exception as e:
+            log(f"      Rescan failed ({e}); using cached data")
+            return False
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""
@@ -529,7 +564,7 @@ async def trigger_scan():
     return await exporter.trigger_topology_scan()
 
 
-async def export_data():
+async def export_data(rescan_ieee=None):
     """Export ZHA data and save to file."""
     log("=" * 60)
     log("Home Assistant ZHA Full Data Exporter")
@@ -538,7 +573,7 @@ async def export_data():
     exporter = ZHAExporter()
 
     try:
-        data = await exporter.export_all()
+        data = await exporter.export_all(rescan_ieee=rescan_ieee)
     except Exception as e:
         log(f"Error: {e}")
         raise

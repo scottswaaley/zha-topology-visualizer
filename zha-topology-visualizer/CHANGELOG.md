@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-06-28
+
+### Added
+- **"Rescan this router" button** in the device detail card (routers/coordinator only). It actively rescans just that one device via zha-toolkit (fast), then reloads with fresh routes/neighbour LQIs for it — no full network scan needed. Backed by a new `/rescan` endpoint.
+
+### Changed
+- **Clicking empty space now closes the detail card** (in addition to clearing the selection).
+
 ## [1.2.0] - 2026-06-28
 
 ### Added

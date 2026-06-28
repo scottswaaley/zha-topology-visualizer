@@ -73,24 +73,24 @@ def regenerate_html(force: bool = False) -> bool:
         return HTML_FILE.exists()
 
 
-def do_refresh() -> tuple:
-    """Perform data refresh and regenerate visualization."""
+def do_refresh(rescan_ieee=None) -> tuple:
+    """Perform a data refresh (or single-router rescan) and regenerate the view."""
     global last_refresh_time, is_refreshing, refresh_error
 
     with refresh_lock:
         is_refreshing = True
         refresh_error = None
-        set_progress('start', 0, 0, 'Starting refresh...')
+        set_progress('start', 0, 0, 'Rescanning router...' if rescan_ieee else 'Starting refresh...')
         try:
             log("=" * 50)
-            log("Starting data refresh...")
+            log(f"Starting rescan of {rescan_ieee}..." if rescan_ieee else "Starting data refresh...")
             log("=" * 50)
 
             # Export new data
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                json_file = loop.run_until_complete(export_data())
+                json_file = loop.run_until_complete(export_data(rescan_ieee=rescan_ieee))
             finally:
                 loop.close()
 
@@ -290,6 +290,8 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         try:
             if self.path == '/refresh':
                 self.handle_refresh()
+            elif self.path == '/rescan':
+                self.handle_rescan()
             elif self.path == '/scan':
                 self.handle_scan()
             elif self.path == '/regenerate':
@@ -397,6 +399,37 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
         self.wfile.write(b'Refresh started')
+
+    def handle_rescan(self):
+        """Handle a single-router rescan request (POST body: {"ieee": "..."})."""
+        if is_refreshing:
+            log("[Server] Rescan rejected - refresh already in progress")
+            self.send_response(202)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'Refresh already in progress')
+            return
+
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length).decode('utf-8') if length else '{}'
+            ieee = json.loads(body).get('ieee')
+        except Exception:
+            ieee = None
+
+        if not ieee:
+            self.send_response(400)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'Missing "ieee"')
+            return
+
+        log(f"[Server] Rescan requested for {ieee}")
+        threading.Thread(target=do_refresh, kwargs={'rescan_ieee': ieee}, daemon=True).start()
+        self.send_response(202)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Rescan started')
 
     def handle_scan(self):
         """Handle topology scan request (fire-and-forget).
