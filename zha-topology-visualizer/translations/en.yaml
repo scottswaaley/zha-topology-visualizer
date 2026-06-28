@@ -17,4 +17,5 @@ configuration:
     name: Active Scan Timeout
     description: >-
       Maximum seconds to wait for the active zha-toolkit scan to finish. Larger
-      networks with many routers need more time. Default is 180 seconds.
+      networks with many routers need more time (raise toward 600 if scans time
+      out). Default is 300 seconds.

@@ -35,7 +35,7 @@ WS_COMMAND_TIMEOUT = 30  # seconds per command
 # which updates zigpy's in-memory tables so the following zha/devices read returns
 # fresh, populated LQIs instead of the coordinator's stale cached snapshot.
 USE_ZHA_TOOLKIT = os.environ.get('USE_ZHA_TOOLKIT', 'true').lower() == 'true'
-ZHA_TOOLKIT_TIMEOUT = int(os.environ.get('ZHA_TOOLKIT_TIMEOUT', 180))  # seconds to wait for the active scan
+ZHA_TOOLKIT_TIMEOUT = int(os.environ.get('ZHA_TOOLKIT_TIMEOUT', 300))  # seconds to wait for the active scan
 
 # Set to True for debug output
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'

@@ -869,25 +869,55 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             stroke-opacity: 0.1;
         }}
 
+        /* Pinned corner card: fixed top-right so it never follows the cursor
+           and can never be clipped at the viewport edge. Scrolls if too tall. */
         .tooltip {{
-            position: absolute;
-            background: rgba(26, 26, 46, 0.95);
-            border: 1px solid #444;
+            position: fixed;
+            top: 148px;
+            right: 12px;
+            left: auto;
+            background: rgba(26, 26, 46, 0.97);
+            border: 1px solid #00d4ff;
             border-radius: 6px;
-            padding: 10px 14px;
+            padding: 10px 28px 10px 14px;
             font-size: 11px;
-            pointer-events: none;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            min-width: 280px;
-            max-width: min(450px, 90vw);
-            width: max-content;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+            width: 300px;
+            max-width: calc(100vw - 24px);
+            max-height: calc(100vh - 164px);
+            overflow-y: auto;
             opacity: 0;
-            transition: opacity 0.2s;
+            transform: translateX(8px);
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
         }}
         .tooltip.visible {{
             opacity: 1;
+            transform: translateX(0);
             pointer-events: auto;
+        }}
+        .tooltip .card-close {{
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }}
+        .tooltip .card-close:hover {{ color: #00d4ff; }}
+        /* On phones, pin to the bottom as a full-width card */
+        @media (max-width: 600px) {{
+            .tooltip {{
+                top: auto;
+                bottom: 8px;
+                left: 8px;
+                right: 8px;
+                width: auto;
+                max-width: none;
+                max-height: 45vh;
+            }}
         }}
         .tooltip div {{
             margin: 3px 0;
@@ -1848,38 +1878,19 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }});
 
         const tooltip = document.getElementById('tooltip');
-        let tooltipTimeout = null;
-        let currentTooltipPos = {{ x: 0, y: 0 }};
 
-        function showTooltip(content, x, y) {{
-            if (tooltipTimeout) {{
-                clearTimeout(tooltipTimeout);
-                tooltipTimeout = null;
-            }}
-            tooltip.innerHTML = content;
-            tooltip.style.left = (x + 15) + 'px';
-            tooltip.style.top = (y + 15) + 'px';
-            currentTooltipPos = {{ x: x + 15, y: y + 15 }};
+        // Pinned corner card: fixed top-right, updated on hover and on tap, with
+        // a close button. It never follows the cursor, so it can't be clipped.
+        function showCard(content) {{
+            tooltip.innerHTML = '<span class="card-close" onclick="hideCard()" title="Close">\\u00d7</span>' + content;
             tooltip.classList.add('visible');
         }}
 
-        function hideTooltip() {{
-            tooltipTimeout = setTimeout(() => {{
-                tooltip.classList.remove('visible');
-            }}, 100);
+        function hideCard() {{
+            tooltip.classList.remove('visible');
         }}
 
-        tooltip.addEventListener('mouseenter', () => {{
-            if (tooltipTimeout) {{
-                clearTimeout(tooltipTimeout);
-                tooltipTimeout = null;
-            }}
-        }});
-        tooltip.addEventListener('mouseleave', () => {{
-            hideTooltip();
-        }});
-
-        node.on('mouseenter', (event, d) => {{
+        function nodeDetailHtml(d) {{
             let parentInfo = 'None (Coordinator)';
             const sourceTypeLabels = {{
                 'route': 'Route table (confirmed)',
@@ -1974,17 +1985,14 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 ${{haDeviceUrl ? `<div style="margin-top:5px"><a href="${{haDeviceUrl}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}
                 <div style="color:#666;margin-top:5px;font-size:10px">Drag to move | Click to select</div>
             `;
-            showTooltip(content, event.pageX, event.pageY);
-        }})
-        .on('mousemove', (event) => {{
-            tooltip.style.left = (event.pageX + 15) + 'px';
-            tooltip.style.top = (event.pageY + 15) + 'px';
-        }})
-        .on('mouseleave', () => {{
-            hideTooltip();
-        }})
+            return content;
+        }}
+
+        // Hover (desktop) and tap (mobile) both populate the pinned card.
+        node.on('mouseenter', (event, d) => showCard(nodeDetailHtml(d)))
         .on('click', (event, d) => {{
             event.stopPropagation();
+            showCard(nodeDetailHtml(d));
             if (d.neighbors && d.neighbors.length > 0) {{
                 if (selectedNode && selectedNode.id === d.id) {{
                     clearSelection();

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-06-28
+
+### Changed
+- **Node details are now a pinned corner card** instead of a tooltip that follows the cursor — it sits fixed in the top-right (a bottom card on phones), scrolls if long, and **can no longer be clipped off-screen**. It updates on hover and on tap (so it finally works on touch devices), with a close button.
+- **Raised the active-scan timeout default** (`zha_toolkit_timeout`) from 180s to 300s, since larger networks (20+ routers) were timing out and silently falling back to cached link data. Raise toward 600 if scans still time out.
+
 ## [1.1.1] - 2026-06-28
 
 ### Fixed

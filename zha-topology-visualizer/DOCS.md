@@ -29,7 +29,7 @@ This add-on provides an interactive visualization of your Zigbee mesh network to
 |--------|---------|-------------|
 | `auto_refresh_minutes` | 0 | Minutes between automatic refreshes. Set to 0 to disable. |
 | `use_zha_toolkit` | true | Actively scan every router for live routes & neighbour LQIs via zha-toolkit on each refresh. Requires the zha-toolkit integration; falls back to cached data if unavailable. |
-| `zha_toolkit_timeout` | 180 | Max seconds to wait for the active scan. Increase for large networks. |
+| `zha_toolkit_timeout` | 300 | Max seconds to wait for the active scan. Increase (toward 600) for large networks that time out. |
 
 > **Optional dependency:** `use_zha_toolkit` needs the **zha-toolkit** custom
 > integration ([install via HACS](https://github.com/mdeweerd/zha-toolkit)).
