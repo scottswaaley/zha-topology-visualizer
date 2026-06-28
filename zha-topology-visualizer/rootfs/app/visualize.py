@@ -5,6 +5,7 @@ Adapted for Home Assistant Add-on environment.
 """
 
 import json
+import os
 import sys
 import yaml
 from pathlib import Path
@@ -2405,8 +2406,12 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 </html>
 '''
 
-    with open(output_file, 'w', encoding='utf-8') as f:
+    # Write atomically (temp file + rename) so a concurrent page load never
+    # reads a half-written topology.html.
+    tmp_file = f"{output_file}.tmp"
+    with open(tmp_file, 'w', encoding='utf-8') as f:
         f.write(html)
+    os.replace(tmp_file, output_file)
 
     return output_file
 

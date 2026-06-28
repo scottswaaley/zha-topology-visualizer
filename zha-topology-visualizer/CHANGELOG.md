@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-06-28
+
+### Fixed
+- **Page no longer hangs on load.** The web server is now multi-threaded (`ThreadingHTTPServer`), so a slow refresh/scan or page render no longer blocks other requests (status polls, health checks, other tabs).
+- **No more full rebuild on every page load.** `topology.html` is now regenerated only when the underlying export actually changes (mtime check); ordinary loads serve the cached file instantly.
+- **Atomic file writes.** `topology.html` and `positions.json` are written via a temp file + rename under a lock, so a page load can never read a half-written file (the intermittent "stuck loading, fixed by reload" bug).
+
 ## [1.1.0] - 2026-06-27
 
 ### Added

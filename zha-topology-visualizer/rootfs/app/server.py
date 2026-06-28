@@ -11,7 +11,7 @@ import threading
 import time
 import asyncio
 from datetime import datetime
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 # Import our modules
@@ -32,6 +32,9 @@ POSITIONS_FILE = DATA_DIR / 'positions.json'
 
 # Global state
 refresh_lock = threading.Lock()
+# Serializes HTML (re)generation so a page load and a background refresh can
+# never write topology.html at the same time.
+html_lock = threading.Lock()
 last_refresh_time = 0
 is_refreshing = False
 refresh_error = None
@@ -43,6 +46,31 @@ def read_options() -> dict:
         with open(OPTIONS_FILE) as f:
             return json.load(f)
     return {}
+
+
+def regenerate_html(force: bool = False) -> bool:
+    """Ensure topology.html reflects the latest export.
+
+    Only regenerates when the newest export is newer than the existing HTML (or
+    when forced), so ordinary page loads serve the cached file instead of
+    rebuilding the entire visualization on every request (the cause of the
+    single-threaded server stalling). Returns True if an HTML file is available
+    to serve.
+    """
+    latest = find_latest_export()
+    if not latest:
+        return HTML_FILE.exists()
+
+    with html_lock:
+        try:
+            export_mtime = os.path.getmtime(latest)
+        except OSError:
+            export_mtime = None
+        html_mtime = os.path.getmtime(HTML_FILE) if HTML_FILE.exists() else None
+
+        if force or html_mtime is None or (export_mtime is not None and export_mtime > html_mtime):
+            generate_visualization(latest)
+        return HTML_FILE.exists()
 
 
 def do_refresh() -> tuple:
@@ -65,11 +93,11 @@ def do_refresh() -> tuple:
             finally:
                 loop.close()
 
-            # Generate visualization
-            output_file = generate_visualization(json_file)
+            # Generate visualization (forced - we just produced a new export)
+            regenerate_html(force=True)
 
             last_refresh_time = time.time()
-            log(f"Refresh complete! Serving: {output_file}")
+            log(f"Refresh complete! Serving: {HTML_FILE}")
             is_refreshing = False
             return True, None
 
@@ -253,78 +281,49 @@ class VisualizationHandler(BaseHTTPRequestHandler):
         except ConnectionResetError:
             pass
 
+    def _send_html(self, content: str, status: int = 200, cache_control: str = None):
+        """Write an HTML response with a correct Content-Length."""
+        body = content.encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', len(body))
+        if cache_control:
+            self.send_header('Cache-Control', cache_control)
+        self.end_headers()
+        self.wfile.write(body)
+
     def serve_html(self):
-        """Serve the visualization HTML."""
+        """Serve the visualization HTML (cached; rebuilt only when data changes)."""
         try:
-            # If currently refreshing, show loading page
+            # If a refresh/scan is in progress, show the loading page
             if is_refreshing:
-                content = get_loading_page()
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', len(content.encode('utf-8')))
-                self.end_headers()
-                self.wfile.write(content.encode('utf-8'))
+                self._send_html(get_loading_page(), 200)
                 return
 
-            # If there was a refresh error, show error page
+            # Refresh error and nothing cached to fall back to
             if refresh_error and not HTML_FILE.exists():
-                content = get_error_page(refresh_error)
-                self.send_response(500)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', len(content.encode('utf-8')))
-                self.end_headers()
-                self.wfile.write(content.encode('utf-8'))
+                self._send_html(get_error_page(refresh_error), 500)
                 return
 
-            # If no HTML file exists yet, show loading and trigger refresh
-            if not HTML_FILE.exists():
-                # Check if we have cached data to regenerate from
-                latest = find_latest_export()
-                if latest:
-                    # Regenerate HTML from cached data
-                    try:
-                        generate_visualization(latest)
-                        log("[Server] Regenerated HTML from cached data")
-                    except Exception as e:
-                        log(f"[Server] Failed to regenerate: {e}")
+            # Rebuild only if the latest export is newer than the current HTML;
+            # otherwise this just serves the cached file (no per-request rebuild).
+            available = regenerate_html()
 
-                # If still no HTML, trigger full refresh
-                if not HTML_FILE.exists():
-                    content = get_loading_page()
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'text/html; charset=utf-8')
-                    self.send_header('Content-Length', len(content.encode('utf-8')))
-                    self.end_headers()
-                    self.wfile.write(content.encode('utf-8'))
+            if not available:
+                # No data yet: show loading and kick off a background refresh
+                self._send_html(get_loading_page(), 200)
+                if not is_refreshing:
+                    threading.Thread(target=do_refresh, daemon=True).start()
+                return
 
-                    # Trigger background refresh if not already running
-                    if not is_refreshing:
-                        thread = threading.Thread(target=do_refresh, daemon=True)
-                        thread.start()
-                    return
-
-            # Auto-regenerate HTML on each page load from cached data
-            # This ensures UI updates are reflected immediately after add-on updates
-            latest = find_latest_export()
-            if latest:
-                try:
-                    generate_visualization(latest)
-                except Exception as e:
-                    log(f"[Server] Auto-regenerate failed: {e}")
-
-            # Serve the visualization
             with open(HTML_FILE, 'r', encoding='utf-8') as f:
                 content = f.read()
-
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
-            self.send_header('Content-Length', len(content.encode('utf-8')))
-            self.send_header('Cache-Control', 'no-cache')
-            self.end_headers()
-            self.wfile.write(content.encode('utf-8'))
+            self._send_html(content, 200, cache_control='no-cache')
 
         except BrokenPipeError:
             pass  # Client disconnected
+        except ConnectionResetError:
+            pass  # Client reset connection (e.g. you hit Stop)
         except Exception as e:
             log(f"Error serving HTML: {e}")
             import traceback
@@ -430,7 +429,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b'No cached data found. Use full refresh first.')
                 return
 
-            generate_visualization(latest)
+            regenerate_html(force=True)
 
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
@@ -474,8 +473,11 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             # Ensure data directory exists
             DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-            with open(POSITIONS_FILE, 'w', encoding='utf-8') as f:
+            # Atomic write so a concurrent /positions read never sees a partial file
+            tmp_file = f"{POSITIONS_FILE}.tmp"
+            with open(tmp_file, 'w', encoding='utf-8') as f:
                 json.dump(positions, f, indent=2)
+            os.replace(tmp_file, POSITIONS_FILE)
 
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
@@ -521,7 +523,7 @@ def initial_refresh():
         log(f"Found existing export: {latest}")
         log("Generating visualization from existing data...")
         try:
-            generate_visualization(latest)
+            regenerate_html(force=True)
             log("Visualization generated successfully")
             return
         except Exception as e:
@@ -560,9 +562,12 @@ def main():
         )
         thread.start()
 
-    # Start HTTP server immediately
+    # Start HTTP server immediately. ThreadingHTTPServer handles requests
+    # concurrently so a slow refresh/scan or a page render no longer blocks
+    # other requests (health checks, status polls, other tabs).
     port = 8099
-    server = HTTPServer(('0.0.0.0', port), VisualizationHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', port), VisualizationHandler)
+    server.daemon_threads = True
 
     log("=" * 50)
     log(f"Server running on port {port}")
