@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2026-06-28
+
+### Fixed
+- **Version/UI now updates immediately after an add-on update.** 1.1.2's per-request page cache had a side effect: after updating the add-on, the old `topology.html` (from the previous version) survived in `/data` and kept being served, so the header showed the old version until a manual refresh. The visualization is now always regenerated on startup, so a new version applies on the first load. (Workaround on older builds: click "Regenerate UI" or "Refresh Data".)
+
 ## [1.1.2] - 2026-06-28
 
 ### Changed
