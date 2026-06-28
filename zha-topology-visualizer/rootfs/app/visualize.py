@@ -2313,6 +2313,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     await new Promise(r => setTimeout(r, pollInterval));
                     attempts++;
 
+                    let progressMsg = '';
                     try {{
                         const statusResponse = await fetch('/status');
                         if (statusResponse.ok) {{
@@ -2320,6 +2321,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
                             if (status.refresh_error) {{
                                 throw new Error(status.refresh_error);
+                            }}
+
+                            if (status.progress && status.progress.message) {{
+                                progressMsg = status.progress.message;
                             }}
 
                             if (!status.is_refreshing) {{
@@ -2332,8 +2337,12 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                         console.error('[Refresh] Poll error:', pollErr);
                     }}
 
-                    // Update button text with progress
-                    btn.textContent = `Refreshing (${{attempts}}s)`;
+                    // Show live progress (per-router scan count) when available
+                    if (progressMsg) {{
+                        btn.textContent = progressMsg.length > 38 ? progressMsg.slice(0, 37) + '\\u2026' : progressMsg;
+                    }} else {{
+                        btn.textContent = `Refreshing (${{attempts}}s)`;
+                    }}
                 }}
 
                 // Timeout

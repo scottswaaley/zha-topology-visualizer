@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-06-28
+
+### Added
+- **Live refresh progress.** The Refresh button and the loading page now show real progress (e.g. "Scanning Front Door (12/23)" → "Fetching device data…" → "Building visualization…"), polled from a new `progress` field on `/status`.
+
+### Changed
+- **Per-router active scan.** Instead of one bulk `all_routes_and_neighbours` call (all-or-nothing, which timed out on larger networks and discarded everything), the scan now queries each router individually via `get_routes_and_neighbours`. Benefits: real "X of N" progress, and a single slow/dead router just times out and is skipped (30s each, capped by `zha_toolkit_timeout`) instead of failing the whole scan — so routers that respond still get fresh LQIs.
+
 ## [1.1.3] - 2026-06-28
 
 ### Fixed

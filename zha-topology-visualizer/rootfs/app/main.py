@@ -9,6 +9,7 @@ import aiohttp
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,10 +36,19 @@ WS_COMMAND_TIMEOUT = 30  # seconds per command
 # which updates zigpy's in-memory tables so the following zha/devices read returns
 # fresh, populated LQIs instead of the coordinator's stale cached snapshot.
 USE_ZHA_TOOLKIT = os.environ.get('USE_ZHA_TOOLKIT', 'true').lower() == 'true'
-ZHA_TOOLKIT_TIMEOUT = int(os.environ.get('ZHA_TOOLKIT_TIMEOUT', 300))  # seconds to wait for the active scan
+ZHA_TOOLKIT_TIMEOUT = int(os.environ.get('ZHA_TOOLKIT_TIMEOUT', 300))  # overall budget for the active scan
+ZHA_TOOLKIT_PER_DEVICE_TIMEOUT = 30  # seconds to wait per router during the active scan
 
 # Set to True for debug output
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
+
+# Refresh progress, polled by the server's /status endpoint for the UI.
+# Mutated in place so the server's imported reference always sees updates.
+PROGRESS = {"phase": "idle", "current": 0, "total": 0, "message": ""}
+
+
+def set_progress(phase: str, current: int, total: int, message: str):
+    PROGRESS.update(phase=phase, current=current, total=total, message=message)
 
 
 class ZHAExporter:
@@ -137,6 +147,7 @@ class ZHAExporter:
                         log("[scan] Active topology scan via zha-toolkit (live router LQIs)...")
                         await self.run_active_scan(ws)
 
+                    set_progress('fetch', 0, 0, 'Fetching device data...')
                     log("[1/7] Fetching ZHA devices with neighbor data...")
                     devices = await self.get_devices(ws)
                     log(f"      Found {len(devices)} devices")
@@ -233,39 +244,63 @@ class ZHAExporter:
             raise
 
     async def run_active_scan(self, ws) -> bool:
-        """Actively scan every router's route + neighbour tables via zha-toolkit.
+        """Actively scan each router's routes + neighbour tables via zha-toolkit.
 
-        Calls the zha_toolkit.all_routes_and_neighbours service, which performs a
-        live Mgmt_Rtg_req / Mgmt_Lqi_req against each router. This refreshes
-        zigpy's in-memory tables, so the zha/devices read that follows returns
-        current, populated LQIs rather than the coordinator's stale cached view.
+        Iterates per-router (zha_toolkit.get_routes_and_neighbours) instead of one
+        bulk all_routes_and_neighbours call. This lets us (a) report "X of N"
+        progress and (b) survive a single slow/dead router (it just times out and
+        we move on) instead of the whole scan failing wholesale. Each successful
+        per-router scan refreshes zigpy's in-memory tables, so the zha/devices read
+        that follows returns fresh, populated LQIs.
 
-        This is resilient: if zha-toolkit is not installed, the service errors, or
-        the scan times out, we log a warning and fall back to whatever cached
-        neighbour data ZHA already has (the previous behaviour).
+        Resilient: if zha-toolkit is missing or a device fails, we keep going and
+        fall back to whatever cached neighbour data ZHA already has.
         """
         try:
-            result = await self.ws_command(
-                ws,
-                {
-                    "type": "call_service",
-                    "domain": "zha_toolkit",
-                    "service": "all_routes_and_neighbours",
-                    "service_data": {},
-                },
-                timeout=ZHA_TOOLKIT_TIMEOUT,
-            )
-            if result.get("success"):
-                log("      Active scan complete - using fresh neighbour/route data")
-                return True
-            log(f"      Active scan not confirmed (falling back to cached data): {result.get('error')}")
-            return False
-        except asyncio.TimeoutError:
-            log(f"      Active scan timed out after {ZHA_TOOLKIT_TIMEOUT}s (falling back to cached data)")
-            return False
+            devices = await self.get_devices(ws)
         except Exception as e:
-            log(f"      Active scan failed (falling back to cached data): {e}")
+            log(f"      Active scan skipped (could not list devices): {e}")
             return False
+
+        targets = [d for d in devices
+                   if d.get('device_type') in ('Router', 'Coordinator') and d.get('ieee')]
+        total = len(targets)
+        if total == 0:
+            log("      Active scan: no routers to scan")
+            return False
+
+        log(f"      Active scan: querying {total} routers (per-router)...")
+        set_progress('scan', 0, total, f'Scanning routers 0/{total}')
+        scanned = 0
+        start = time.monotonic()
+        for i, dev in enumerate(targets, 1):
+            if time.monotonic() - start > ZHA_TOOLKIT_TIMEOUT:
+                log(f"      Scan budget ({ZHA_TOOLKIT_TIMEOUT}s) reached; stopping at {i - 1}/{total}")
+                break
+            ieee = dev.get('ieee')
+            name = dev.get('user_given_name') or dev.get('name') or ieee
+            set_progress('scan', i - 1, total, f'Scanning {name} ({i}/{total})')
+            try:
+                result = await self.ws_command(
+                    ws,
+                    {
+                        "type": "call_service",
+                        "domain": "zha_toolkit",
+                        "service": "get_routes_and_neighbours",
+                        "service_data": {"ieee": ieee},
+                    },
+                    timeout=ZHA_TOOLKIT_PER_DEVICE_TIMEOUT,
+                )
+                if result.get("success"):
+                    scanned += 1
+                else:
+                    log(f"      Scan incomplete for {name} ({result.get('error')}); continuing")
+            except Exception as e:
+                log(f"      Scan failed for {name}: {e}; continuing")
+
+        set_progress('scan', total, total, f'Scan complete ({scanned}/{total} routers)')
+        log(f"      Active scan complete: {scanned}/{total} routers responded")
+        return scanned > 0
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""

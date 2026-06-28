@@ -15,7 +15,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 # Import our modules
-from main import export_data, trigger_scan
+from main import export_data, trigger_scan, PROGRESS, set_progress
 from visualize import generate_visualization, find_latest_export
 
 
@@ -80,6 +80,7 @@ def do_refresh() -> tuple:
     with refresh_lock:
         is_refreshing = True
         refresh_error = None
+        set_progress('start', 0, 0, 'Starting refresh...')
         try:
             log("=" * 50)
             log("Starting data refresh...")
@@ -94,10 +95,12 @@ def do_refresh() -> tuple:
                 loop.close()
 
             # Generate visualization (forced - we just produced a new export)
+            set_progress('render', 0, 0, 'Building visualization...')
             regenerate_html(force=True)
 
             last_refresh_time = time.time()
             log(f"Refresh complete! Serving: {HTML_FILE}")
+            set_progress('done', 0, 0, 'Done')
             is_refreshing = False
             return True, None
 
@@ -107,6 +110,7 @@ def do_refresh() -> tuple:
             import traceback
             traceback.print_exc()
             refresh_error = error_msg
+            set_progress('error', 0, 0, f'Failed: {error_msg}')
             is_refreshing = False
             return False, error_msg
 
@@ -119,7 +123,6 @@ def get_loading_page():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHA Network Topology - Loading</title>
-    <meta http-equiv="refresh" content="5">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -168,9 +171,28 @@ def get_loading_page():
     <div class="container">
         <h1>ZHA Network Topology</h1>
         <div class="spinner"></div>
-        <p class="status">Fetching Zigbee network data...</p>
-        <p class="note">This may take 1-2 minutes for the initial topology scan.<br>This page will automatically refresh.</p>
+        <p class="status" id="status">Fetching Zigbee network data...</p>
+        <p class="note">The active topology scan can take a few minutes on larger networks.<br>This page updates automatically.</p>
     </div>
+    <script>
+        async function poll() {
+            try {
+                const r = await fetch('/status');
+                if (r.ok) {
+                    const s = await r.json();
+                    if (s.progress && s.progress.message) {
+                        document.getElementById('status').textContent = s.progress.message;
+                    }
+                    if (s.refresh_error || (!s.is_refreshing && s.html_exists)) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+            } catch (e) {}
+            setTimeout(poll, 1500);
+        }
+        poll();
+    </script>
 </body>
 </html>'''
 
@@ -344,6 +366,7 @@ class VisualizationHandler(BaseHTTPRequestHandler):
             'last_refresh': last_refresh_time,
             'html_exists': HTML_FILE.exists(),
             'refresh_error': refresh_error,
+            'progress': dict(PROGRESS),
             'options': read_options()
         }
 
