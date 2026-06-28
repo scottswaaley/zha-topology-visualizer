@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-06-28
+
+### Changed
+- **LQI color bands recalibrated for TI Z-Stack.** The coordinator (a TI CC2652) computes LQI on a compressed scale that rarely exceeds ~110, so the generic 150/100/50 bands left most devices stuck in "fair" amber with the "excellent" green band unreachable. New bands — validated against the live network's full device-LQI distribution (range 18–105, mean 73, max 105) — are: **90+ excellent, 65+ good, 45+ fair, <45 weak**. Applies to the device badge, link colors, link thickness, and the legend. (Note: device LQI is measured by the coordinator, so this scaling applies to every device regardless of make.)
+
 ## [1.3.0] - 2026-06-28
 
 ### Added

@@ -1046,11 +1046,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div> Coordinator</div>
             <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> Router</div>
             <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> End Device</div>
-            <span class="legend-group" style="margin-left:12px">Signal <span style="color:#666;font-weight:normal">(badge &amp; links = last hop to coordinator)</span>:</span>
-            <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div> 150+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> 100+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> 50+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> &lt;50</div>
+            <span class="legend-group" style="margin-left:12px">Signal <span style="color:#666;font-weight:normal">(TI LQI; badge &amp; links = last hop to coordinator)</span>:</span>
+            <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div> 90+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> 65+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> 45+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> &lt;45</div>
             <div class="legend-item"><div class="legend-color" style="background:#888"></div> not reported</div>
             <span class="legend-group" style="margin-left:12px">Connection:</span>
             <div class="legend-item clickable" data-link-type="route" title="Parent from the route table (most authoritative)"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route (confirmed)</div>
@@ -1467,11 +1467,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 
         function getLqiColor(lqi) {{
+            // Bands calibrated for TI Z-Stack, where LQI is compressed and rarely
+            // exceeds ~110 even on strong links (this network's observed max ~105).
             if (lqi === null || lqi === undefined) return '#888';
-            if (lqi >= 150) return '#4CAF50';
-            if (lqi >= 100) return '#8BC34A';
-            if (lqi >= 50) return '#FFC107';
-            return '#F44336';
+            if (lqi >= 90) return '#4CAF50';   // excellent
+            if (lqi >= 65) return '#8BC34A';   // good
+            if (lqi >= 45) return '#FFC107';   // fair
+            return '#F44336';                  // weak
         }}
 
         function getNodeRadius(d) {{
@@ -1725,9 +1727,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .attr('stroke', d => getSourceTypeColor(d.source_type))
             .attr('stroke-width', d => {{
                 if (d.lqi == null) return 1.5;  // unknown quality - de-emphasized
-                if (d.lqi >= 150) return 3;
-                if (d.lqi >= 100) return 2.5;
-                if (d.lqi >= 50) return 2;
+                if (d.lqi >= 90) return 3;
+                if (d.lqi >= 65) return 2.5;
+                if (d.lqi >= 45) return 2;
                 return 1.5;
             }})
             .attr('stroke-dasharray', d => {{
