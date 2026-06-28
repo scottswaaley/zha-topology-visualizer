@@ -40,11 +40,35 @@ def load_topology(json_file: str) -> dict:
     return data
 
 
+def _parse_nwk(nwk_val):
+    """Normalize a ZHA NWK value (hex string '0x1234', int, or None) to an int.
+
+    ZHA serializes nwk as a hex string, but route next_hop/dest_nwk comparisons
+    need integers. Keeping both forms consistent is what makes route-based parent
+    resolution work for multi-hop devices.
+    """
+    if nwk_val is None:
+        return None
+    if isinstance(nwk_val, int):
+        return nwk_val
+    if isinstance(nwk_val, str):
+        try:
+            return int(nwk_val, 16) if nwk_val.lower().startswith('0x') else int(nwk_val)
+        except ValueError:
+            return None
+    return None
+
+
 def build_hierarchy(data: dict) -> dict:
-    """Build a hierarchical tree structure from the topology data."""
+    """Extract the coordinator, node map and device map used by the visualizer.
+
+    The rendered graph's parent/child structure is computed entirely in
+    generate_html() via the device_primary_link cascade (route -> parent ->
+    child-from-others -> best-neighbour -> fallback). This function only locates
+    the coordinator and exposes the node/device lookups it needs.
+    """
     topology = data.get('topology', {})
     nodes = {n['id']: n for n in topology.get('nodes', [])}
-    edges = topology.get('edges', [])
     devices = {d.get('ieee'): d for d in data.get('devices', [])}
 
     coordinator = None
@@ -57,116 +81,9 @@ def build_hierarchy(data: dict) -> dict:
         print("Warning: No coordinator found in topology")
         return {}
 
-    children = defaultdict(list)
-    assigned = set()
-    assigned.add(coordinator['id'])
-
-    # Use minimum LQI across both directions for conservative tree decisions
-    best_link = {}
-    for edge in edges:
-        src, tgt = edge['source'], edge['target']
-        lqi = edge.get('lqi', 0) or 0
-        key = tuple(sorted([src, tgt]))
-        if key not in best_link:
-            best_link[key] = lqi
-        else:
-            best_link[key] = min(best_link[key], lqi)
-
-    def get_link_lqi(id1, id2):
-        key = tuple(sorted([id1, id2]))
-        return best_link.get(key, 0)
-
-    router_parents = {}
-    for edge in edges:
-        source_id = edge['source']
-        target_id = edge['target']
-        relationship = edge.get('relationship')
-        lqi = edge.get('lqi', 0) or 0
-        source_node = nodes.get(source_id)
-        target_node = nodes.get(target_id)
-
-        if relationship == 'Parent':
-            if source_node and source_node.get('device_type') == 'Router':
-                if source_id not in router_parents or lqi > router_parents[source_id][1]:
-                    router_parents[source_id] = (target_id, lqi)
-
-        if relationship == 'Child':
-            if target_node and target_node.get('device_type') == 'Router':
-                if source_node and source_node.get('device_type') in ('Router', 'Coordinator'):
-                    if target_id not in router_parents or lqi > router_parents[target_id][1]:
-                        router_parents[target_id] = (source_id, lqi)
-
-    routers = [n for n in nodes.values() if n.get('device_type') == 'Router']
-    for router in routers:
-        rid = router['id']
-        if rid in router_parents:
-            parent_id, lqi = router_parents[rid]
-            children[parent_id].append((rid, lqi if lqi > 0 else None))
-        else:
-            lqi = get_link_lqi(coordinator['id'], rid)
-            children[coordinator['id']].append((rid, lqi if lqi > 0 else None))
-        assigned.add(rid)
-
-    end_device_parent = {}
-    for edge in edges:
-        source_id = edge['source']
-        target_id = edge['target']
-        relationship = edge.get('relationship', '')
-        lqi = edge.get('lqi', 0) or 0
-
-        source_node = nodes.get(source_id)
-        target_node = nodes.get(target_id)
-
-        if relationship == 'Child':
-            if source_node and target_node:
-                if source_node.get('device_type') in ('Router', 'Coordinator') and \
-                   target_node.get('device_type') == 'EndDevice':
-                    if target_id not in end_device_parent or lqi > end_device_parent[target_id][1]:
-                        end_device_parent[target_id] = (source_id, lqi)
-
-    end_devices = [n for n in nodes.values() if n.get('device_type') == 'EndDevice']
-    for device in end_devices:
-        did = device['id']
-        if did in assigned:
-            continue
-
-        if did in end_device_parent:
-            parent_id, lqi = end_device_parent[did]
-            children[parent_id].append((did, lqi if lqi > 0 else None))
-            assigned.add(did)
-            continue
-
-        best_lqi = 0
-        best_parent_id = coordinator['id']
-
-        for edge in edges:
-            if edge['source'] == did or edge['target'] == did:
-                other_id = edge['target'] if edge['source'] == did else edge['source']
-                other_node = nodes.get(other_id)
-                if other_node and other_node.get('device_type') in ('Router', 'Coordinator'):
-                    lqi = edge.get('lqi', 0) or 0
-                    if lqi > best_lqi:
-                        best_lqi = lqi
-                        best_parent_id = other_id
-
-        children[best_parent_id].append((did, best_lqi if best_lqi > 0 else None))
-        assigned.add(did)
-
-    for node in nodes.values():
-        if node['id'] not in assigned:
-            children[coordinator['id']].append((node['id'], None))
-            assigned.add(node['id'])
-
-    for parent_id in children:
-        children[parent_id].sort(key=lambda x: (
-            0 if nodes.get(x[0], {}).get('device_type') == 'Router' else 1,
-            -(x[1] or 0)
-        ))
-
     return {
         'coordinator': coordinator,
         'nodes': nodes,
-        'children': dict(children),
         'devices': devices
     }
 
@@ -189,6 +106,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
     # Step 1: Build device_id -> IEEE map from device registry
     device_id_to_ieee = {}
+    ieee_to_device_reg_id = {}  # reverse map so the "Open in Home Assistant" link works
     device_registry = data.get('device_registry', [])
     for dev in device_registry:
         device_id = dev.get('id')
@@ -197,6 +115,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             if isinstance(ident, (list, tuple)) and len(ident) >= 2:
                 if ident[0] == 'zha':
                     device_id_to_ieee[device_id] = ident[1]
+                    if device_id:
+                        ieee_to_device_reg_id[ident[1]] = device_id
                     break
     print(f"[Visualize] Device registry: {len(device_registry)} devices, {len(device_id_to_ieee)} with IEEE")
 
@@ -238,36 +158,33 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             })
     print(f"[Visualize] Mapped {entities_mapped} entities to {len(ieee_to_entities)} devices")
 
+    # Key by BOTH the raw nwk and its normalized int form. Route resolution looks
+    # up next_hop as an int; without the int key every multi-hop next_hop missed
+    # and the authoritative 'route' parent was silently never assigned.
     nwk_to_ieee = {}
     for ieee, device in devices.items():
         nwk = device.get('nwk')
-        if nwk:
+        if nwk is not None and nwk != '':
             nwk_to_ieee[nwk] = ieee
+            nwk_int = _parse_nwk(nwk)
+            if nwk_int is not None:
+                nwk_to_ieee[nwk_int] = ieee
 
     # Build directional LQI lookup: (source_ieee, target_ieee) -> lqi
-    # Source is the reporting device, target is the neighbor it reported
+    # Source is the reporting device, target is the neighbor it reported.
+    # Preserve None for "not reported" so unknown links aren't shown as weak.
     topology = data.get('topology', {})
     directional_lqi = {}
     for edge in topology.get('edges', []):
         src = edge.get('source')
         tgt = edge.get('target')
-        lqi = edge.get('lqi', 0) or 0
+        lqi = edge.get('lqi')
         if src and tgt:
-            directional_lqi[(src, tgt)] = lqi
+            directional_lqi[(src, tgt)] = lqi if lqi else None
 
     device_primary_link = {}
 
-    def nwk_to_int(nwk_val):
-        if nwk_val is None:
-            return None
-        if isinstance(nwk_val, int):
-            return nwk_val
-        if isinstance(nwk_val, str):
-            try:
-                return int(nwk_val, 16) if nwk_val.startswith('0x') else int(nwk_val)
-            except ValueError:
-                return None
-        return None
+    nwk_to_int = _parse_nwk
 
     valid_route_statuses = {'Active', 'Validation_Underway'}
     coordinator_id = hierarchy['coordinator']['id']
@@ -310,7 +227,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         if coord_route:
             device_primary_link[ieee] = {
                 'target': coord_route[0],
-                'lqi': coord_route[1],
+                'lqi': coord_route[1] or None,
                 'source_type': 'route'
             }
 
@@ -333,7 +250,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                         lqi = 0
                     device_primary_link[ieee] = {
                         'target': parent_ieee,
-                        'lqi': lqi,
+                        'lqi': lqi or None,
                         'source_type': 'parent'
                     }
                     break
@@ -370,7 +287,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         if best_parent:
             device_primary_link[ieee] = {
                 'target': best_parent,
-                'lqi': best_lqi,
+                'lqi': best_lqi if best_lqi > 0 else None,
                 'source_type': 'parent'
             }
 
@@ -413,12 +330,14 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     best_neighbor = n_ieee
 
         if best_neighbor:
-            # End devices using "best neighbor" are inferred - no confirmed parent
-            source_type = 'inferred' if device_type == 'EndDevice' else 'neighbor'
+            # "Best neighbour" is a guess (strongest signal, no reported parent
+            # relationship) for ANY device type - routers included. Mark it
+            # inferred so the displayed backbone never looks more certain than it
+            # is, instead of giving routers a confident solid link.
             device_primary_link[ieee] = {
                 'target': best_neighbor,
-                'lqi': best_lqi,
-                'source_type': source_type
+                'lqi': best_lqi if best_lqi > 0 else None,
+                'source_type': 'inferred'
             }
 
     coordinator_id = hierarchy['coordinator']['id']
@@ -435,15 +354,21 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         parent_ieee = link_info['target']
         parent_node = nodes.get(parent_ieee)
         parent_name = parent_node.get('name', parent_ieee) if parent_node else parent_ieee
-        # Reverse LQI: how does the parent see this child?
-        reverse_lqi = directional_lqi.get((parent_ieee, ieee))
+        # Two independent directional measurements (each measured at the receiver,
+        # each may be None = "not reported"):
+        #   forward  child -> parent : how the PARENT hears the child
+        #   reverse  parent -> child : how the CHILD hears the parent
+        # Looking both up from directional_lqi avoids showing one measurement as
+        # if it were both directions (the case for inferred end-device links).
+        lqi_fwd = directional_lqi.get((parent_ieee, ieee))
+        lqi_rev = directional_lqi.get((ieee, parent_ieee))
         # Source last_seen: when was the reporting device last heard from?
         reporting_device = devices.get(ieee, {})
         child_to_parents[ieee].append({
             'id': parent_ieee,
             'name': parent_name,
-            'lqi': link_info['lqi'],
-            'lqi_reverse': reverse_lqi,
+            'lqi': lqi_fwd,
+            'lqi_reverse': lqi_rev,
             'source_type': link_info['source_type'],
             'source_last_seen': reporting_device.get('last_seen')
         })
@@ -455,22 +380,24 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         for n in neighbors:
             neighbor_list.append({
                 'ieee': n.get('ieee', ''),
-                'lqi': int(n.get('lqi', 0)) if n.get('lqi') else 0,
+                # 0/missing = "not reported" on TI Z-Stack, kept as None so the
+                # neighbour overlay shows "unknown" instead of a red zero.
+                'lqi': int(n.get('lqi')) if n.get('lqi') else None,
                 'relationship': n.get('relationship', 'Unknown'),
                 'device_type': n.get('device_type', 'Unknown')
             })
 
-        device_reg_id = device.get('device_reg_id', '')
+        # Prefer the device-registry id (authoritative) so the "Open in Home
+        # Assistant" deep link resolves; fall back to anything on the device.
+        device_reg_id = ieee_to_device_reg_id.get(node_id) or device.get('device_reg_id', '')
 
         # Get nwk address
         nwk = device.get('nwk', '')
 
-        # Get depth from neighbors (depth is reported by the device's parent)
-        depth = None
-        for n in neighbors:
-            if n.get('depth') is not None:
-                depth = n.get('depth')
-                break
+        # Power source (Mains / Battery / Unknown): distinguishes always-on
+        # routers from sleepy battery devices, which explains many unreported LQIs.
+        power_source = device.get('power_source') or ''
+        is_mains = ('main' in power_source.lower()) if power_source else None
 
         # Get entity names associated with this device from the ieee_to_entities map
         device_entities = ieee_to_entities.get(node_id, [])
@@ -505,22 +432,26 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'parents': child_to_parents.get(node_id, []),
             'device_reg_id': device_reg_id,
             'nwk': nwk,
-            'depth': depth,
+            'power_source': power_source,
+            'is_mains': is_mains,
             'entity_names': entity_names,
             'entity_details': entity_details
         })
 
     for ieee, link_info in device_primary_link.items():
         parent_ieee = link_info['target']
-        # Reverse LQI: how does the parent see this child?
-        reverse_lqi = directional_lqi.get((parent_ieee, ieee))
+        lqi_fwd = directional_lqi.get((parent_ieee, ieee))
+        lqi_rev = directional_lqi.get((ieee, parent_ieee))
+        # Representative LQI for stroke-width: a real measured direction if any
+        # exists, else None ("not reported") so the link isn't drawn as weak.
+        link_lqi = lqi_fwd if lqi_fwd is not None else lqi_rev
         # Source last_seen: when was the reporting device last heard from?
         reporting_device = devices.get(ieee, {})
         d3_links.append({
             'source': parent_ieee,
             'target': ieee,
-            'lqi': link_info['lqi'],
-            'lqi_reverse': reverse_lqi,
+            'lqi': link_lqi,
+            'lqi_reverse': lqi_rev,
             'type': 'primary',
             'source_type': link_info['source_type'],
             'source_last_seen': reporting_device.get('last_seen')
@@ -591,10 +522,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         node['path_to_coordinator'] = device_paths.get(node['id'], [])
 
     export_timestamp = data.get('export_timestamp', '')
+    data_fetched_str = export_timestamp[:19].replace('T', ' ') if export_timestamp else 'N/A'
     nodes_data = hierarchy['nodes']
     total = len(nodes_data)
     routers = sum(1 for n in nodes_data.values() if n.get('device_type') == 'Router')
     end_devices = sum(1 for n in nodes_data.values() if n.get('device_type') == 'EndDevice')
+
+    # Network channel for the health line (from zha/network/settings)
+    channel = data.get('network_settings', {}).get('network_info', {}).get('channel')
+    channel_html = (f'<span style="color:#888">Channel: {channel}</span>'
+                    if channel not in (None, 'N/A', '') else '')
 
     coordinator_id = hierarchy['coordinator']['id']
     storage_key = f"zha_topology_{coordinator_id[:8]}"
@@ -681,6 +618,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             display: flex;
             align-items: center;
             gap: 4px;
+        }}
+        .legend-group {{
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #aaa;
+            font-weight: 600;
         }}
         .legend-item.clickable {{
             cursor: pointer;
@@ -870,6 +814,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             stroke-opacity: 0.4;
         }}
 
+        /* "Unknown" attachment (fallback): dashed + faint so it never reads as a
+           confirmed direct connection to the coordinator. */
+        .link.primary.fallback {{
+            stroke-dasharray: 2, 3;
+            stroke-opacity: 0.35;
+        }}
+
         .link.sibling.highlighted {{
             stroke-opacity: 0.8;
         }}
@@ -1054,24 +1005,29 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <span>Coordinator: 1</span>
             <span>Routers: {routers}</span>
             <span>End Devices: {end_devices}</span>
-            <span id="dataAge" style="color:#666">Data as of: {export_timestamp[:19].replace('T', ' ') if export_timestamp else 'N/A'}</span>
-            <span id="oldestSeen" style="color:#888" title="Oldest device last_seen timestamp - indicates stalest neighbor data"></span>
+            {channel_html}
+            <span id="dataAge" style="color:#666" title="When this data was fetched from ZHA">Data fetched: {data_fetched_str}</span>
+            <span id="oldestSeen" style="color:#888" title="Oldest device last_seen - the stalest data in this view"></span>
+            <span id="healthSummary" style="color:#FFC107" title="Network health: weak / offline / unknown-attachment devices"></span>
         </div>
         <div class="legend">
+            <span class="legend-group">Device:</span>
             <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div> Coordinator</div>
             <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> Router</div>
             <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> End Device</div>
-            <div class="legend-item" style="margin-left:15px"><div class="legend-color" style="background:#4CAF50"></div> LQI 150+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> LQI 100+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> LQI 50+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> LQI &lt;50</div>
-            <div class="legend-item clickable" data-link-type="route" style="margin-left:15px"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route</div>
-            <div class="legend-item clickable" data-link-type="parent"><div class="legend-line" style="width:20px;height:3px;background:#8BC34A;margin-right:5px"></div> Parent</div>
-            <div class="legend-item clickable" data-link-type="neighbor"><div class="legend-line" style="width:20px;height:3px;background:#FFC107;margin-right:5px"></div> Neighbor</div>
-            <div class="legend-item clickable" data-link-type="inferred"><div class="legend-line" style="width:20px;border-top:2px dashed #FF9800;margin-right:5px"></div> Inferred</div>
-            <div class="legend-item clickable" data-link-type="fallback"><div class="legend-line" style="width:20px;height:3px;background:#666;margin-right:5px"></div> Fallback</div>
+            <span class="legend-group" style="margin-left:12px">Signal <span style="color:#666;font-weight:normal">(badge &amp; links = last hop to coordinator)</span>:</span>
+            <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div> 150+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> 100+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> 50+</div>
+            <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> &lt;50</div>
+            <div class="legend-item"><div class="legend-color" style="background:#888"></div> not reported</div>
+            <span class="legend-group" style="margin-left:12px">Connection:</span>
+            <div class="legend-item clickable" data-link-type="route" title="Parent from the route table (most authoritative)"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route (confirmed)</div>
+            <div class="legend-item clickable" data-link-type="parent" title="Parent from a reported Parent/Child relationship"><div class="legend-line" style="width:20px;height:3px;background:#8BC34A;margin-right:5px"></div> Parent (confirmed)</div>
+            <div class="legend-item clickable" data-link-type="inferred" title="Best guess from signal strength - no reported relationship"><div class="legend-line" style="width:20px;border-top:2px dashed #FF9800;margin-right:5px"></div> Estimated</div>
+            <div class="legend-item clickable" data-link-type="fallback" title="Attachment unknown - shown at the coordinator for layout only"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px"></div> Unknown</div>
             <div class="legend-item clickable disabled" data-link-type="sibling"><div class="legend-line" style="width:20px;border-top:2px dashed #888;margin-right:5px"></div> Sibling</div>
-            <div class="legend-item" style="margin-left:15px"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px;opacity:0.5"></div> Stale (&gt;24h)</div>
+            <div class="legend-item"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px;opacity:0.5"></div> Stale (&gt;24h)</div>
         </div>
         <div class="controls">
             <div class="search-container">
@@ -1079,8 +1035,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <button class="clear-search" id="clearSearch" onclick="clearSearch()">&times;</button>
                 <span class="search-count" id="searchCount"></span>
             </div>
-            <button onclick="refreshData()" id="refreshBtn" title="Fetch latest data from ZHA (uses cached neighbor tables)">Refresh Data</button>
-            <button onclick="scanNetwork()" id="scanBtn" title="Full network scan - queries all routers for neighbor tables (takes several minutes)">Scan Network</button>
+            <button onclick="refreshData()" id="refreshBtn" title="Re-measure the network: actively scans every router for fresh routes &amp; neighbour LQIs via zha-toolkit, then reloads (takes 1-5 min)">Refresh Data</button>
+            <button onclick="scanNetwork()" id="scanBtn" title="Ask ZHA to rebuild its own topology (zha/network/update_topology). Usually unnecessary now - Refresh already scans actively.">Scan Network</button>
             <button onclick="regenerateUI()" id="regenBtn" title="Regenerate UI from cached data (fast)">Regenerate UI</button>
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
@@ -1169,7 +1125,30 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             else relativeTime = `${{diffDays}} day${{diffDays !== 1 ? 's' : ''}} ago`;
 
             const dateStr = exportTime.toLocaleString();
-            document.getElementById('dataAge').textContent = `Data as of: ${{dateStr}} (${{relativeTime}})`;
+            document.getElementById('dataAge').textContent = `Data fetched: ${{dateStr}} (${{relativeTime}})`;
+        }}
+
+        function updateHealthSummary() {{
+            const el = document.getElementById('healthSummary');
+            if (!el) return;
+            const weak = nodesData.filter(n => !n.is_coordinator && n.lqi != null && n.lqi < 50).length;
+            const offline = nodesData.filter(n => n.available === false).length;
+            const unknown = nodesData.filter(n => n.parents && n.parents.length && n.parents[0].source_type === 'fallback').length;
+            const estimated = nodesData.filter(n => n.parents && n.parents.length && n.parents[0].source_type === 'inferred').length;
+            if (weak === 0 && offline === 0 && unknown === 0) {{
+                el.style.color = '#4CAF50';
+                el.textContent = '\\u2713 No issues';
+                el.title = 'No weak, offline, or unknown-attachment devices';
+                return;
+            }}
+            const parts = [];
+            if (weak) parts.push(`${{weak}} weak`);
+            if (offline) parts.push(`${{offline}} offline`);
+            if (unknown) parts.push(`${{unknown}} unknown link`);
+            el.style.color = (offline || weak) ? '#F44336' : '#FFC107';
+            el.textContent = '\\u26a0 ' + parts.join(' \\u00b7 ');
+            el.title = `Weak (device LQI<50 to coordinator): ${{weak}}  |  Offline: ${{offline}}  |  `
+                + `Unknown attachment: ${{unknown}}  |  Estimated attachment: ${{estimated}}`;
         }}
 
         function updateOldestSeen() {{
@@ -1221,6 +1200,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             // Update data age display
             updateDataAge();
             updateOldestSeen();
+            updateHealthSummary();
             // Update every minute
             setInterval(updateDataAge, 60000);
             setInterval(updateOldestSeen, 60000);
@@ -1713,7 +1693,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .attr('class', d => `link primary ${{d.source_type}}`)
             .attr('stroke', d => getSourceTypeColor(d.source_type))
             .attr('stroke-width', d => {{
-                if (!d.lqi) return 2;
+                if (d.lqi == null) return 1.5;  // unknown quality - de-emphasized
                 if (d.lqi >= 150) return 3;
                 if (d.lqi >= 100) return 2.5;
                 if (d.lqi >= 50) return 2;
@@ -1901,11 +1881,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         node.on('mouseenter', (event, d) => {{
             let parentInfo = 'None (Coordinator)';
             const sourceTypeLabels = {{
-                'route': 'Route Table',
-                'parent': 'Parent Relationship',
-                'neighbor': 'Strongest Neighbor',
-                'inferred': 'Inferred (actual parent unknown)',
-                'fallback': 'No connection data',
+                'route': 'Route table (confirmed)',
+                'parent': 'Parent relationship (confirmed)',
+                'neighbor': 'Strongest neighbour',
+                'inferred': 'Estimated (strongest signal, no reported parent)',
+                'fallback': 'Unknown (no connection data)',
                 'sibling': 'Sibling'
             }};
             const sourceTypeColors = {{
@@ -1979,11 +1959,12 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
                 <div>Type: <span>${{d.device_type}}</span>${{d.nwk ? ` <span style="color:#666;font-size:10px">(NWK: ${{d.nwk}})</span>` : ''}}</div>
-                <div>Device LQI <span style="color:#555;font-size:9px">(last msg to coordinator)</span>: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi !== null ? d.lqi : 'N/A'}}</span> | Depth: <span>${{depthDisplay}}</span></div>
+                <div>Power: <span>${{d.power_source || 'Unknown'}}</span>${{d.available === false ? ' <span style="color:#F44336">• Offline</span>' : ''}}</div>
+                <div>Device LQI <span style="color:#555;font-size:9px">(signal of last hop to coordinator, not this device's own link)</span>: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi != null ? d.lqi : 'not reported'}}</span> | Hops (est.): <span>${{depthDisplay}}</span></div>
                 <div>Position: <span style="color:#888">${{positionDisplay}}</span></div>
                 <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
-                <div style="color:#555;font-size:9px;margin-top:-2px">Link LQI values below are from neighbor table scans</div>
+                <div style="color:#555;font-size:9px;margin-top:-2px">Link LQI = neighbour-table values (→ child→parent / ← parent→child); "?" = not reported</div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
                 <div>Model: <span>${{d.model || 'Unknown'}}</span></div>
                 ${{entitiesHtml}}
@@ -2229,7 +2210,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             const grid = document.getElementById('neighborGrid');
 
             title.textContent = `${{nodeData.name}} - Neighbor Table`;
-            subtitle.textContent = `${{nodeData.neighbors.length}} neighbors | Device LQI (to coordinator): ${{nodeData.lqi || 'N/A'}}`;
+            subtitle.textContent = `${{nodeData.neighbors.length}} neighbors | Device LQI (to coordinator): ${{nodeData.lqi != null ? nodeData.lqi : 'not reported'}}`;
 
             const sortedNeighbors = [...nodeData.neighbors].sort((a, b) => (b.lqi || 0) - (a.lqi || 0));
 
@@ -2237,8 +2218,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             for (const neighbor of sortedNeighbors) {{
                 const neighborNode = nodeMap[neighbor.ieee];
                 const neighborName = neighborNode ? neighborNode.name : neighbor.ieee.substring(0, 17) + '...';
+                // null LQI = "not reported" (TI Z-Stack), shown neutral - never as a red zero.
+                const lqiKnown = neighbor.lqi != null;
                 const lqiColor = getLqiColor(neighbor.lqi);
-                const lqiPercent = Math.round((neighbor.lqi / 255) * 100);
+                const lqiPercent = lqiKnown ? Math.round((neighbor.lqi / 255) * 100) : 0;
+                const lqiDisplay = lqiKnown ? neighbor.lqi : '<span style="font-size:11px">not reported</span>';
                 const notInNetwork = !neighborNode ? 'not-in-network' : '';
 
                 // Look up reverse LQI (how does the neighbor see this device?)
@@ -2253,7 +2237,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 html += `
                     <div class="neighbor-card ${{notInNetwork}}">
                         <div class="name">${{neighborName}}</div>
-                        <div class="lqi-value" style="color:${{lqiColor}}">${{neighbor.lqi}} <span style="font-size:11px;color:#888">\\u2192</span> <span style="font-size:11px;color:${{reverseLqiColor}}">\\u2190 ${{reverseDisplay}}</span></div>
+                        <div class="lqi-value" style="color:${{lqiColor}}">${{lqiDisplay}} <span style="font-size:11px;color:#888">\\u2192</span> <span style="font-size:11px;color:${{reverseLqiColor}}">\\u2190 ${{reverseDisplay}}</span></div>
                         <div class="lqi-bar">
                             <div class="lqi-bar-fill" style="width:${{lqiPercent}}%;background:${{lqiColor}}"></div>
                         </div>
@@ -2309,9 +2293,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     throw new Error(error);
                 }}
 
-                // Poll for completion
+                // Poll for completion. The active zha-toolkit scan queries every
+                // router, so allow up to ~5 minutes before giving up on the UI side
+                // (the backend keeps running regardless).
                 let attempts = 0;
-                const maxAttempts = 120;  // 2 minutes max
+                const maxAttempts = 300;  // 5 minutes max
                 const pollInterval = 1000;  // 1 second
 
                 while (attempts < maxAttempts) {{
@@ -2342,7 +2328,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 }}
 
                 // Timeout
-                throw new Error('Refresh timed out after 2 minutes');
+                throw new Error('Refresh timed out after 5 minutes');
 
             }} catch (err) {{
                 console.error('[Refresh] Error:', err);

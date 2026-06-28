@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-06-27
+
+### Added
+- **Active scan via zha-toolkit** (`use_zha_toolkit`, on by default): each refresh now queries every router for its live route + neighbour tables (Mgmt_Rtg_req / Mgmt_Lqi_req), so link LQIs are fresh and populated instead of the coordinator's stale cached snapshot. Falls back to cached data if zha-toolkit is absent or the scan fails.
+- `zha_toolkit_timeout` option (default 180s) for the active scan.
+- Network-health summary in the header (weak / offline / unknown-attachment counts) plus the Zigbee channel.
+- Power source (mains/battery) and online/offline status surfaced in the device tooltip.
+- Distinct **"not reported"** rendering for unknown LQIs (neutral grey), separate from a measured-weak link.
+
+### Changed
+- **Truthfulness overhaul:** the map now distinguishes *confirmed* (route/parent) from *estimated* (best-guess) and *unknown* (fallback) connections — guessed router parents are dashed like end-device guesses, and "Unknown" links are dashed/faint instead of solid lines to the coordinator.
+- Legend regrouped into Device / Signal / Connection, with an explicit note that the LQI badge is the last hop to the coordinator.
+- Bidirectional link LQI now shows two genuinely independent directional measurements (`?` when a direction wasn't reported) instead of repeating one value.
+- Tooltip "Depth" relabelled "Hops (est.)"; "Data as of" relabelled "Data fetched".
+- Refresh button now performs the active re-measure; UI poll window extended to 5 minutes.
+
+### Fixed
+- **Route-based parent inference** was silently broken for multi-hop devices (NWK lookup keyed by hex string but queried by int); the authoritative route parent is now resolved correctly.
+- **Timezone bug:** export timestamp is now UTC-aware, so staleness/age/last-seen math is no longer off by the browser's UTC offset.
+- "Open in Home Assistant" device link now resolves (device registry id is populated from the registry).
+
+### Removed
+- Dead `topology_scan_wait` option (ignored since 1.0.21) and the unused `share:rw` mapping.
+- Dead code: the unused tree builder in `build_hierarchy`, the always-null `rssi` field, and the unused/incorrect neighbour-`depth` field.
+
 ## [1.0.33] - 2024-12-24
 
 ### Added

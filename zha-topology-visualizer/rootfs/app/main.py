@@ -9,7 +9,7 @@ import aiohttp
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -29,7 +29,13 @@ DATA_DIR = Path('/data')
 
 # Timeouts - can be overridden by environment variable
 WS_COMMAND_TIMEOUT = 30  # seconds per command
-TOPOLOGY_SCAN_WAIT = int(os.environ.get('TOPOLOGY_SCAN_WAIT', 60))  # seconds to wait after triggering scan
+
+# Active scan via zha-toolkit. When enabled, a refresh asks zha-toolkit to query
+# every router for its live route + neighbour tables (Mgmt_Rtg_req / Mgmt_Lqi_req),
+# which updates zigpy's in-memory tables so the following zha/devices read returns
+# fresh, populated LQIs instead of the coordinator's stale cached snapshot.
+USE_ZHA_TOOLKIT = os.environ.get('USE_ZHA_TOOLKIT', 'true').lower() == 'true'
+ZHA_TOOLKIT_TIMEOUT = int(os.environ.get('ZHA_TOOLKIT_TIMEOUT', 180))  # seconds to wait for the active scan
 
 # Set to True for debug output
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
@@ -127,6 +133,10 @@ class ZHAExporter:
 
                     log("      Connected and authenticated!")
 
+                    if USE_ZHA_TOOLKIT:
+                        log("[scan] Active topology scan via zha-toolkit (live router LQIs)...")
+                        await self.run_active_scan(ws)
+
                     log("[1/7] Fetching ZHA devices with neighbor data...")
                     devices = await self.get_devices(ws)
                     log(f"      Found {len(devices)} devices")
@@ -171,7 +181,10 @@ class ZHAExporter:
             floorplan_data = await self.get_floorplan_svg(session)
 
         return {
-            "export_timestamp": datetime.now().isoformat(),
+            # Timezone-aware UTC so the browser parses it on the same clock as
+            # ZHA's last_seen values (also UTC); a naive local timestamp here
+            # skews every staleness/age calculation by the browser's UTC offset.
+            "export_timestamp": datetime.now(timezone.utc).isoformat(),
             "network_settings": network,
             "network_backups": backups,
             "devices": devices_with_clusters,
@@ -218,6 +231,41 @@ class ZHAExporter:
         except Exception as e:
             log(f"      Error triggering scan: {e}")
             raise
+
+    async def run_active_scan(self, ws) -> bool:
+        """Actively scan every router's route + neighbour tables via zha-toolkit.
+
+        Calls the zha_toolkit.all_routes_and_neighbours service, which performs a
+        live Mgmt_Rtg_req / Mgmt_Lqi_req against each router. This refreshes
+        zigpy's in-memory tables, so the zha/devices read that follows returns
+        current, populated LQIs rather than the coordinator's stale cached view.
+
+        This is resilient: if zha-toolkit is not installed, the service errors, or
+        the scan times out, we log a warning and fall back to whatever cached
+        neighbour data ZHA already has (the previous behaviour).
+        """
+        try:
+            result = await self.ws_command(
+                ws,
+                {
+                    "type": "call_service",
+                    "domain": "zha_toolkit",
+                    "service": "all_routes_and_neighbours",
+                    "service_data": {},
+                },
+                timeout=ZHA_TOOLKIT_TIMEOUT,
+            )
+            if result.get("success"):
+                log("      Active scan complete - using fresh neighbour/route data")
+                return True
+            log(f"      Active scan not confirmed (falling back to cached data): {result.get('error')}")
+            return False
+        except asyncio.TimeoutError:
+            log(f"      Active scan timed out after {ZHA_TOOLKIT_TIMEOUT}s (falling back to cached data)")
+            return False
+        except Exception as e:
+            log(f"      Active scan failed (falling back to cached data): {e}")
+            return False
 
     async def get_devices(self, ws) -> list:
         """Fetch all ZHA devices."""
@@ -355,17 +403,19 @@ class ZHAExporter:
                 "model": model,
                 "is_coordinator": device_type == "Coordinator",
                 "lqi": device_lqi,
-                "rssi": device.get("rssi")
             })
 
             neighbors = device.get("neighbors", [])
             for neighbor in neighbors:
                 neighbor_ieee = neighbor.get("ieee", "")
                 lqi_raw = neighbor.get("lqi", 0)
+                # On TI Z-Stack a neighbour LQI of 0 means "not reported", not a
+                # measured zero-quality link. Keep it as None so the UI can show
+                # "unknown" rather than painting it as a failing link.
                 try:
-                    lqi = int(lqi_raw) if lqi_raw else 0
+                    lqi = int(lqi_raw) if lqi_raw else None
                 except (ValueError, TypeError):
-                    lqi = 0
+                    lqi = None
                 relationship = neighbor.get("relationship", "Unknown")
 
                 if neighbor_ieee:
@@ -375,7 +425,7 @@ class ZHAExporter:
                         "target": neighbor_ieee,
                         "target_name": ieee_to_name.get(neighbor_ieee, neighbor_ieee),
                         "lqi": lqi,
-                        "lqi_percent": round((lqi / 255) * 100, 1) if lqi else 0,
+                        "lqi_percent": round((lqi / 255) * 100, 1) if lqi else None,
                         "relationship": relationship
                     })
 

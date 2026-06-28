@@ -28,13 +28,21 @@ This add-on provides an interactive visualization of your Zigbee mesh network to
 | Option | Default | Description |
 |--------|---------|-------------|
 | `auto_refresh_minutes` | 0 | Minutes between automatic refreshes. Set to 0 to disable. |
-| `topology_scan_wait` | 60 | Seconds to wait for topology scan. Increase for large networks. |
+| `use_zha_toolkit` | true | Actively scan every router for live routes & neighbour LQIs via zha-toolkit on each refresh. Requires the zha-toolkit integration; falls back to cached data if unavailable. |
+| `zha_toolkit_timeout` | 180 | Max seconds to wait for the active scan. Increase for large networks. |
+
+> **Optional dependency:** `use_zha_toolkit` needs the **zha-toolkit** custom
+> integration ([install via HACS](https://github.com/mdeweerd/zha-toolkit)).
+> Without it the add-on still works, but link LQIs come from the coordinator's
+> cached neighbour tables (on TI Z-Stack, many router-to-router LQIs read as
+> "not reported").
 
 ### Example Configuration
 
 ```yaml
 auto_refresh_minutes: 30
-topology_scan_wait: 90
+use_zha_toolkit: true
+zha_toolkit_timeout: 240
 ```
 
 ## Usage
@@ -56,21 +64,29 @@ Or click **Open Web UI** from the add-on page.
 - **Yellow**: End Device (battery-powered sensors, etc.)
 
 #### Connection Types
-- **Cyan lines**: Connection determined from route table (most accurate)
-- **Green lines**: Parent relationship
-- **Yellow lines**: Strongest neighbor connection
-- **Gray lines**: Fallback connection to coordinator
-- **Dashed lines**: Sibling mesh connections (hidden by default)
+Connections are grouped by how confident we are in them:
+- **Cyan (Route, confirmed)**: parent taken from the device's route table — the most authoritative source.
+- **Green (Parent, confirmed)**: parent taken from a reported Parent/Child relationship.
+- **Orange dashed (Estimated)**: best guess from signal strength — no relationship was reported.
+- **Gray dashed (Unknown)**: attachment could not be determined; the node is drawn at the coordinator for layout only.
+- **Faint dashed (Sibling)**: router-to-router mesh links (hidden by default).
+- **Dashed (Stale)**: the reporting device hasn't been heard from in over 24h.
 
-#### LQI Values
+#### LQI Values (signal of the last hop to the coordinator)
 - **Green (150+)**: Excellent signal
 - **Light Green (100-149)**: Good signal
 - **Yellow (50-99)**: Fair signal
 - **Red (<50)**: Weak signal
+- **Gray (not reported)**: no measurement — common for router-to-router links on TI Z-Stack coordinators. This means "unknown", **not** "bad".
+
+> Note: the per-device LQI badge is the quality of the **last hop into the
+> coordinator**, not the device's own first-hop link. A multi-hop device can show
+> a low badge even when its own link is strong.
 
 ### Controls
 
-- **Refresh Data**: Fetch fresh topology data from ZHA
+- **Refresh Data**: Actively re-measure the network (scans every router for fresh routes & neighbour LQIs via zha-toolkit when enabled), then reload. Takes 1-5 minutes.
+- **Scan Network**: Ask ZHA to rebuild its own topology cache. Usually unnecessary now that Refresh scans actively.
 - **Reset Layout**: Reset node positions to auto-layout
 - **Save Positions**: Save current node arrangement
 - **Show/Hide End Devices**: Toggle visibility of end devices
@@ -92,19 +108,24 @@ Or click **Open Web UI** from the add-on page.
 
 ### Empty visualization
 - Click "Refresh Data" to fetch topology data
-- Wait for the topology scan to complete (60+ seconds)
+- The active scan can take 1-5 minutes on larger networks
 
 ### Missing neighbor data
-- Increase `topology_scan_wait` in the configuration
+- Increase `zha_toolkit_timeout` in the configuration
+- Install the zha-toolkit integration and keep `use_zha_toolkit` enabled for fresh router LQIs
 - Some battery devices may not report neighbors until they wake up
 
 ### Slow refresh
-- Topology scans take time to gather data from all devices
-- Large networks (50+ devices) may take 2-3 minutes
+- Active scans query every router, which takes time
+- Large networks (50+ devices) may take several minutes; raise `zha_toolkit_timeout`
 
-### Connection shows "Fallback"
-- The device's actual route couldn't be determined
-- This is normal for newly added devices or after power outages
+### Connection shows "Unknown"
+- The device's attachment couldn't be determined and it's shown at the coordinator for layout only
+- This is normal for newly added devices, sleepy battery devices, or after power outages
+
+### Many links show "not reported"
+- On TI Z-Stack coordinators, router-to-router link LQIs are frequently not populated
+- Enable `use_zha_toolkit` (with the zha-toolkit integration installed) to actively query them
 
 ## Technical Details
 

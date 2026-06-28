@@ -39,7 +39,8 @@ https://github.com/scottswaaley/hass-zha-topology
 | Option | Default | Description |
 |--------|---------|-------------|
 | `auto_refresh_minutes` | 0 | Auto-refresh interval (0 = disabled) |
-| `topology_scan_wait` | 60 | Topology scan timeout in seconds |
+| `use_zha_toolkit` | true | Actively scan routers for live LQIs via zha-toolkit (falls back to cached data if unavailable) |
+| `zha_toolkit_timeout` | 180 | Max seconds to wait for the active scan |
 
 ## Usage
 
@@ -50,6 +51,7 @@ Access the visualization at `http://<your-ha-ip>:8099` after starting the add-on
 - Home Assistant with Supervisor
 - ZHA integration configured and running
 - Zigbee coordinator connected
+- *(Optional)* [zha-toolkit](https://github.com/mdeweerd/zha-toolkit) for active per-router LQI scanning (`use_zha_toolkit`)
 
 ## License
 

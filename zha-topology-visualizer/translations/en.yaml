@@ -5,9 +5,16 @@ configuration:
       Minutes between automatic data refreshes. Set to 0 to disable auto-refresh.
       The visualization will still update when you click the Refresh button.
       Recommended: 30-60 minutes for most networks.
-  topology_scan_wait:
-    name: Topology Scan Wait
+  use_zha_toolkit:
+    name: Active Scan (zha-toolkit)
     description: >-
-      Seconds to wait for the Zigbee topology scan to complete.
-      Larger networks may need more time. Default is 60 seconds.
-      Increase this if you notice incomplete neighbor data.
+      When enabled, each refresh actively queries every router for its live
+      route and neighbour tables via the zha-toolkit integration, giving fresh,
+      populated link LQIs instead of the coordinator's stale cached view.
+      Requires the "zha-toolkit" custom integration (install via HACS). If it is
+      not installed or the scan fails, the add-on falls back to cached data.
+  zha_toolkit_timeout:
+    name: Active Scan Timeout
+    description: >-
+      Maximum seconds to wait for the active zha-toolkit scan to finish. Larger
+      networks with many routers need more time. Default is 180 seconds.
