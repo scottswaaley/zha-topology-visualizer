@@ -92,6 +92,19 @@ Connections are grouped by how confident we are in them:
 - **Show/Hide End Devices**: Toggle visibility of end devices
 - **Time Filter**: Show only devices seen recently
 - **Zoom Controls**: Zoom in/out and reset view
+- **Routes** *(only with `zha_routes`)*: Show/hide the source-route layer
+- **Tree: Routes / Neighbours** *(only with `zha_routes`)*: Build the tree from route records or from neighbour/route tables
+
+### Source routes (optional)
+
+If the `zha_routes` custom integration is installed, each refresh also reads its route snapshot (read-only). The coordinator receives a route record from each device listing the routers its traffic passes through; this layer draws those real paths, which neighbour LQIs cannot tell you.
+
+- **Magenta arrows**: device → relay → … → coordinator. Thicker = more devices share that hop. Dashed = only startup (database) data, age unknown.
+- **Purple badge**: number of device paths through a router. **Gold ring**: busiest router.
+- **Flags**: ↯ flapping (route changes > 5/hour), z silent (startup route only or no report in 6h), ∅ no route known.
+- Counts (`reports`, `changes`) reset when Home Assistant restarts.
+
+Without `zha_routes` nothing changes; the add-on logs one line and carries on.
 
 ### Interacting with Nodes
 
@@ -133,7 +146,8 @@ The add-on uses the Home Assistant WebSocket API to:
 1. Trigger a ZHA topology scan
 2. Fetch all ZHA device data including neighbor tables
 3. Retrieve device registry information
-4. Build an interactive visualization
+4. Optionally read the `zha_routes/snapshot` source-route data
+5. Build an interactive visualization
 
 Data is stored in `/data/` within the add-on container and persists across restarts.
 

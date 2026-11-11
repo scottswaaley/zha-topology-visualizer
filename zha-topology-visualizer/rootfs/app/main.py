@@ -156,33 +156,36 @@ class ZHAExporter:
                         await self.run_active_scan(ws)
 
                     set_progress('fetch', 0, 0, 'Fetching device data...')
-                    log("[1/7] Fetching ZHA devices with neighbor data...")
+                    log("[1/8] Fetching ZHA devices with neighbor data...")
                     devices = await self.get_devices(ws)
                     log(f"      Found {len(devices)} devices")
 
-                    log("[2/7] Fetching network settings...")
+                    log("[2/8] Fetching network settings...")
                     network = await self.get_network_settings(ws)
                     channel = network.get("network_info", {}).get("channel", "N/A")
                     log(f"      Channel: {channel}")
 
-                    log("[3/7] Fetching network backups...")
+                    log("[3/8] Fetching network backups...")
                     backups = await self.get_network_backups(ws)
                     log(f"      Found {len(backups)} backups")
 
-                    log("[4/7] Fetching ZHA groups...")
+                    log("[4/8] Fetching ZHA groups...")
                     groups = await self.get_groups(ws)
                     log(f"      Found {len(groups)} groups")
 
-                    log("[5/7] Fetching device clusters...")
+                    log("[5/8] Fetching device clusters...")
                     devices_with_clusters = await self.get_device_clusters(ws, devices)
 
-                    log("[6/7] Fetching device registry...")
+                    log("[6/8] Fetching device registry...")
                     device_registry = await self.get_device_registry(ws)
                     log(f"      Found {len(device_registry)} device registry entries")
 
-                    log("[7/7] Fetching entity registry...")
+                    log("[7/8] Fetching entity registry...")
                     entity_registry = await self.get_entity_registry(ws)
                     log(f"      Found {len(entity_registry)} entity registry entries")
+
+                    log("[8/8] Fetching source routes (zha_routes)...")
+                    routes = await self.get_routes(ws)
 
         except aiohttp.ClientError as e:
             log(f"      ERROR: WebSocket connection failed: {e}")
@@ -212,6 +215,10 @@ class ZHAExporter:
             "entity_registry": entity_registry,
             "entities": entities,
             "topology": self.build_topology(devices_with_clusters),
+            # Source-route snapshot from the optional zha_routes integration, or
+            # None when it is not installed / the call failed. The UI renders
+            # exactly as before when this is None.
+            "routes": routes,
             "floorplan_svg": floorplan_data.get('svg') if floorplan_data else None,
             "floorplan_css": floorplan_data.get('css') if floorplan_data else None
         }
@@ -371,6 +378,31 @@ class ZHAExporter:
         """Fetch entity registry to map entities to devices."""
         result = await self.ws_command(ws, {"type": "config/entity_registry/list"})
         return result.get("result", [])
+
+    async def get_routes(self, ws):
+        """Fetch the zha_routes source-route snapshot (read-only).
+
+        zha_routes is an optional custom integration. If it is missing
+        (unknown_command), errors, or times out, log one line and return None
+        so the rest of the refresh and the UI carry on unchanged.
+        """
+        try:
+            result = await self.ws_command(ws, {"type": "zha_routes/snapshot", "history": True})
+        except Exception as e:
+            log(f"      zha_routes snapshot unavailable ({e}); route layer disabled")
+            return None
+        if not result.get("success"):
+            err = result.get("error")
+            code = err.get("code") if isinstance(err, dict) else err
+            log(f"      zha_routes snapshot unavailable ({code}); route layer disabled")
+            return None
+        snap = result.get("result")
+        if not isinstance(snap, dict) or not isinstance(snap.get("devices"), list):
+            log("      zha_routes snapshot unavailable (unexpected payload); route layer disabled")
+            return None
+        log(f"      Routes for {len(snap['devices'])} devices, "
+            f"{snap.get('live_reports', 0)} live reports since {snap.get('listening_since')}")
+        return snap
 
     async def get_device_clusters(self, ws, devices: list) -> list:  # noqa: ARG002
         """Fetch cluster information for each device.

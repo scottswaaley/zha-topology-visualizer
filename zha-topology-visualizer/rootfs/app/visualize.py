@@ -34,6 +34,282 @@ def get_addon_version():
 ADDON_VERSION = get_addon_version()
 
 
+# --- Source-route layer (zha_routes) -------------------------------------
+# Plain strings (not f-strings) injected into the page, so braces are literal.
+# Only route CSS is conditional; ROUTE_JS is always included because the main
+# script calls its hooks, which are no-ops when routesMeta is null.
+
+ROUTE_CSS = """
+        .route-only { display: none; }
+        body.routes-on .route-only { display: inline; }
+        .route-seg { fill: none; stroke: #E040FB; stroke-linecap: round; pointer-events: stroke; cursor: help; }
+        .route-seg.startup { stroke-dasharray: 5, 4; }
+        .route-seg.route-dim { stroke-opacity: 0.08 !important; }
+        .route-seg.route-hl { stroke: #FF80FF; stroke-opacity: 1 !important; filter: drop-shadow(0 0 4px #E040FB); }
+        .route-load-badge text { font-size: 6px; font-weight: bold; fill: #fff; text-anchor: middle; pointer-events: none; }
+        .route-flags { font-size: 9px; font-weight: bold; text-anchor: end; pointer-events: none; text-shadow: 0 1px 2px #000; }
+        .top-load-ring { fill: none; stroke: #FFD54F; stroke-width: 2.5px; stroke-dasharray: 3, 2; pointer-events: none; }
+        .route-hist { font-size: 10px; color: #aaa; margin-left: 10px; }
+"""
+
+ROUTE_JS = r"""
+        // ---------------- Source-route layer (zha_routes) ----------------
+        // Thresholds for the per-device flags. Tune here.
+        const FLAP_CHANGES_PER_HOUR = 5;   // flapping: route changes/hour since listening started
+        const SILENT_HOURS = 6;            // silent: no route report for this long (or startup route only)
+
+        let routesOn = !!routesMeta;
+        let routeSelectedId = null;
+        let routeSeg = null;
+        let topLoadIds = new Set();
+
+        function routeListenHours() {
+            if (!routesMeta || !routesMeta.listening_since) return null;
+            const h = (exportTime - new Date(routesMeta.listening_since)) / 3600000;
+            return isNaN(h) ? null : h;
+        }
+
+        function routeFlags(d) {
+            const r = d.route;
+            if (!routesMeta || !r || d.is_coordinator) return {};
+            const flags = {};
+            if (r.relays === null) flags.noRoute = true;
+            const hrs = routeListenHours();
+            if (hrs && r.changes / Math.max(hrs, 1) > FLAP_CHANGES_PER_HOUR) flags.flapping = true;
+            const reportAgeH = r.last_report ? (exportTime - new Date(r.last_report)) / 3600000 : Infinity;
+            if (r.source === 'database' || !(reportAgeH <= SILENT_HOURS)) flags.silent = true;
+            return flags;
+        }
+
+        function fmtAgo(iso) {
+            if (!iso) return 'never';
+            const mins = Math.floor((exportTime - new Date(iso)) / 60000);
+            if (isNaN(mins)) return 'unknown';
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            const h = Math.floor(mins / 60);
+            if (h < 48) return h + 'h ' + (mins % 60) + 'm ago';
+            return Math.floor(h / 24) + 'd ago';
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function routePathHtml(names, deviceName) {
+            if (names === null || names === undefined) return '<span style="color:#F44336">no route known</span>';
+            const parts = [`<span style="color:#FFC107">${escHtml(deviceName)}</span>`];
+            names.forEach(n => parts.push(`<span style="color:#CE93D8">${escHtml(n)}</span>`));
+            parts.push('<span style="color:#00d4ff">Coordinator</span>');
+            return parts.join(' &rarr; ') + (names.length === 0 ? ' <span style="color:#888">(direct)</span>' : '');
+        }
+
+        function routeDetailHtml(d) {
+            if (!routesMeta) return '';
+            let html = '';
+            if (d.route_load > 0) {
+                const top = topLoadIds.has(d.id) ? ' <span style="color:#FFD54F">(busiest router)</span>' : '';
+                html += `<div>Routes through this node: <span style="color:#E040FB">${d.route_load} device${d.route_load !== 1 ? 's' : ''}</span>${top}</div>`;
+            }
+            if (d.is_coordinator) return html;
+            const r = d.route;
+            if (!r) {
+                return html + '<div style="color:#666">Route: not tracked by zha_routes</div>';
+            }
+            const name = d.user_given_name || d.name;
+            const flags = routeFlags(d);
+            const hrs = routeListenHours();
+            const rate = hrs ? (r.changes / Math.max(hrs, 1)).toFixed(1) : '?';
+            const flagText = [
+                flags.flapping ? '<span style="color:#FF9800">&#8623; flapping</span>' : '',
+                flags.silent ? '<span style="color:#9E9E9E">z silent</span>' : '',
+                flags.noRoute ? '<span style="color:#F44336">&#8709; no route</span>' : '',
+            ].filter(Boolean).join(' ');
+            const sourceText = r.source === 'live'
+                ? '<span style="color:#4CAF50">live</span>'
+                : '<span style="color:#9E9E9E">startup only (age unknown)</span>';
+            html += `<div style="margin-top:4px;border-top:1px solid #333;padding-top:4px">Route <span style="color:#555;font-size:9px">(zha_routes)</span>: <span style="font-size:11px">${routePathHtml(r.relay_names, name)}</span></div>`;
+            if (r.unresolved && r.unresolved.length) {
+                html += `<div style="color:#FF9800;font-size:10px">Unknown relay NWK: ${r.unresolved.map(escHtml).join(', ')}</div>`;
+            }
+            html += `<div>Hops: <span>${r.hops !== null ? r.hops : 'n/a'}</span> | Source: ${sourceText}</div>`;
+            html += `<div>Last route report: <span>${fmtAgo(r.last_report)}</span>${r.last_change ? ` | changed ${fmtAgo(r.last_change)}` : ''}</div>`;
+            html += `<div>Changes: <span>${r.changes}</span> since listening started <span style="color:#666">(${rate}/h, ${r.reports} reports)</span></div>`;
+            if (flagText) html += `<div>Flags: ${flagText}</div>`;
+            if (r.history && r.history.length) {
+                const recent = r.history.slice(-8).reverse();
+                html += `<div style="margin-top:2px">Recent changes <span style="color:#666">(${r.history.length} kept)</span>:</div>`;
+                html += recent.map(h => {
+                    const t = h.t ? new Date(h.t).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '?';
+                    const p = h.names === null ? 'no route' : (h.names.length ? h.names.map(escHtml).join(' &rarr; ') : 'direct');
+                    return `<div class="route-hist">${t} &nbsp;${p}</div>`;
+                }).join('');
+            }
+            return html;
+        }
+
+        function routeSummaryText() {
+            const hrs = routeListenHours();
+            const since = routesMeta.listening_since ? new Date(routesMeta.listening_since).toLocaleString() : '?';
+            let flap = 0, silent = 0, none = 0;
+            nodesData.forEach(n => {
+                const f = routeFlags(n);
+                if (f.flapping) flap++;
+                if (f.silent) silent++;
+                if (f.noRoute) none++;
+            });
+            const hrsText = hrs !== null ? ` (${hrs.toFixed(1)}h)` : '';
+            return {
+                text: `Listening since ${since}${hrsText} · ${routesMeta.live_reports ?? '?'} live reports`
+                    + ` · ↯${flap} flapping · z${silent} silent · ∅${none} no route`,
+                title: `zha_routes: ${routesMeta.hooked_devices ?? '?'} hooked devices. Counts reset when Home Assistant restarts.\n`
+                    + `Flapping = more than ${FLAP_CHANGES_PER_HOUR} route changes/hour; silent = startup route only or no report for ${SILENT_HOURS}h.`
+            };
+        }
+
+        function segEnds(s) {
+            const a = nodeMap[s.source], b = nodeMap[s.target];
+            if (!a || !b || a.x == null || b.x == null) return null;
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const ra = getNodeRadius(a) + 1, rb = getNodeRadius(b) + 4;
+            if (len < ra + rb) return null;
+            return [a.x + dx / len * ra, a.y + dy / len * ra, b.x - dx / len * rb, b.y - dy / len * rb];
+        }
+
+        function updateRouteSegments() {
+            if (!routeSeg) return;
+            routeSeg.attr('d', s => {
+                const e = segEnds(s);
+                return e ? `M${e[0]},${e[1]} L${e[2]},${e[3]}` : '';
+            });
+        }
+
+        function highlightRoute(d) {
+            if (!routesMeta || !routesOn || !routeSeg) return;
+            if (!d.route && !d.route_load) return;
+            routeSelectedId = d.id;
+            const pathSet = new Set([d.id, coordinatorId]);
+            (d.route && d.route.relay_ieees || []).forEach(x => x && pathSet.add(x));
+            // Device's own path, plus (for a router) every path it carries.
+            routeSeg.classed('route-hl', s => s.devices.includes(d.id));
+            routeSeg.classed('route-dim', s => !s.devices.includes(d.id) && !(d.route_load && (s.source === d.id || s.target === d.id)));
+            const neighborIds = new Set(selectedNode ? selectedNode.neighbors.map(n => n.ieee) : []);
+            node.classed('dimmed', n => !(pathSet.has(n.id) || neighborIds.has(n.id)));
+            node.classed('selected', n => n.id === d.id);
+            routeSeg.filter('.route-hl').raise();
+        }
+
+        function clearRouteHighlight() {
+            routeSelectedId = null;
+            if (routeSeg) routeSeg.classed('route-hl', false).classed('route-dim', false);
+        }
+
+        function applyRouteFilters() {
+            if (!routeSeg) return;
+            routeSeg.classed('hidden', s => {
+                const a = nodeMap[s.source], b = nodeMap[s.target];
+                return !a || !b || a.visible === false || b.visible === false;
+            });
+        }
+
+        function toggleRoutes(btn) {
+            routesOn = !routesOn;
+            document.body.classList.toggle('routes-on', routesOn);
+            btn.classList.toggle('active', routesOn);
+            if (!routesOn) clearRouteHighlight();
+        }
+
+        function toggleHierarchy(btn) {
+            hierarchyMode = hierarchyMode === 'routes' ? 'neighbor' : 'routes';
+            btn.textContent = hierarchyMode === 'routes' ? 'Tree: Routes' : 'Tree: Neighbours';
+            btn.classList.toggle('active', hierarchyMode === 'routes');
+            clearSelection();
+            primaryLinks = hierarchyMode === 'routes' ? routePrimaryLinks : neighborPrimaryLinks;
+            // forceLink resolves string ids to node objects before we render.
+            simulation.force('link').links(primaryLinks.concat(siblingLinks));
+            renderPrimaryLinks();
+            applyFilters();
+            simulation.alpha(0.3).restart();
+        }
+
+        if (routesMeta) {
+            document.body.classList.add('routes-on');
+            const hb = document.getElementById('hierarchyBtn');
+            if (hb) hb.classList.toggle('active', hierarchyMode === 'routes');
+
+            // Busiest router(s), computed from per-device relays (not names).
+            const maxLoad = Math.max(0, ...nodesData.map(n => n.route_load || 0));
+            if (maxLoad > 0) topLoadIds = new Set(nodesData.filter(n => n.route_load === maxLoad).map(n => n.id));
+
+            // Merged path segments, drawn above the tree links and below nodes.
+            const routeGroup = g.insert('g', '.nodes-group').attr('class', 'route-only route-segs-group');
+            routeSeg = routeGroup.selectAll('path')
+                .data(routeSegments)
+                .join('path')
+                .attr('class', s => 'route-seg' + (s.live === 0 ? ' startup' : ''))
+                .attr('stroke-width', s => 1.2 + Math.sqrt(s.count) * 1.1)
+                .attr('stroke-opacity', s => s.live === 0 ? 0.45 : 0.75)
+                .attr('marker-end', 'url(#route-arrow)');
+            routeSeg.append('title').text(s => {
+                const a = nodeMap[s.source], b = nodeMap[s.target];
+                const names = s.devices.map(id => nodeMap[id] ? (nodeMap[id].user_given_name || nodeMap[id].name) : id);
+                return `${a ? a.name : s.source} → ${b ? b.name : s.target}\n${s.count} device path${s.count !== 1 ? 's' : ''}`
+                    + (s.live === 0 ? ' (startup routes only)' : '') + `:\n` + names.join(', ');
+            });
+
+            svg.append('defs').append('marker')
+                .attr('id', 'route-arrow')
+                .attr('viewBox', '0 0 10 10').attr('refX', 8).attr('refY', 5)
+                .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 7).attr('markerHeight', 7)
+                .attr('orient', 'auto')
+                .append('path').attr('d', 'M0,0 L10,5 L0,10 z').attr('fill', '#E040FB');
+
+            // Router load badge (bottom-left) and busiest-router ring.
+            node.filter(d => topLoadIds.has(d.id))
+                .insert('circle', ':first-child')
+                .attr('class', 'route-only top-load-ring')
+                .attr('r', d => getNodeRadius(d) + 5);
+            const badge = node.filter(d => d.route_load > 0)
+                .append('g')
+                .attr('class', 'route-only route-load-badge')
+                .attr('transform', d => `translate(${-getNodeRadius(d) + 2}, ${getNodeRadius(d) - 2})`);
+            badge.append('circle').attr('r', 5.5).attr('fill', '#7B1FA2').attr('stroke', '#fff').attr('stroke-width', 0.8);
+            badge.append('text').attr('dy', 2).text(d => d.route_load);
+
+            // Per-device flags (top-left): flapping / silent / no route.
+            const flagText = node.append('text')
+                .attr('class', 'route-only route-flags')
+                .attr('x', d => -getNodeRadius(d) + 1)
+                .attr('y', d => -getNodeRadius(d) + 3);
+            flagText.each(function(d) {
+                const f = routeFlags(d);
+                const t = d3.select(this);
+                if (f.noRoute) t.append('tspan').attr('fill', '#F44336').text('∅');
+                if (f.flapping) t.append('tspan').attr('fill', '#FF9800').text('↯');
+                if (f.silent) t.append('tspan').attr('fill', '#9E9E9E').text('z');
+            });
+
+            const summary = document.getElementById('routeSummary');
+            if (summary) {
+                const s = routeSummaryText();
+                summary.textContent = s.text;
+                summary.title = s.title;
+            }
+            // The summary may wrap the header; re-fit without disturbing the layout.
+            const topBefore = container.offsetTop;
+            fitGraphTop();
+            if (container.offsetTop !== topBefore) {
+                width = container.clientWidth;
+                height = container.clientHeight;
+                svg.attr('viewBox', [0, 0, width, height]);
+            }
+
+            simulation.on('tick.routes', updateRouteSegments);
+        }
+"""
+
+
 def load_topology(json_file: str) -> dict:
     """Load topology data from JSON export file."""
     with open(json_file, 'r') as f:
@@ -86,6 +362,136 @@ def build_hierarchy(data: dict) -> dict:
         'coordinator': coordinator,
         'nodes': nodes,
         'devices': devices
+    }
+
+
+def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
+                     device_primary_link, directional_lqi):
+    """Turn a zha_routes snapshot into what the Routes layer draws.
+
+    Relay order is device first, coordinator last: relays ["0xA", "0xB"] means
+    device -> 0xA -> 0xB -> coordinator. [] = direct, None = no route known.
+    Devices are matched by IEEE; relay NWKs are resolved against ZHA's own
+    device list (never by name). Returns None when there is no usable snapshot,
+    in which case the page renders exactly as it did without routes.
+    """
+    if not isinstance(routes, dict) or not isinstance(routes.get('devices'), list):
+        return None
+
+    def resolve(nwk):
+        n = _parse_nwk(nwk)
+        if n is None:
+            return None
+        if n == 0:
+            return coordinator_id
+        return nwk_to_ieee.get(n)
+
+    def label(ieee, raw):
+        node = nodes.get(ieee) if ieee else None
+        return node.get('name', ieee) if node else raw
+
+    info = {}
+    segments = {}
+    load = defaultdict(int)
+
+    for rd in routes['devices']:
+        ieee = rd.get('ieee')
+        if not ieee or ieee not in nodes or ieee == coordinator_id:
+            continue
+        relays = rd.get('relays')
+        relay_ieees = None
+        unresolved = []
+        if isinstance(relays, list):
+            relay_ieees = [resolve(r) for r in relays]
+            unresolved = [r for r, x in zip(relays, relay_ieees) if x is None]
+            # Router load: each device counts once per router on its path.
+            for x in {x for x in relay_ieees if x and x != coordinator_id and x != ieee}:
+                load[x] += 1
+            chain = [ieee] + relay_ieees + [coordinator_id]
+            for a, b in zip(chain, chain[1:]):
+                if not a or not b or a == b:
+                    continue  # unresolved hop: leave a gap rather than guess
+                seg = segments.setdefault((a, b), {'source': a, 'target': b, 'devices': [], 'live': 0})
+                if ieee not in seg['devices']:
+                    seg['devices'].append(ieee)
+                    if rd.get('source') == 'live':
+                        seg['live'] += 1
+        else:
+            relays = None
+
+        history = []
+        for h in (rd.get('history') or [])[-50:]:
+            hr = h.get('relays')
+            history.append({
+                't': h.get('t'),
+                'names': None if hr is None else [label(resolve(r), r) for r in hr],
+            })
+
+        info[ieee] = {
+            'relays': relays,
+            'relay_ieees': relay_ieees,
+            'relay_names': None if relays is None else [label(x, r) for r, x in zip(relays, relay_ieees)],
+            'unresolved': unresolved,
+            'hops': None if relays is None else len(relays),
+            'source': rd.get('source'),
+            'last_report': rd.get('last_report'),
+            'last_change': rd.get('last_change'),
+            'reports': rd.get('reports', 0),
+            'changes': rd.get('changes', 0),
+            'history': history,
+        }
+
+    # Route-based hierarchy: parent = first relay (or the coordinator when the
+    # device talks to it directly). Devices with no usable route keep the
+    # neighbour-based link, with its original source_type, so nothing vanishes.
+    route_primary_links = []
+    for ieee in nodes:
+        if ieee == coordinator_id:
+            continue
+        ri = info.get(ieee)
+        parent = None
+        if ri and ri['relays'] is not None:
+            parent = ri['relay_ieees'][0] if ri['relay_ieees'] else coordinator_id
+            if parent == ieee:
+                parent = None
+        if parent:
+            source_type = 'zroute'
+        else:
+            fallback = device_primary_link.get(ieee)
+            if not fallback:
+                continue
+            parent, source_type = fallback['target'], fallback['source_type']
+        lqi_fwd = directional_lqi.get((parent, ieee))
+        lqi_rev = directional_lqi.get((ieee, parent))
+        route_primary_links.append({
+            'source': parent,
+            'target': ieee,
+            'lqi': lqi_fwd if lqi_fwd is not None else lqi_rev,
+            'lqi_reverse': lqi_rev,
+            'type': 'primary',
+            'source_type': source_type,
+            'source_last_seen': devices.get(ieee, {}).get('last_seen'),
+        })
+
+    seg_list = []
+    for seg in segments.values():
+        seg['count'] = len(seg['devices'])
+        seg_list.append(seg)
+
+    meta = {
+        'listening_since': routes.get('listening_since'),
+        'live_reports': routes.get('live_reports'),
+        'hooked_devices': routes.get('hooked_devices'),
+        'router_load_reported': routes.get('router_load'),
+    }
+    print(f"[Visualize] Routes: {len(info)} devices, {len(seg_list)} segments, "
+          f"{sum(1 for i in info.values() if i['relays'] is None)} without route")
+    return {
+        'info': info,
+        'segments': seg_list,
+        'load': dict(load),
+        'route_primary_links': route_primary_links,
+        'meta': meta,
     }
 
 
@@ -522,6 +928,18 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     for node in d3_nodes:
         node['path_to_coordinator'] = device_paths.get(node['id'], [])
 
+    # Optional source-route layer (zha_routes). None -> page identical to v1.3.1.
+    route_data = build_route_data(data.get('routes'), devices, nodes, coordinator_id,
+                                  nwk_to_ieee, device_primary_link, directional_lqi)
+    if route_data:
+        for node in d3_nodes:
+            node['route'] = route_data['info'].get(node['id'])
+            node['route_load'] = route_data['load'].get(node['id'], 0)
+    routes_meta_json = json.dumps(route_data['meta']) if route_data else 'null'
+    route_segments_json = json.dumps(route_data['segments']) if route_data else '[]'
+    route_primary_json = json.dumps(route_data['route_primary_links']) if route_data else '[]'
+    has_routes = route_data is not None
+
     export_timestamp = data.get('export_timestamp', '')
     data_fetched_str = export_timestamp[:19].replace('T', ' ') if export_timestamp else 'N/A'
     nodes_data = hierarchy['nodes']
@@ -555,6 +973,37 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
     # Escape CSS for embedding
     floorplan_css_escaped = floorplan_css if floorplan_css else ''
+
+    if has_routes:
+        route_legend_html = (
+            '<div class="legend-item clickable" data-link-type="zroute" title="Tree parent = first relay in the device&#39;s latest route record (zha_routes)">'
+            '<div class="legend-line" style="width:20px;height:3px;background:#CE93D8;margin-right:5px"></div> Route record</div>'
+            '<span class="legend-group" style="margin-left:12px">Routes:</span>'
+            '<div class="legend-item" title="Actual path traffic takes to the coordinator; thicker = more devices share it">'
+            '<div class="legend-line" style="width:20px;height:3px;background:#E040FB;margin-right:5px"></div> Path (thicker = more devices)</div>'
+            '<div class="legend-item" title="Only startup (database) routes - age unknown">'
+            '<div class="legend-line" style="width:20px;border-top:2px dashed #E040FB;margin-right:5px;opacity:0.6"></div> Startup only</div>'
+            '<div class="legend-item" title="Number of device paths through this router; gold ring = busiest router">'
+            '<div class="legend-color" style="background:#7B1FA2;border-radius:50%"></div> Router load</div>'
+            '<div class="legend-item" title="Route changed more often than the flapping threshold since listening started">'
+            '<span style="color:#FF9800;font-weight:bold">&#8623;</span> Flapping</div>'
+            '<div class="legend-item" title="Only a startup route, or no route report within the silent threshold">'
+            '<span style="color:#9E9E9E;font-weight:bold">z</span> Silent</div>'
+            '<div class="legend-item" title="No route known for this device">'
+            '<span style="color:#F44336;font-weight:bold">&#8709;</span> No route</div>'
+        )
+        route_controls_html = (
+            '<div class="filter-group">'
+            '<button onclick="toggleRoutes(this)" class="active" id="toggleRoutesBtn" '
+            'title="Show the actual source routes reported to the coordinator (zha_routes)">Routes</button>'
+            '<button onclick="toggleHierarchy(this)" id="hierarchyBtn" '
+            'title="Build the tree from route records (parent = first relay) or from neighbour/route tables (v1.3 method)">Tree: Routes</button>'
+            '<span id="routeSummary" style="font-size:11px;color:#CE93D8"></span>'
+            '</div>'
+        )
+    else:
+        route_legend_html = ''
+        route_controls_html = ''
 
     html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -1025,6 +1474,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         .hidden {{
             display: none !important;
         }}
+{ROUTE_CSS if has_routes else ''}
     </style>
 </head>
 <body>
@@ -1059,6 +1509,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <div class="legend-item clickable" data-link-type="fallback" title="Attachment unknown - shown at the coordinator for layout only"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px"></div> Unknown</div>
             <div class="legend-item clickable disabled" data-link-type="sibling"><div class="legend-line" style="width:20px;border-top:2px dashed #888;margin-right:5px"></div> Sibling</div>
             <div class="legend-item"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px;opacity:0.5"></div> Stale (&gt;24h)</div>
+            {route_legend_html}
         </div>
         <div class="controls">
             <div class="search-container">
@@ -1090,6 +1541,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <button onclick="zoomOut()">-</button>
                 <button onclick="zoomReset()">Reset</button>
             </div>
+            {route_controls_html}
         </div>
     </div>
 
@@ -1113,6 +1565,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         const storageKey = "{storage_key}";
         const hasFloorplan = {'true' if has_floorplan else 'false'};
         const floorplanSvgContent = `{floorplan_svg_escaped}`;
+        // Source routes from zha_routes (null when unavailable -> no route UI).
+        const routesMeta = {routes_meta_json};
+        const routeSegments = {route_segments_json};
+        const routePrimaryLinks = {route_primary_json};
+        const coordinatorId = "{coordinator_id}";
 
         const linkTypeVisibility = {{
             route: true,
@@ -1120,6 +1577,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             neighbor: true,
             inferred: true,
             fallback: true,
+            zroute: true,
             sibling: false
         }};
 
@@ -1241,6 +1699,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         nodesData.forEach(n => nodeMap[n.id] = n);
 
         const container = document.getElementById('graph');
+        // The header can wrap to more lines (e.g. with route controls); start the
+        // graph and the pinned card just below it instead of at a fixed 140px.
+        function fitGraphTop() {{
+            if (!routesMeta) return;  // keep the v1.3 layout untouched without routes
+            const h =document.querySelector('.header').offsetHeight;
+            container.style.top = h + 'px';
+            const card = document.getElementById('tooltip');
+            if (card) card.style.top = window.innerWidth > 600 ? (h + 8) + 'px' : '';
+        }}
+        fitGraphTop();
         let width = container.clientWidth;
         let height = container.clientHeight;
 
@@ -1482,8 +1950,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             return 8;
         }}
 
+        // Two candidate trees: neighbour/route-table based (v1.3) and, when
+        // zha_routes data exists, route-record based (parent = first relay).
+        const neighborPrimaryLinks = linksData.filter(l => l.type === 'primary');
+        const siblingLinks = linksData.filter(l => l.type === 'sibling');
+        let hierarchyMode = routesMeta ? 'routes' : 'neighbor';
+        let primaryLinks = hierarchyMode === 'routes' ? routePrimaryLinks : neighborPrimaryLinks;
+
         const simulation = d3.forceSimulation(nodesData)
-            .force('link', d3.forceLink(linksData).id(d => d.id).distance(100).strength(0.5))
+            .force('link', d3.forceLink(primaryLinks.concat(siblingLinks)).id(d => d.id).distance(100).strength(0.5))
             .force('charge', d3.forceManyBody().strength(-300))
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(d => getNodeRadius(d) + 5));
@@ -1693,8 +2168,6 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             return `M${{source.x}},${{source.y}} L${{source.x}},${{midY}} L${{target.x}},${{midY}} L${{target.x}},${{target.y}}`;
         }}
 
-        const primaryLinks = linksData.filter(l => l.type === 'primary');
-        const siblingLinks = linksData.filter(l => l.type === 'sibling');
 
         function getSourceTypeColor(sourceType) {{
             switch(sourceType) {{
@@ -1703,6 +2176,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 case 'neighbor': return '#FFC107';
                 case 'inferred': return '#FF9800';
                 case 'fallback': return '#666';
+                case 'zroute': return '#CE93D8';
                 case 'sibling': return '#888';
                 default: return '#888';
             }}
@@ -1718,9 +2192,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             .attr('stroke-width', 1)
             .style('display', 'none');
 
-        const link = g.append('g')
-            .attr('class', 'primary-links-group')
-            .selectAll('path')
+        const primaryLinksGroup = g.append('g').attr('class', 'primary-links-group');
+        let link = primaryLinksGroup.selectAll('path');
+
+        function renderPrimaryLinks() {{
+          link = primaryLinksGroup.selectAll('path')
             .data(primaryLinks)
             .join('path')
             .attr('class', d => `link primary ${{d.source_type}}`)
@@ -1744,12 +2220,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 const hoursSince = (exportTime - new Date(d.source_last_seen)) / 3600000;
                 if (hoursSince > 24) return 0.35;
                 return 0.6;
-            }});
+            }})
+            .style('display', d => linkTypeVisibility[d.source_type] ? null : 'none');
+        }}
+        renderPrimaryLinks();
 
         const neighborLinksGroup = g.append('g').attr('class', 'neighbor-links-group');
         const neighborLabelsGroup = g.append('g').attr('class', 'neighbor-labels-group');
 
         const node = g.append('g')
+            .attr('class', 'nodes-group')
             .selectAll('g')
             .data(nodesData)
             .join('g')
@@ -1864,6 +2344,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 
         function clearSelection() {{
+            clearRouteHighlight();
             selectedNode = null;
             node.classed('selected', false);
             node.classed('dimmed', false);
@@ -1901,6 +2382,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'neighbor': 'Strongest neighbour',
                 'inferred': 'Estimated (strongest signal, no reported parent)',
                 'fallback': 'Unknown (no connection data)',
+                'zroute': 'Route record (zha_routes)',
                 'sibling': 'Sibling'
             }};
             const sourceTypeColors = {{
@@ -1909,6 +2391,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'neighbor': '#FFC107',
                 'inferred': '#FF9800',
                 'fallback': '#666',
+                'zroute': '#CE93D8',
                 'sibling': '#888'
             }};
             if (d.parents && d.parents.length > 0) {{
@@ -1977,7 +2460,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div>Power: <span>${{d.power_source || 'Unknown'}}</span>${{d.available === false ? ' <span style="color:#F44336">• Offline</span>' : ''}}</div>
                 <div>Device LQI <span style="color:#555;font-size:9px">(signal of last hop to coordinator, not this device's own link)</span>: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi != null ? d.lqi : 'not reported'}}</span> | Hops (est.): <span>${{depthDisplay}}</span></div>
                 <div>Position: <span style="color:#888">${{positionDisplay}}</span></div>
-                <div>Path: <span style="font-size:11px">${{pathInfo}}</span></div>
+                ${{routeDetailHtml(d)}}
+                <div>Path${{d.route ? ' <span style="color:#555;font-size:9px">(neighbour estimate)</span>' : ''}}: <span style="font-size:11px">${{pathInfo}}</span></div>
                 <div>Connected via: <span>${{parentInfo}}</span></div>
                 <div style="color:#555;font-size:9px;margin-top:-2px">Link LQI = neighbour-table values (→ child→parent / ← parent→child); "?" = not reported</div>
                 <div>Manufacturer: <span>${{d.manufacturer || 'Unknown'}}</span></div>
@@ -1997,13 +2481,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         .on('click', (event, d) => {{
             event.stopPropagation();
             showCard(nodeDetailHtml(d));
-            if (d.neighbors && d.neighbors.length > 0) {{
-                if (selectedNode && selectedNode.id === d.id) {{
-                    clearSelection();
-                }} else {{
-                    clearSelection();
-                    showNeighborLinks(d);
-                }}
+            // Second click on the same device clears; otherwise select it,
+            // showing neighbours (if any) and its route path (if routes on).
+            const wasSelected = (selectedNode && selectedNode.id === d.id) || routeSelectedId === d.id;
+            clearSelection();
+            if (!wasSelected) {{
+                if (d.neighbors && d.neighbors.length > 0) showNeighborLinks(d);
+                highlightRoute(d);
             }}
         }});
 
@@ -2179,6 +2663,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 return !d.source.searchMatch && !d.target.searchMatch;
             }});
 
+            applyRouteFilters();
             document.getElementById('visibleCount').textContent = `(Showing: ${{visibleCount}})`;
 
             // Update search count
@@ -2280,6 +2765,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }});
 
         window.addEventListener('resize', () => {{
+            fitGraphTop();
             width = container.clientWidth;
             height = container.clientHeight;
             svg.attr('viewBox', [0, 0, width, height]);
@@ -2452,6 +2938,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 showToast('Rescan failed: ' + err.message);
             }}
         }}
+{ROUTE_JS}
     </script>
 </body>
 </html>

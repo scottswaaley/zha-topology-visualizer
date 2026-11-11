@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-11-11
+
+### Added
+- **Source-route layer (optional, needs the `zha_routes` custom integration).** Each refresh now also reads `zha_routes/snapshot` (read-only) and stores it under `routes` in the export. When present:
+  - **Routes toggle** draws each device's real path (device → relays → coordinator) as directed magenta segments. Segments shared by several devices merge into one line whose thickness scales with the number of paths; hover a segment to see which devices use it. Paths known only from startup (database) data are dashed.
+  - **Device detail** shows the named route, hop count, live vs startup source, time since the last route report, route changes since listening started (with rate), and the recent change history. Clicking a device highlights its full path.
+  - **Router load**: a purple badge on each router with the number of device paths through it (counted from relays, not names); the busiest router gets a gold ring.
+  - **Flags**: ↯ flapping (more than `FLAP_CHANGES_PER_HOUR` = 5 changes/hour), z silent (startup route only, or no report for `SILENT_HOURS` = 6h), ∅ no route. Thresholds are named constants in `visualize.py`.
+  - **Tree: Routes / Neighbours** toggle. With routes present the tree defaults to route records (parent = first relay; direct devices hang off the coordinator; devices without a route fall back to the v1.3 method). The neighbour-based tree is one click away.
+  - A header line shows when `zha_routes` started listening and the total live reports, plus flag counts.
+- Without `zha_routes` (unknown command, error or timeout) the add-on logs one line, sets `routes` to null, and the page renders exactly as in 1.3.1.
+
 ## [1.3.1] - 2026-06-28
 
 ### Changed
