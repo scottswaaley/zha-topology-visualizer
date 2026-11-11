@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-11-11
+
+### Added
+- **Both LQI directions on every tree line.** Each tree line now carries two numbers: child → parent (measured by the parent) and parent → child (measured by the child), each placed on the side of the node that measured it; "?" = not reported. Hover a number to draw an arrow along the line in the direction it was measured, with a tooltip naming who measured it. Hovering the line itself shows both. An **LQI Labels** button hides them. LQI stays off the magenta route lines, since route records carry no link quality.
+
+- **Next-hop evidence in the device card.** Each device lists every source for its next hop toward the coordinator, side by side with its age: live route record, route table (marked "scanned this refresh" or "cached"), startup route record, parent relationship. Each is marked used / agrees / alternating / differs (stale) / conflicts, with an overall verdict.
+- **Conflict detection.** A conflict is two *current* sources pointing at different next hops, where the other hop isn't in the device's recent route history. Shown as a dashed amber line to the other hop, a ⚠ on the node, and a count in the route header line. Normal path switching shows as "alternating" and stale data as "differs (stale)"; neither raises an alarm.
+- **Scan tracking.** A refresh now records which routers answered the zha-toolkit scan (`scan` in the export), so a route table read this refresh can be told apart from ZHA's cached copy.
+
+### Changed
+- **"Tree: Best evidence" replaces "Tree: Routes".** Each device hangs from its most trusted next hop: live route record > route table scanned this refresh > parent reported by a scanned router > startup route record > cached route table > other parent data > estimated/unknown. Startup-only route records draw dashed. "Tree: Neighbour tables" is the v1.3 view, unchanged.
+- **"Route (confirmed)" is now "Route table"** in the legend and card, next to "Route record".
+- **Tree line thickness uses the weaker known direction.** A hop needs both directions (data one way, acknowledgement the other), so the weaker one is the honest summary. Previously it used child → parent and fell back to parent → child.
+- **The card's Path line shows both directions per hop** (`82 → / ← 108`), matching "Connected via". Previously it showed whichever direction was to hand, unlabelled.
+- **Router load counts live routes only.** The badge and busiest-router ring now count devices that sent a route record since `zha_routes` started listening. Routes known only from startup data (age unknown) are listed separately in the card, e.g. "15 live, 7 startup only". A router with only stale routes through it no longer looks busy.
+
+### Fixed
+- **The route layer no longer covers the click-to-show neighbour lines and their LQI numbers.** It is now drawn underneath them.
+
 ## [1.4.0] - 2026-11-11
 
 ### Added

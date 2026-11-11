@@ -59,6 +59,11 @@ class ZHAExporter:
         self.ws_url = WS_URL
         self.api_url = INTERNAL_API_URL
         self.msg_id = 0
+        # Routers whose route/neighbour tables were actively read during this
+        # refresh (vs. ZHA's cached copy). Lets the UI rank a freshly scanned
+        # route table above stale data.
+        self.scan_responded = []
+        self.scan_time = None
 
     def next_id(self) -> int:
         self.msg_id += 1
@@ -147,6 +152,8 @@ class ZHAExporter:
 
                     log("      Connected and authenticated!")
 
+                    self.scan_responded = []
+                    self.scan_time = None
                     if rescan_ieee:
                         set_progress('scan', 0, 1, 'Rescanning router...')
                         await self.scan_single_device(ws, rescan_ieee)
@@ -219,6 +226,9 @@ class ZHAExporter:
             # None when it is not installed / the call failed. The UI renders
             # exactly as before when this is None.
             "routes": routes,
+            # Which routers answered the active scan this refresh (their route
+            # tables are fresh); everyone else's tables are ZHA's cached copy.
+            "scan": {"scanned_at": self.scan_time, "responded": self.scan_responded},
             "floorplan_svg": floorplan_data.get('svg') if floorplan_data else None,
             "floorplan_css": floorplan_data.get('css') if floorplan_data else None
         }
@@ -308,6 +318,8 @@ class ZHAExporter:
                 )
                 if result.get("success"):
                     scanned += 1
+                    self.scan_responded.append(ieee)
+                    self.scan_time = datetime.now(timezone.utc).isoformat()
                 else:
                     log(f"      Scan incomplete for {name} ({result.get('error')}); continuing")
             except Exception as e:
@@ -337,6 +349,8 @@ class ZHAExporter:
             )
             if result.get("success"):
                 log("      Rescan complete - using fresh data for this device")
+                self.scan_responded.append(ieee)
+                self.scan_time = datetime.now(timezone.utc).isoformat()
                 return True
             log(f"      Rescan not confirmed ({result.get('error')}); using cached data")
             return False

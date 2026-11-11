@@ -50,6 +50,12 @@ ROUTE_CSS = """
         .route-flags { font-size: 9px; font-weight: bold; text-anchor: end; pointer-events: none; text-shadow: 0 1px 2px #000; }
         .top-load-ring { fill: none; stroke: #FFD54F; stroke-width: 2.5px; stroke-dasharray: 3, 2; pointer-events: none; }
         .route-hist { font-size: 10px; color: #aaa; margin-left: 10px; }
+        .link.primary.zroute_startup { stroke-dasharray: 4, 3; stroke-opacity: 0.5; }
+        .conflict-link { fill: none; stroke: #FFB300; stroke-width: 1.6px; stroke-dasharray: 3, 3;
+                         stroke-opacity: 0.9; pointer-events: stroke; cursor: help; }
+        body.tree-neighbour .conflict-links-group { display: none; }
+        .nh-row { font-size: 10px; margin-left: 10px; color: #aaa; }
+        .nh-row.used { color: #fff; }
 """
 
 ROUTE_JS = r"""
@@ -59,6 +65,12 @@ ROUTE_JS = r"""
         const SILENT_HOURS = 6;            // silent: no route report for this long (or startup route only)
 
         let routesOn = !!routesMeta;
+
+        function routeDefs() {
+            let defs = svg.select('defs');
+            if (defs.empty()) defs = svg.append('defs');
+            return defs;
+        }
         let routeSelectedId = null;
         let routeSeg = null;
         let topLoadIds = new Set();
@@ -71,9 +83,11 @@ ROUTE_JS = r"""
 
         function routeFlags(d) {
             const r = d.route;
-            if (!routesMeta || !r || d.is_coordinator) return {};
+            if (!routesMeta || d.is_coordinator) return {};
+            if (!r) return (d.next_hop && d.next_hop.verdict === 'conflict') ? { conflict: true } : {};
             const flags = {};
             if (r.relays === null) flags.noRoute = true;
+            if (d.next_hop && d.next_hop.verdict === 'conflict') flags.conflict = true;
             const hrs = routeListenHours();
             if (hrs && r.changes / Math.max(hrs, 1) > FLAP_CHANGES_PER_HOUR) flags.flapping = true;
             const reportAgeH = r.last_report ? (exportTime - new Date(r.last_report)) / 3600000 : Infinity;
@@ -104,12 +118,47 @@ ROUTE_JS = r"""
             return parts.join(' &rarr; ') + (names.length === 0 ? ' <span style="color:#888">(direct)</span>' : '');
         }
 
+        const NH_KIND = { record: 'Route record', table: 'Route table', parent: 'Parent' };
+        const NH_STATUS = {
+            used: '<span style="color:#4CAF50">← used</span>',
+            agree: '<span style="color:#4CAF50">✓ agrees</span>',
+            alternating: '<span style="color:#90CAF9" title="Differs, but this hop appears in the device\'s recent route history: normal path switching">⇄ alternating</span>',
+            outdated: '<span style="color:#9E9E9E" title="Differs, but one side is stale data">differs (stale)</span>',
+            conflict: '<span style="color:#FFB300">⚠ conflicts</span>',
+        };
+        const NH_VERDICT = {
+            agree: '<span style="color:#4CAF50">✓ Sources agree</span>',
+            single: '<span style="color:#888">One source only</span>',
+            alternating: '<span style="color:#90CAF9">⇄ Alternating between these hops (normal switching)</span>',
+            outdated: '<span style="color:#9E9E9E">Sources differ, but the other one is stale</span>',
+            conflict: '<span style="color:#FFB300">⚠ Conflict: two current sources point at different next hops, and the other hop isn\'t in recent route history</span>',
+        };
+
+        function nextHopHtml(d) {
+            const nh = d.next_hop;
+            if (!nh || d.is_coordinator) return '';
+            if (nh.verdict === 'none') {
+                return `<div style="margin-top:4px">Next hop: <span style="color:#888">no direct evidence (tree line is ${escHtml(nh.fallback)})</span></div>`;
+            }
+            const rows = nh.sources.map(src => {
+                const age = src.age ? `, ${fmtAgo(src.age)}` : '';
+                return `<div class="nh-row${src.status === 'used' ? ' used' : ''}">${NH_KIND[src.kind] || src.kind}: `
+                    + `<span style="color:#CE93D8">${escHtml(src.name)}</span> `
+                    + `<span style="color:#666">(${escHtml(src.detail)}${age})</span> ${NH_STATUS[src.status] || ''}</div>`;
+            }).join('');
+            return `<div style="margin-top:4px;border-top:1px solid #333;padding-top:4px">Next hop:</div>${rows}`
+                + `<div class="nh-row">${NH_VERDICT[nh.verdict] || ''}</div>`;
+        }
+
         function routeDetailHtml(d) {
             if (!routesMeta) return '';
-            let html = '';
-            if (d.route_load > 0) {
+            let html = nextHopHtml(d);
+            if (d.route_load > 0 || d.route_load_startup > 0) {
                 const top = topLoadIds.has(d.id) ? ' <span style="color:#FFD54F">(busiest router)</span>' : '';
-                html += `<div>Routes through this node: <span style="color:#E040FB">${d.route_load} device${d.route_load !== 1 ? 's' : ''}</span>${top}</div>`;
+                const startup = d.route_load_startup
+                    ? `, <span style="color:#9E9E9E" title="Devices whose only known route is the one stored at startup (age unknown)">${d.route_load_startup} startup only</span>`
+                    : '';
+                html += `<div>Routes through this node: <span style="color:#E040FB">${d.route_load || 0} live</span>${startup}${top}</div>`;
             }
             if (d.is_coordinator) return html;
             const r = d.route;
@@ -124,6 +173,7 @@ ROUTE_JS = r"""
                 flags.flapping ? '<span style="color:#FF9800">&#8623; flapping</span>' : '',
                 flags.silent ? '<span style="color:#9E9E9E">z silent</span>' : '',
                 flags.noRoute ? '<span style="color:#F44336">&#8709; no route</span>' : '',
+                flags.conflict ? '<span style="color:#FFB300">&#9888; next-hop conflict</span>' : '',
             ].filter(Boolean).join(' ');
             const sourceText = r.source === 'live'
                 ? '<span style="color:#4CAF50">live</span>'
@@ -151,17 +201,18 @@ ROUTE_JS = r"""
         function routeSummaryText() {
             const hrs = routeListenHours();
             const since = routesMeta.listening_since ? new Date(routesMeta.listening_since).toLocaleString() : '?';
-            let flap = 0, silent = 0, none = 0;
+            let flap = 0, silent = 0, none = 0, conflict = 0;
             nodesData.forEach(n => {
                 const f = routeFlags(n);
                 if (f.flapping) flap++;
                 if (f.silent) silent++;
                 if (f.noRoute) none++;
+                if (f.conflict) conflict++;
             });
             const hrsText = hrs !== null ? ` (${hrs.toFixed(1)}h)` : '';
             return {
                 text: `Listening since ${since}${hrsText} · ${routesMeta.live_reports ?? '?'} live reports`
-                    + ` · ↯${flap} flapping · z${silent} silent · ∅${none} no route`,
+                    + ` · ↯${flap} flapping · z${silent} silent · ∅${none} no route · ⚠${conflict} conflict`,
                 title: `zha_routes: ${routesMeta.hooked_devices ?? '?'} hooked devices. Counts reset when Home Assistant restarts.\n`
                     + `Flapping = more than ${FLAP_CHANGES_PER_HOUR} route changes/hour; silent = startup route only or no report for ${SILENT_HOURS}h.`
             };
@@ -187,13 +238,14 @@ ROUTE_JS = r"""
 
         function highlightRoute(d) {
             if (!routesMeta || !routesOn || !routeSeg) return;
-            if (!d.route && !d.route_load) return;
+            if (!d.route && !d.route_load && !d.route_load_startup) return;
             routeSelectedId = d.id;
             const pathSet = new Set([d.id, coordinatorId]);
             (d.route && d.route.relay_ieees || []).forEach(x => x && pathSet.add(x));
             // Device's own path, plus (for a router) every path it carries.
             routeSeg.classed('route-hl', s => s.devices.includes(d.id));
-            routeSeg.classed('route-dim', s => !s.devices.includes(d.id) && !(d.route_load && (s.source === d.id || s.target === d.id)));
+            const carries = d.route_load || d.route_load_startup;
+            routeSeg.classed('route-dim', s => !s.devices.includes(d.id) && !(carries && (s.source === d.id || s.target === d.id)));
             const neighborIds = new Set(selectedNode ? selectedNode.neighbors.map(n => n.ieee) : []);
             node.classed('dimmed', n => !(pathSet.has(n.id) || neighborIds.has(n.id)));
             node.classed('selected', n => n.id === d.id);
@@ -205,7 +257,22 @@ ROUTE_JS = r"""
             if (routeSeg) routeSeg.classed('route-hl', false).classed('route-dim', false);
         }
 
+        let conflictSel = null;
+
+        function updateConflictLinks() {
+            if (!conflictSel) return;
+            conflictSel.attr('d', l => {
+                const a = nodeMap[l.source], b = nodeMap[l.target];
+                if (!a || !b || a.x == null || b.x == null) return '';
+                return `M${a.x},${a.y} L${b.x},${b.y}`;
+            });
+        }
+
         function applyRouteFilters() {
+            if (conflictSel) conflictSel.classed('hidden', l => {
+                const a = nodeMap[l.source], b = nodeMap[l.target];
+                return !a || !b || a.visible === false || b.visible === false;
+            });
             if (!routeSeg) return;
             routeSeg.classed('hidden', s => {
                 const a = nodeMap[s.source], b = nodeMap[s.target];
@@ -222,7 +289,8 @@ ROUTE_JS = r"""
 
         function toggleHierarchy(btn) {
             hierarchyMode = hierarchyMode === 'routes' ? 'neighbor' : 'routes';
-            btn.textContent = hierarchyMode === 'routes' ? 'Tree: Routes' : 'Tree: Neighbours';
+            btn.textContent = hierarchyMode === 'routes' ? 'Tree: Best evidence' : 'Tree: Neighbour tables';
+            document.body.classList.toggle('tree-neighbour', hierarchyMode !== 'routes');
             btn.classList.toggle('active', hierarchyMode === 'routes');
             clearSelection();
             primaryLinks = hierarchyMode === 'routes' ? routePrimaryLinks : neighborPrimaryLinks;
@@ -238,12 +306,13 @@ ROUTE_JS = r"""
             const hb = document.getElementById('hierarchyBtn');
             if (hb) hb.classList.toggle('active', hierarchyMode === 'routes');
 
-            // Busiest router(s), computed from per-device relays (not names).
+            // Busiest router(s) by live paths, computed from per-device relays (not names).
             const maxLoad = Math.max(0, ...nodesData.map(n => n.route_load || 0));
             if (maxLoad > 0) topLoadIds = new Set(nodesData.filter(n => n.route_load === maxLoad).map(n => n.id));
 
-            // Merged path segments, drawn above the tree links and below nodes.
-            const routeGroup = g.insert('g', '.nodes-group').attr('class', 'route-only route-segs-group');
+            // Merged path segments: above the tree links, but below the tree LQI
+            // labels and the click-to-show neighbour lines so they never hide them.
+            const routeGroup = g.insert('g', '.neighbor-links-group').attr('class', 'route-only route-segs-group');
             routeSeg = routeGroup.selectAll('path')
                 .data(routeSegments)
                 .join('path')
@@ -258,7 +327,7 @@ ROUTE_JS = r"""
                     + (s.live === 0 ? ' (startup routes only)' : '') + `:\n` + names.join(', ');
             });
 
-            svg.append('defs').append('marker')
+            routeDefs().append('marker')
                 .attr('id', 'route-arrow')
                 .attr('viewBox', '0 0 10 10').attr('refX', 8).attr('refY', 5)
                 .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 7).attr('markerHeight', 7)
@@ -278,6 +347,16 @@ ROUTE_JS = r"""
             badge.append('text').attr('dy', 2).text(d => d.route_load);
 
             // Per-device flags (top-left): flapping / silent / no route.
+            // Conflicting next hops: dashed amber line from the other source's hop.
+            conflictSel = g.insert('g', '.neighbor-links-group').attr('class', 'conflict-links-group')
+                .selectAll('path').data(conflictLinks).join('path').attr('class', 'conflict-link');
+            conflictSel.append('title').text(l => {
+                const a = nodeMap[l.source], b = nodeMap[l.target];
+                const kind = { table: 'route table', parent: 'parent relationship', record: 'route record' }[l.kind] || l.kind;
+                return `Conflict: ${b ? lqiNodeName(b) : l.target}'s ${kind} says next hop is ${a ? lqiNodeName(a) : l.source}`;
+            });
+            simulation.on('tick.conflicts', updateConflictLinks);
+
             const flagText = node.append('text')
                 .attr('class', 'route-only route-flags')
                 .attr('x', d => -getNodeRadius(d) + 1)
@@ -288,6 +367,7 @@ ROUTE_JS = r"""
                 if (f.noRoute) t.append('tspan').attr('fill', '#F44336').text('∅');
                 if (f.flapping) t.append('tspan').attr('fill', '#FF9800').text('↯');
                 if (f.silent) t.append('tspan').attr('fill', '#9E9E9E').text('z');
+                if (f.conflict) t.append('tspan').attr('fill', '#FFB300').text('\u26a0');
             });
 
             const summary = document.getElementById('routeSummary');
@@ -307,6 +387,182 @@ ROUTE_JS = r"""
 
             simulation.on('tick.routes', updateRouteSegments);
         }
+"""
+
+
+# --- Tree-line LQI labels -------------------------------------------------
+# LQI only exists in neighbour tables, so it lives on the tree lines (never on
+# the route layer). Each tree line shows both directions; hovering a number
+# draws an arrow along the line in the direction that value was measured.
+#   fwd = child -> parent, measured by the parent (parent's neighbour table)
+#   rev = parent -> child, measured by the child  (child's neighbour table)
+
+TREE_LQI_CSS = """
+        .tree-lqi { font-size: 5.5px; font-weight: bold; text-anchor: middle; paint-order: stroke;
+                    stroke: #1a1a2e; stroke-width: 1.6px; stroke-linejoin: round; cursor: help; }
+        .tree-lqi.unknown { fill: #777; font-weight: normal; }
+        .tree-lqi.active { font-size: 8px; }
+        .tree-lqi.dimmed { opacity: 0.15; }
+        body.no-tree-lqi .tree-lqi-group { display: none; }
+        .lqi-dir { fill: none; stroke-width: 3px; stroke-opacity: 0.95; stroke-linejoin: round;
+                   pointer-events: none; filter: drop-shadow(0 0 3px rgba(0,0,0,0.9)); }
+"""
+
+TREE_LQI_JS = r"""
+        // ---------------- Tree-line LQI labels ----------------
+        // `var` on purpose: renderPrimaryLinks() runs before this block, and must
+        // see these as undefined (not in the temporal dead zone).
+        var treeLabelsReady = false;
+        var treeLabelGroup = null, treeDirGroup = null, treeLabel = null;
+        var LQI_ARROW_COLORS = ['#4CAF50', '#8BC34A', '#FFC107', '#F44336', '#888'];
+
+        function lqiNodeName(n) {
+            if (!n || typeof n !== 'object') return String(n);
+            return n.user_given_name || n.name || n.id;
+        }
+
+        function treeLinkTitle(d) {
+            const p = lqiNodeName(d.source), c = lqiNodeName(d.target);
+            const f = d.lqi_fwd != null ? d.lqi_fwd : 'not reported';
+            const r = d.lqi_reverse != null ? d.lqi_reverse : 'not reported';
+            return `${c} → ${p}: ${f}  (measured by ${p})\n${p} → ${c}: ${r}  (measured by ${c})\nLine width = weaker direction`;
+        }
+
+        function lqiLabelTitle(e) {
+            const p = lqiNodeName(e.link.source), c = lqiNodeName(e.link.target);
+            const [from, to] = e.dir === 'fwd' ? [c, p] : [p, c];
+            const v = e.v != null ? `LQI ${e.v}` : 'not reported';
+            return `${from} → ${to}: ${v}\nHow ${to} hears ${from} (from ${to}'s neighbour table)`;
+        }
+
+        function renderTreeLabels() {
+            if (!treeLabelsReady) return;
+            const data = [];
+            primaryLinks.forEach(l => {
+                if (l.lqi_fwd == null && l.lqi_reverse == null) return;  // nothing measured either way
+                data.push({ link: l, dir: 'fwd', v: l.lqi_fwd });
+                data.push({ link: l, dir: 'rev', v: l.lqi_reverse });
+            });
+            treeLabel = treeLabelGroup.selectAll('text')
+                .data(data)
+                .join('text')
+                .attr('class', e => 'tree-lqi' + (e.v == null ? ' unknown' : ''))
+                .attr('fill', e => e.v != null ? getLqiColor(e.v) : null)
+                .text(e => e.v != null ? e.v : '?')
+                .on('mouseenter', (event, e) => showLqiDirection(e))
+                .on('mouseleave', hideLqiDirection)
+                .on('click', event => event.stopPropagation());
+            treeLabel.selectAll('title').remove();
+            treeLabel.append('title').text(lqiLabelTitle);
+            positionTreeLabels();
+            syncTreeLabels();
+        }
+
+        // Both labels sit at the middle of the line's horizontal run, each on the
+        // side of the node that measured it (fwd near the parent, rev near the child).
+        function positionTreeLabels() {
+            if (!treeLabel) return;
+            treeLabel
+                .attr('x', e => {
+                    const p = e.link.source, c = e.link.target;
+                    if (p.x == null || c.x == null) return 0;
+                    const mx = (p.x + c.x) / 2;
+                    const parentLeft = p.x <= c.x;
+                    const towardParent = e.dir === 'fwd';
+                    return mx + ((parentLeft === towardParent) ? -7 : 7);
+                })
+                .attr('y', e => {
+                    const p = e.link.source, c = e.link.target;
+                    if (p.y == null || c.y == null) return 0;
+                    return (p.y + c.y) / 2 - 2;
+                });
+        }
+
+        // Mirror each line's hidden/dimmed state onto its labels.
+        function syncTreeLabels() {
+            if (!treeLabel || !link) return;
+            const state = new Map();
+            link.each(function(l) {
+                state.set(l, {
+                    hidden: this.classList.contains('hidden') || this.style.display === 'none',
+                    dimmed: this.classList.contains('dimmed'),
+                });
+            });
+            treeLabel
+                .classed('hidden', e => { const s = state.get(e.link); return !s || s.hidden; })
+                .classed('dimmed', e => { const s = state.get(e.link); return !!(s && s.dimmed); });
+        }
+
+        // Walk back `r` units from one end of a polyline (so arrowheads clear the node).
+        function trimPolyline(pts, rStart, rEnd) {
+            pts = pts.filter((p, i) => i === 0 || Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) > 0.5);
+            const trimEnd = (arr, r) => {
+                arr = arr.slice();
+                while (arr.length > 1 && r > 0) {
+                    const a = arr[arr.length - 2], b = arr[arr.length - 1];
+                    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+                    if (len > r) {
+                        arr[arr.length - 1] = [b[0] - (b[0] - a[0]) / len * r, b[1] - (b[1] - a[1]) / len * r];
+                        r = 0;
+                    } else {
+                        arr.pop();
+                        r -= len;
+                    }
+                }
+                return arr;
+            };
+            return trimEnd(trimEnd(pts, rEnd).reverse(), rStart).reverse();
+        }
+
+        function showLqiDirection(e) {
+            hideLqiDirection();
+            const p = e.link.source, c = e.link.target;
+            if (p.x == null || c.x == null) return;
+            const midY = (p.y + c.y) / 2;
+            // Same elbow shape as the tree line, oriented sender -> receiver.
+            const [snd, rcv] = e.dir === 'fwd' ? [c, p] : [p, c];
+            const pts = trimPolyline(
+                [[snd.x, snd.y], [snd.x, midY], [rcv.x, midY], [rcv.x, rcv.y]],
+                getNodeRadius(snd) + 1, getNodeRadius(rcv) + 3);
+            if (pts.length < 2) return;
+            const color = e.v != null ? getLqiColor(e.v) : '#888';
+            treeDirGroup.append('path')
+                .attr('class', 'lqi-dir')
+                .attr('d', 'M' + pts.map(q => q.join(',')).join(' L'))
+                .attr('stroke', color)
+                .attr('marker-end', `url(#lqi-arrow-${color.slice(1)})`);
+            treeLabel.classed('active', x => x === e);
+        }
+
+        function hideLqiDirection() {
+            if (treeDirGroup) treeDirGroup.selectAll('*').remove();
+            if (treeLabel) treeLabel.classed('active', false);
+        }
+
+        function toggleTreeLqi(btn) {
+            const off = document.body.classList.toggle('no-tree-lqi');
+            btn.classList.toggle('active', !off);
+            hideLqiDirection();
+        }
+
+        (function initTreeLabels() {
+            let defs = svg.select('defs');
+            if (defs.empty()) defs = svg.append('defs');
+            LQI_ARROW_COLORS.forEach(col => {
+                defs.append('marker')
+                    .attr('id', 'lqi-arrow-' + col.slice(1))
+                    .attr('viewBox', '0 0 10 10').attr('refX', 7).attr('refY', 5)
+                    .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 9).attr('markerHeight', 9)
+                    .attr('orient', 'auto')
+                    .append('path').attr('d', 'M0,0 L10,5 L0,10 z').attr('fill', col);
+            });
+            // Above the tree lines and route layer, below neighbour overlay and nodes.
+            treeDirGroup = g.insert('g', '.neighbor-links-group').attr('class', 'lqi-dir-group');
+            treeLabelGroup = g.insert('g', '.neighbor-links-group').attr('class', 'tree-lqi-group');
+            treeLabelsReady = true;
+            renderTreeLabels();
+            simulation.on('tick.treelqi', positionTreeLabels);
+        })();
 """
 
 
@@ -365,8 +621,18 @@ def build_hierarchy(data: dict) -> dict:
     }
 
 
+def _weaker_lqi(a, b):
+    """The weaker of two directional LQIs, ignoring unreported (None) values.
+
+    A hop needs both directions (data one way, ACK the other), so the weaker
+    known direction is the honest summary of the link.
+    """
+    known = [v for v in (a, b) if v is not None]
+    return min(known) if known else None
+
+
 def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
-                     device_primary_link, directional_lqi):
+                     device_primary_link, directional_lqi, evidence=None):
     """Turn a zha_routes snapshot into what the Routes layer draws.
 
     Relay order is device first, coordinator last: relays ["0xA", "0xB"] means
@@ -391,8 +657,10 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
         return node.get('name', ieee) if node else raw
 
     info = {}
+    recent_first = {}   # ieee -> first hops seen in the device's recent route history
     segments = {}
-    load = defaultdict(int)
+    load = defaultdict(int)          # devices with a live route through the router
+    load_startup = defaultdict(int)  # devices whose only route is the startup (database) one
 
     for rd in routes['devices']:
         ieee = rd.get('ieee')
@@ -404,9 +672,11 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
         if isinstance(relays, list):
             relay_ieees = [resolve(r) for r in relays]
             unresolved = [r for r, x in zip(relays, relay_ieees) if x is None]
-            # Router load: each device counts once per router on its path.
+            # Router load: each device counts once per router on its path. Startup
+            # (database) routes are of unknown age, so they're counted apart.
+            bucket = load if rd.get('source') == 'live' else load_startup
             for x in {x for x in relay_ieees if x and x != coordinator_id and x != ieee}:
-                load[x] += 1
+                bucket[x] += 1
             chain = [ieee] + relay_ieees + [coordinator_id]
             for a, b in zip(chain, chain[1:]):
                 if not a or not b or a == b:
@@ -420,13 +690,19 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
             relays = None
 
         history = []
+        firsts = set()
         for h in (rd.get('history') or [])[-50:]:
             hr = h.get('relays')
+            if isinstance(hr, list):
+                fh = resolve(hr[0]) if hr else coordinator_id
+                if fh:
+                    firsts.add(fh)
             history.append({
                 't': h.get('t'),
                 'names': None if hr is None else [label(resolve(r), r) for r in hr],
             })
 
+        recent_first[ieee] = firsts
         info[ieee] = {
             'relays': relays,
             'relay_ieees': relay_ieees,
@@ -441,32 +717,98 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
             'history': history,
         }
 
-    # Route-based hierarchy: parent = first relay (or the coordinator when the
-    # device talks to it directly). Devices with no usable route keep the
-    # neighbour-based link, with its original source_type, so nothing vanishes.
+    # Best-evidence hierarchy. Each source of "next hop toward the coordinator"
+    # is ranked by how direct and how fresh it is; the best one draws the tree
+    # line, and the others are compared against it:
+    #   1    live route record (zha_routes; actual traffic, continuously updated)
+    #   2    route table read by this refresh's active scan
+    #   2.5  parent relationship reported by a router scanned this refresh
+    #   3    startup route record (zigpy database, age unknown)
+    #   4    route table from ZHA's cache (not scanned this refresh)
+    #   5    parent relationship from unscanned data
+    # Devices with no evidence keep their neighbour-based link (estimated /
+    # unknown), so nothing vanishes.
+    evidence = evidence or {}
+    fresh = evidence.get('fresh') or set()
+    table_hop = evidence.get('table_hop', {})
+    parent_rel = evidence.get('parent_rel', {})
+    severity = {'single': 0, 'agree': 1, 'outdated': 2, 'alternating': 3, 'conflict': 4}
+    kind_type = {'table': 'route', 'parent': 'parent'}
+
     route_primary_links = []
+    conflict_links = []
+    next_hop = {}
     for ieee in nodes:
         if ieee == coordinator_id:
             continue
         ri = info.get(ieee)
-        parent = None
+        cands = []
         if ri and ri['relays'] is not None:
-            parent = ri['relay_ieees'][0] if ri['relay_ieees'] else coordinator_id
-            if parent == ieee:
-                parent = None
-        if parent:
-            source_type = 'zroute'
+            hop = ri['relay_ieees'][0] if ri['relay_ieees'] else coordinator_id
+            if hop and hop != ieee:
+                live = ri['source'] == 'live'
+                cands.append({'kind': 'record', 'hop': hop, 'rank': 1 if live else 3, 'current': live,
+                              'detail': 'live' if live else 'startup only, age unknown',
+                              'age': ri['last_report'] if live else None})
+        th = table_hop.get(ieee)
+        if th and th != ieee:
+            f = ieee in fresh
+            cands.append({'kind': 'table', 'hop': th, 'rank': 2 if f else 4, 'current': f,
+                          'detail': 'scanned this refresh' if f else 'cached, not scanned this refresh'})
+        pr = parent_rel.get(ieee)
+        if pr and pr[0] != ieee:
+            f = pr[1] in fresh
+            reporter = 'this device' if pr[1] == ieee else label(pr[1], pr[1])
+            cands.append({'kind': 'parent', 'hop': pr[0], 'rank': 2.5 if f else 5, 'current': f,
+                          'detail': 'reported by ' + reporter + (', scanned this refresh' if f else ', not rescanned')})
+
+        if cands:
+            chosen = min(cands, key=lambda c: c['rank'])
+            recent = set(recent_first.get(ieee, set()))
+            for c in cands:
+                if c['kind'] == 'record':
+                    recent.add(c['hop'])
+            verdict = 'single' if len(cands) == 1 else 'agree'
+            for c in cands:
+                if c is chosen:
+                    c['status'] = 'used'
+                    continue
+                if c['hop'] == chosen['hop']:
+                    c['status'] = 'agree'
+                elif c['hop'] in recent and chosen['hop'] in recent:
+                    c['status'] = 'alternating'   # normal path switching
+                elif c['current'] and chosen['current']:
+                    c['status'] = 'conflict'      # two current sources disagree
+                    conflict_links.append({'source': c['hop'], 'target': ieee, 'kind': c['kind']})
+                else:
+                    c['status'] = 'outdated'      # one side is stale data
+                if severity[c['status']] > severity[verdict]:
+                    verdict = c['status']
+            parent = chosen['hop']
+            if chosen['kind'] == 'record':
+                source_type = 'zroute' if chosen['current'] else 'zroute_startup'
+            else:
+                source_type = kind_type[chosen['kind']]
+            next_hop[ieee] = {
+                'verdict': verdict,
+                'sources': [{'kind': c['kind'], 'hop': c['hop'], 'name': label(c['hop'], c['hop']),
+                             'detail': c['detail'], 'status': c['status'], 'age': c.get('age')}
+                            for c in sorted(cands, key=lambda c: c['rank'])],
+            }
         else:
             fallback = device_primary_link.get(ieee)
             if not fallback:
                 continue
             parent, source_type = fallback['target'], fallback['source_type']
+            next_hop[ieee] = {'verdict': 'none', 'sources': [], 'fallback': source_type}
+
         lqi_fwd = directional_lqi.get((parent, ieee))
         lqi_rev = directional_lqi.get((ieee, parent))
         route_primary_links.append({
             'source': parent,
             'target': ieee,
-            'lqi': lqi_fwd if lqi_fwd is not None else lqi_rev,
+            'lqi': _weaker_lqi(lqi_fwd, lqi_rev),
+            'lqi_fwd': lqi_fwd,
             'lqi_reverse': lqi_rev,
             'type': 'primary',
             'source_type': source_type,
@@ -490,7 +832,10 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
         'info': info,
         'segments': seg_list,
         'load': dict(load),
+        'load_startup': dict(load_startup),
         'route_primary_links': route_primary_links,
+        'conflict_links': conflict_links,
+        'next_hop': next_hop,
         'meta': meta,
     }
 
@@ -849,15 +1194,17 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         parent_ieee = link_info['target']
         lqi_fwd = directional_lqi.get((parent_ieee, ieee))
         lqi_rev = directional_lqi.get((ieee, parent_ieee))
-        # Representative LQI for stroke-width: a real measured direction if any
-        # exists, else None ("not reported") so the link isn't drawn as weak.
-        link_lqi = lqi_fwd if lqi_fwd is not None else lqi_rev
+        # Stroke width uses the weaker known direction; None = "not reported" so
+        # the link isn't drawn as weak. lqi_fwd = child->parent (measured by the
+        # parent), lqi_reverse = parent->child (measured by the child).
+        link_lqi = _weaker_lqi(lqi_fwd, lqi_rev)
         # Source last_seen: when was the reporting device last heard from?
         reporting_device = devices.get(ieee, {})
         d3_links.append({
             'source': parent_ieee,
             'target': ieee,
             'lqi': link_lqi,
+            'lqi_fwd': lqi_fwd,
             'lqi_reverse': lqi_rev,
             'type': 'primary',
             'source_type': link_info['source_type'],
@@ -916,6 +1263,10 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                     'id': parent_id,
                     'name': parent_name,
                     'lqi': link['lqi'],
+                    # Same convention as links: fwd = this hop's child -> parent
+                    # (parent's table), rev = parent -> child (child's table).
+                    'lqi_fwd': directional_lqi.get((parent_id, current)),
+                    'lqi_rev': directional_lqi.get((current, parent_id)),
                     'device_type': parent_node.get('device_type') if parent_node else 'Unknown'
                 })
                 current = parent_id
@@ -928,16 +1279,47 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     for node in d3_nodes:
         node['path_to_coordinator'] = device_paths.get(node['id'], [])
 
+    # Next-hop evidence for the best-evidence tree (only used with zha_routes).
+    # Route-table hop: the 'route' links above came straight from each router's
+    # own table entry for the coordinator.
+    table_hop = {i: l['target'] for i, l in device_primary_link.items() if l['source_type'] == 'route'}
+    # Parent relationship: (parent, who reported it). The device's own Parent
+    # entry wins; otherwise a router that lists the device as its Child.
+    parent_rel = {}
+    for ieee, device in devices.items():
+        if ieee not in nodes:
+            continue
+        for n in device.get('neighbors', []):
+            if n.get('relationship') == 'Parent' and n.get('ieee') in nodes:
+                parent_rel[ieee] = (n['ieee'], ieee)
+                break
+    for other_ieee, other in devices.items():
+        if nodes.get(other_ieee, {}).get('device_type') not in ('Router', 'Coordinator'):
+            continue
+        for n in other.get('neighbors', []):
+            child = n.get('ieee')
+            if n.get('relationship') == 'Child' and child in nodes and child not in parent_rel:
+                parent_rel[child] = (other_ieee, other_ieee)
+    scan_info = data.get('scan') if isinstance(data.get('scan'), dict) else {}
+    evidence = {
+        'table_hop': table_hop,
+        'parent_rel': parent_rel,
+        'fresh': set(scan_info.get('responded') or []),
+    }
+
     # Optional source-route layer (zha_routes). None -> page identical to v1.3.1.
     route_data = build_route_data(data.get('routes'), devices, nodes, coordinator_id,
-                                  nwk_to_ieee, device_primary_link, directional_lqi)
+                                  nwk_to_ieee, device_primary_link, directional_lqi, evidence)
     if route_data:
         for node in d3_nodes:
             node['route'] = route_data['info'].get(node['id'])
             node['route_load'] = route_data['load'].get(node['id'], 0)
+            node['route_load_startup'] = route_data['load_startup'].get(node['id'], 0)
+            node['next_hop'] = route_data['next_hop'].get(node['id'])
     routes_meta_json = json.dumps(route_data['meta']) if route_data else 'null'
     route_segments_json = json.dumps(route_data['segments']) if route_data else '[]'
     route_primary_json = json.dumps(route_data['route_primary_links']) if route_data else '[]'
+    conflict_links_json = json.dumps(route_data['conflict_links']) if route_data else '[]'
     has_routes = route_data is not None
 
     export_timestamp = data.get('export_timestamp', '')
@@ -976,8 +1358,12 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
     if has_routes:
         route_legend_html = (
-            '<div class="legend-item clickable" data-link-type="zroute" title="Tree parent = first relay in the device&#39;s latest route record (zha_routes)">'
+            '<div class="legend-item clickable" data-link-type="zroute" title="Tree parent = first relay in the device&#39;s latest live route record (zha_routes)">'
             '<div class="legend-line" style="width:20px;height:3px;background:#CE93D8;margin-right:5px"></div> Route record</div>'
+            '<div class="legend-item clickable" data-link-type="zroute_startup" title="Tree parent from a route record stored at startup (age unknown)">'
+            '<div class="legend-line" style="width:20px;border-top:2px dashed #CE93D8;margin-right:5px"></div> Route record (startup)</div>'
+            '<div class="legend-item" title="Two current sources disagree on the next hop; dashed amber line points at the other one">'
+            '<div class="legend-line" style="width:20px;border-top:2px dashed #FFB300;margin-right:5px"></div> Conflicting next hop</div>'
             '<span class="legend-group" style="margin-left:12px">Routes:</span>'
             '<div class="legend-item" title="Actual path traffic takes to the coordinator; thicker = more devices share it">'
             '<div class="legend-line" style="width:20px;height:3px;background:#E040FB;margin-right:5px"></div> Path (thicker = more devices)</div>'
@@ -991,13 +1377,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             '<span style="color:#9E9E9E;font-weight:bold">z</span> Silent</div>'
             '<div class="legend-item" title="No route known for this device">'
             '<span style="color:#F44336;font-weight:bold">&#8709;</span> No route</div>'
+            '<div class="legend-item" title="Route record and route table / parent disagree, and neither is stale">'
+            '<span style="color:#FFB300;font-weight:bold">&#9888;</span> Conflict</div>'
         )
         route_controls_html = (
             '<div class="filter-group">'
             '<button onclick="toggleRoutes(this)" class="active" id="toggleRoutesBtn" '
             'title="Show the actual source routes reported to the coordinator (zha_routes)">Routes</button>'
             '<button onclick="toggleHierarchy(this)" id="hierarchyBtn" '
-            'title="Build the tree from route records (parent = first relay) or from neighbour/route tables (v1.3 method)">Tree: Routes</button>'
+            'title="Best evidence: each device hangs from its most trusted next hop (live route record &gt; fresh route table &gt; startup record &gt; cached table &gt; parent). Neighbour tables: the v1.3 method.">Tree: Best evidence</button>'
             '<span id="routeSummary" style="font-size:11px;color:#CE93D8"></span>'
             '</div>'
         )
@@ -1474,6 +1862,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         .hidden {{
             display: none !important;
         }}
+{TREE_LQI_CSS}
 {ROUTE_CSS if has_routes else ''}
     </style>
 </head>
@@ -1503,7 +1892,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> &lt;45</div>
             <div class="legend-item"><div class="legend-color" style="background:#888"></div> not reported</div>
             <span class="legend-group" style="margin-left:12px">Connection:</span>
-            <div class="legend-item clickable" data-link-type="route" title="Parent from the route table (most authoritative)"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route (confirmed)</div>
+            <div class="legend-item clickable" data-link-type="route" title="Next hop from the router's own route table (read by the zha-toolkit scan)"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route table</div>
             <div class="legend-item clickable" data-link-type="parent" title="Parent from a reported Parent/Child relationship"><div class="legend-line" style="width:20px;height:3px;background:#8BC34A;margin-right:5px"></div> Parent (confirmed)</div>
             <div class="legend-item clickable" data-link-type="inferred" title="Best guess from signal strength - no reported relationship"><div class="legend-line" style="width:20px;border-top:2px dashed #FF9800;margin-right:5px"></div> Estimated</div>
             <div class="legend-item clickable" data-link-type="fallback" title="Attachment unknown - shown at the coordinator for layout only"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px"></div> Unknown</div>
@@ -1523,6 +1912,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
             <button onclick="toggleEndDevices(this)" class="active" id="toggleEndBtn">Show End Devices</button>
+            <button onclick="toggleTreeLqi(this)" class="active" id="toggleTreeLqiBtn" title="Show both LQI directions on each tree line; hover a number to see which direction it measures">LQI Labels</button>
             {'<button onclick="toggleFloorplan(this)" class="active" id="toggleFloorplanBtn">Show Floorplan</button>' if has_floorplan else ''}
             {'<button onclick="toggleGrid(this)" id="toggleGridBtn">Show Grid</button>' if has_floorplan else ''}
             <div class="filter-group">
@@ -1569,6 +1959,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         const routesMeta = {routes_meta_json};
         const routeSegments = {route_segments_json};
         const routePrimaryLinks = {route_primary_json};
+        const conflictLinks = {conflict_links_json};
         const coordinatorId = "{coordinator_id}";
 
         const linkTypeVisibility = {{
@@ -1578,6 +1969,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             inferred: true,
             fallback: true,
             zroute: true,
+            zroute_startup: true,
             sibling: false
         }};
 
@@ -1598,6 +1990,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
             d3.selectAll('.sibling-links-group path')
                 .style('display', d => linkTypeVisibility.sibling ? null : 'none');
+            syncTreeLabels();
         }}
 
         function updateDataAge() {{
@@ -2177,6 +2570,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 case 'inferred': return '#FF9800';
                 case 'fallback': return '#666';
                 case 'zroute': return '#CE93D8';
+                case 'zroute_startup': return '#CE93D8';
                 case 'sibling': return '#888';
                 default: return '#888';
             }}
@@ -2222,6 +2616,9 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 return 0.6;
             }})
             .style('display', d => linkTypeVisibility[d.source_type] ? null : 'none');
+          link.selectAll('title').remove();
+          link.append('title').text(d => treeLinkTitle(d));
+          renderTreeLabels();
         }}
         renderPrimaryLinks();
 
@@ -2341,6 +2738,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 .text(n => n.lqi);
 
             updateNeighborLinks();
+            syncTreeLabels();
         }}
 
         function clearSelection() {{
@@ -2354,6 +2752,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             siblingLink.classed('highlighted', false);
             neighborLinksGroup.selectAll('*').remove();
             neighborLabelsGroup.selectAll('*').remove();
+            syncTreeLabels();
         }}
 
         svg.on('click', () => {{
@@ -2377,12 +2776,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         function nodeDetailHtml(d) {{
             let parentInfo = 'None (Coordinator)';
             const sourceTypeLabels = {{
-                'route': 'Route table (confirmed)',
+                'route': 'Route table',
                 'parent': 'Parent relationship (confirmed)',
                 'neighbor': 'Strongest neighbour',
                 'inferred': 'Estimated (strongest signal, no reported parent)',
                 'fallback': 'Unknown (no connection data)',
-                'zroute': 'Route record (zha_routes)',
+                'zroute': 'Route record (zha_routes, live)',
+                'zroute_startup': 'Route record (startup only, age unknown)',
                 'sibling': 'Sibling'
             }};
             const sourceTypeColors = {{
@@ -2392,6 +2792,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'inferred': '#FF9800',
                 'fallback': '#666',
                 'zroute': '#CE93D8',
+                'zroute_startup': '#CE93D8',
                 'sibling': '#888'
             }};
             if (d.parents && d.parents.length > 0) {{
@@ -2419,7 +2820,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 const deviceName = d.user_given_name || d.name;
                 const pathParts = [`<span style="color:#FFC107">${{deviceName}}</span>`];
                 d.path_to_coordinator.forEach(hop => {{
-                    const lqiStr = hop.lqi ? `<span style="color:${{getLqiColor(hop.lqi)}}">${{hop.lqi}}</span>` : '?';
+                    const dirStr = v => v != null ? `<span style="color:${{getLqiColor(v)}}">${{v}}</span>` : '?';
+                    const lqiStr = `${{dirStr(hop.lqi_fwd)}} → / ← ${{dirStr(hop.lqi_rev)}}`;
                     const hopColor = hop.device_type === 'Coordinator' ? '#00d4ff' : '#8BC34A';
                     pathParts.push(`—(${{lqiStr}})→ <span style="color:${{hopColor}}">${{hop.name}}</span>`);
                 }});
@@ -2500,6 +2902,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 if (!highlight) return false;
                 return l.source.id === nodeId || l.target.id === nodeId;
             }});
+            syncTreeLabels();
         }}
 
         function dragstarted(event, d) {{
@@ -2664,6 +3067,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             }});
 
             applyRouteFilters();
+            syncTreeLabels();
             document.getElementById('visibleCount').textContent = `(Showing: ${{visibleCount}})`;
 
             // Update search count
@@ -2939,6 +3343,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             }}
         }}
 {ROUTE_JS}
+{TREE_LQI_JS}
     </script>
 </body>
 </html>

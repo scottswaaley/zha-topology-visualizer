@@ -92,17 +92,19 @@ Connections are grouped by how confident we are in them:
 - **Show/Hide End Devices**: Toggle visibility of end devices
 - **Time Filter**: Show only devices seen recently
 - **Zoom Controls**: Zoom in/out and reset view
+- **LQI Labels**: Show/hide the two LQI numbers on each tree line. Hover a number to see which direction it measures; "?" = not reported
 - **Routes** *(only with `zha_routes`)*: Show/hide the source-route layer
-- **Tree: Routes / Neighbours** *(only with `zha_routes`)*: Build the tree from route records or from neighbour/route tables
+- **Tree: Best evidence / Neighbour tables** *(only with `zha_routes`)*: Hang each device from its most trusted next hop (live route record > fresh route table > startup record > cached table > parent), or use the v1.3 neighbour-table method
 
 ### Source routes (optional)
 
 If the `zha_routes` custom integration is installed, each refresh also reads its route snapshot (read-only). The coordinator receives a route record from each device listing the routers its traffic passes through; this layer draws those real paths, which neighbour LQIs cannot tell you.
 
 - **Magenta arrows**: device → relay → … → coordinator. Thicker = more devices share that hop. Dashed = only startup (database) data, age unknown.
-- **Purple badge**: number of device paths through a router. **Gold ring**: busiest router.
+- **Purple badge**: number of devices with a live route through a router (startup-only routes are listed separately in the card). **Gold ring**: busiest router.
 - **Flags**: ↯ flapping (route changes > 5/hour), z silent (startup route only or no report in 6h), ∅ no route known.
 - Counts (`reports`, `changes`) reset when Home Assistant restarts.
+- **Next hop** (device card): every source for the device's next hop, its age, and whether it agrees. ⚠ **Conflict** (dashed amber line) = two current sources disagree and the other hop isn't in recent route history. "Alternating" = normal path switching; "differs (stale)" = one side is old data.
 
 Without `zha_routes` nothing changes; the add-on logs one line and carries on.
 
