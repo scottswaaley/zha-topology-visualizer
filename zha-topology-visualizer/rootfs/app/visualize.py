@@ -1120,6 +1120,27 @@ RADAR_JS = r"""
             return { d: Math.hypot(fa.x - fb.x, fa.y - fb.y), feet: fa.isFeet };
         }
 
+        // LQI scales differ by chip vendor: some radios report up to 255, TI
+        // tops out near 110. For the models only (displayed numbers stay raw),
+        // scale down each device whose readings run clearly above 100, judged
+        // by its own 90th percentile. Never scale up, so weak devices stay weak.
+        const LQI_MODEL_CEILING = 100;
+        const LQI_SCALE_MIN_VALUES = 5;
+        let lqiScaleCache = null;
+
+        function lqiScale(id) {
+            if (!lqiScaleCache) {
+                lqiScaleCache = {};
+                nodesData.forEach(n => {
+                    const vals = (n.neighbors || []).map(nb => nb.lqi).filter(v => v != null).sort((a, b) => a - b);
+                    if (vals.length < LQI_SCALE_MIN_VALUES) return;
+                    const p90 = vals[Math.floor(0.9 * (vals.length - 1))];
+                    if (p90 > LQI_MODEL_CEILING) lqiScaleCache[n.id] = LQI_MODEL_CEILING / p90;
+                });
+            }
+            return lqiScaleCache[id] || 1;
+        }
+
         // Every neighbour-table value between two placed devices, and the fit
         // LQI = a + b*ln(distance) over them. null when there is too little data.
         function fitDistance() {
@@ -1131,7 +1152,7 @@ RADAR_JS = r"""
                     if (!placed(o) || o.id === n.id || nb.lqi == null) return;
                     const key = [n.id, o.id].sort().join('|');
                     if (!pairs.has(key)) pairs.set(key, { a: n.id, b: o.id, vals: {} });
-                    pairs.get(key).vals[n.id] = nb.lqi;   // how n hears o
+                    pairs.get(key).vals[n.id] = nb.lqi * lqiScale(n.id);   // how n hears o, on a common scale
                 });
             });
             const pts = [];
@@ -1178,8 +1199,9 @@ RADAR_JS = r"""
                 const A = nodeMap[p.a], B = nodeMap[p.b];
                 const an = A.user_given_name || A.name, bn = B.user_given_name || B.name;
                 const parts = [];
-                if (p.vals[p.a] != null) parts.push(`${an} hears ${bn}: ${p.vals[p.a]}`);
-                if (p.vals[p.b] != null) parts.push(`${bn} hears ${an}: ${p.vals[p.b]}`);
+                const shown = id => `${Math.round(p.vals[id])}${lqiScale(id) < 1 ? ' (rescaled from ' + Math.round(p.vals[id] / lqiScale(id)) + ')' : ''}`;
+                if (p.vals[p.a] != null) parts.push(`${an} hears ${bn}: ${shown(p.a)}`);
+                if (p.vals[p.b] != null) parts.push(`${bn} hears ${an}: ${shown(p.b)}`);
                 const dir = p.resid < 0 ? 'weaker' : 'stronger';
                 return `${an} ↔ ${bn}: ${p.dist.toFixed(1)}${unit}\n${parts.join('\n')}\n`
                     + `Expected at this distance ≈ ${Math.round(p.exp)}; ${Math.abs(Math.round(p.resid))} ${dir} than expected`;

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.5] - 2026-11-13
+
+### Fixed
+- **Coverage and signal-vs-distance no longer penalise the coordinator for its LQI scale.** Chip vendors report LQI on different scales: on this network, routers such as the Third Reality Night Light, SONOFF MINI-ZB2GS, GL-G-003P and Inovelli report up to 222–255, while the TI coordinator tops out at 90. One distance fit across all of them made the coordinator's honest readings look like heavy losses in every direction, so the map showed red around it. For these models only, each device whose readings run clearly above 100 (by its own 90th percentile, with at least 5 readings) is scaled down to a common ~100 ceiling; devices are never scaled up, so genuinely weak ones stay weak. In a simulated mixed-vendor mesh, this cut the coordinator's false penalty from −45 to −10 LQI. Displayed LQI numbers stay raw; the distance-layer tooltip shows rescaled values with the original.
+
 ## [1.6.4] - 2026-11-13
 
 ### Fixed
