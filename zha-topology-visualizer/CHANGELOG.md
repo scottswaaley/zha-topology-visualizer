@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2026-11-13
+
+### Changed
+- **The signal radar is a continuous shape.** A smooth closed curve runs through the neighbours in direction order: filled cyan = how this device hears them, dashed amber outline = how they hear it. Dots and spokes stay on top. Needs at least 3 known values per direction; fewer falls back to dots only.
+
 ## [1.5.0] - 2026-11-13
 
 ### Changed

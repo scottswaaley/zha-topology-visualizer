@@ -956,8 +956,24 @@ RADAR_JS = r"""
                 spoke += '</g>';
                 svgParts.push(spoke);
             });
+            // Continuous shapes: a smooth closed curve through each direction's
+            // values, in angle order. Filled = how this device hears its
+            // neighbours; outline = how they hear it. Needs 3+ known points.
+            const shape = key => {
+                const pts = spokes.filter(s => s[key] != null)
+                    .sort((a, b) => a.ang - b.ang)
+                    .map(s => [C + Math.cos(s.ang) * r(s[key]), C + Math.sin(s.ang) * r(s[key])]);
+                if (pts.length < 3) return '';
+                return d3.line().curve(d3.curveCardinalClosed.tension(0.55))(pts);
+            };
+            const hearPath = shape('hear'), heardPath = shape('heard');
+            const shapes = []
+            if (hearPath) shapes.push(`<path d="${hearPath}" fill="#00d4ff" fill-opacity="0.18" stroke="#00d4ff" stroke-width="1.4" stroke-opacity="0.8"></path>`);
+            if (heardPath) shapes.push(`<path d="${heardPath}" fill="none" stroke="#FFB300" stroke-width="1.4" stroke-dasharray="4 2" stroke-opacity="0.9"></path>`);
+            // Shapes sit under the spokes and dots (rings stay first).
+            svgParts.splice(3, 0, ...shapes);
             svgParts.push(`<circle cx="${C}" cy="${C}" r="4" fill="${getNodeColor(d)}"></circle>`);
-            return `<div class="radar-wrap"><div>Signal around this device <span style="color:#666;font-size:9px">(direction = map position; up = top of map; ● it hears them, ○ they hear it; dotted = not reported)</span></div>`
+            return `<div class="radar-wrap"><div>Signal around this device <span style="color:#666;font-size:9px">(direction = map position, up = top of map; <span style="color:#00d4ff">filled</span> = how it hears them, <span style="color:#FFB300">dashed outline</span> = how they hear it; dotted spoke = not reported)</span></div>`
                 + `<svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Neighbour signal by direction">${svgParts.join('')}</svg></div>`;
         }
 
