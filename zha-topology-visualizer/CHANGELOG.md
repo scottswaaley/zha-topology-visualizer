@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.4] - 2026-11-13
+
+### Changed
+- **Radar colours are easier to read.** The outgoing shape now has a transparent amber fill, not just a dashed outline, and the area where incoming and outgoing overlap is drawn in its own green (a clip of one shape by the other), so it reads clearly on both the dark background and the floorplan. Cyan = incoming only, amber = outgoing only, green = both.
+
 ## [1.5.3] - 2026-11-13
 
 ### Changed

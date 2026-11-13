@@ -680,8 +680,9 @@ def build_legend_html(has_routes: bool) -> str:
                       'neighbour, not parent', 'Routers that hear each other', on=False),
            _lg_toggle('data-toggle="radars"',
                       '<svg width="28" height="16" aria-hidden="true"><path d="M14,2 L24,8 L18,14 L8,13 L4,6 Z" fill="#00d4ff" fill-opacity="0.2" stroke="#00d4ff" stroke-width="1"></path>'
-                      '<path d="M14,4 L21,8 L16,12 L9,11 L6,7 Z" fill="none" stroke="#FFB300" stroke-width="1" stroke-dasharray="2 1"></path></svg>',
-                      'Signal shape on every device', 'filled = incoming, dashed = outgoing; click a device for a big one',
+                      '<path d="M16,3 L25,10 L15,15 L7,9 Z" fill="#FFB300" fill-opacity="0.25" stroke="#FFB300" stroke-width="1" stroke-dasharray="2 1"></path>'
+                      '<path d="M14,4 L21,8 L17,13 L9,11 Z" fill="#B2FF59" fill-opacity="0.5"></path></svg>',
+                      'Signal shape on every device', 'cyan = incoming, amber = outgoing, green = both; click a device for a big one',
                       'Draw each device&#39;s signal radar around it on the map', on=False),
            _lg_toggle('data-toggle="distance"',
                       '<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#F44336" stroke-width="2.5"></line>'
@@ -935,9 +936,13 @@ LEGEND_JS = r"""
 
 RADAR_CSS = """
         .radar-in { fill: #00d4ff; fill-opacity: 0.16; stroke: #00d4ff; stroke-width: 1.3px; stroke-opacity: 0.85; pointer-events: none; }
-        .radar-out { fill: none; stroke: #FFB300; stroke-width: 1.3px; stroke-dasharray: 4, 2; stroke-opacity: 0.9; pointer-events: none; }
-        .radar:not(.sel) .radar-in { fill-opacity: 0.10; stroke-width: 0.8px; }
-        .radar:not(.sel) .radar-out { stroke-width: 0.8px; }
+        .radar-out { fill: #FFB300; fill-opacity: 0.18; stroke: #FFB300; stroke-width: 1.3px; stroke-dasharray: 4, 2; stroke-opacity: 0.95; pointer-events: none; }
+        /* Where incoming and outgoing overlap: its own colour, so "both
+           directions reach here" is obvious on any background. */
+        .radar-both { fill: #B2FF59; fill-opacity: 0.45; stroke: none; pointer-events: none; }
+        .radar:not(.sel) .radar-in { fill-opacity: 0.12; stroke-width: 0.8px; }
+        .radar:not(.sel) .radar-out { fill-opacity: 0.12; stroke-width: 0.8px; }
+        .radar:not(.sel) .radar-both { fill-opacity: 0.35; }
         .radar-ring { fill: none; stroke: #8a93a8; stroke-dasharray: 2, 3; stroke-opacity: 0.45; pointer-events: none; }
         .radar-dots circle { stroke-width: 1.3px; pointer-events: none; }
         .dist-link { fill: none; stroke-width: 2.2px; stroke-opacity: 0.85; stroke-linecap: round; cursor: help; }
@@ -994,8 +999,11 @@ RADAR_JS = r"""
                 .join(enter => {
                     const e = enter.append('g').attr('class', it => 'radar' + (it.sel ? ' sel' : ''));
                     e.append('g').attr('class', 'radar-rings');
+                    const cid = it => 'radar-clip-' + it.n.id.replace(/[^A-Za-z0-9]/g, '') + (it.sel ? '-sel' : '');
+                    e.append('clipPath').attr('id', cid).append('path');
                     e.append('path').attr('class', 'radar-in');
                     e.append('path').attr('class', 'radar-out');
+                    e.append('path').attr('class', 'radar-both').attr('clip-path', it => `url(#${cid(it)})`);
                     e.append('g').attr('class', 'radar-dots');
                     return e;
                 });
@@ -1011,6 +1019,9 @@ RADAR_JS = r"""
                 const geo = radarGeometry(n, it.R);
                 sel.select('.radar-in').attr('d', geo.inPath);
                 sel.select('.radar-out').attr('d', geo.outPath);
+                // Overlap = incoming shape clipped to the outgoing shape.
+                sel.select('clipPath path').attr('d', geo.outPath);
+                sel.select('.radar-both').attr('d', geo.inPath && geo.outPath ? geo.inPath : '');
                 if (!it.sel) return;
                 sel.select('.radar-rings').selectAll('circle').data([45, 65, 90]).join('circle')
                     .attr('class', 'radar-ring').attr('cx', n.x).attr('cy', n.y).attr('r', v => geo.r(v));
@@ -1043,7 +1054,7 @@ RADAR_JS = r"""
         function radarHtml(d) {
             if (!d.neighbors || !d.neighbors.length) return '';
             return '<div style="margin-top:4px;color:#888;font-size:10px">Signal shape: drawn around this device on the map when selected '
-                + '(<span style="color:#00d4ff">filled</span> = incoming, <span style="color:#FFB300">dashed</span> = outgoing)</div>';
+                + '(<span style="color:#00d4ff">cyan</span> = incoming, <span style="color:#FFB300">amber</span> = outgoing, <span style="color:#B2FF59">green</span> = both)</div>';
         }
 
         simulation.on('tick.radar', updateRadars);
