@@ -957,6 +957,7 @@ RADAR_JS = r"""
         const RADAR_MAX_LQI = 120;   // TI LQI rarely exceeds ~110
         const RADAR_SEL_R = 90;      // selected device, in map units
         const RADAR_ALL_R = 28;      // "on every device" mode
+        const RADAR_SECTORS = 16;    // compass sectors for the shape (22.5° each)
         var radarSel = null;
         var radarAll = false;
         var radarG = null;
@@ -977,10 +978,25 @@ RADAR_JS = r"""
         function radarGeometry(d, R) {
             const spokes = radarSpokes(d);
             const r = v => Math.max(R * 0.06, Math.min(1, v / RADAR_MAX_LQI) * R);
+            // Envelope over fixed compass sectors: each sector takes its strongest
+            // neighbour; empty sectors pinch to the centre. Joining raw neighbour
+            // angles instead collapses into slivers when neighbours cluster in a
+            // few directions. Dots still mark the neighbours' true directions.
             const shape = key => {
-                const pts = spokes.filter(s => s[key] != null).sort((a, b) => a.ang - b.ang)
-                    .map(s => [d.x + Math.cos(s.ang) * r(s[key]), d.y + Math.sin(s.ang) * r(s[key])]);
-                return pts.length < 3 ? '' : d3.line().curve(d3.curveCardinalClosed.tension(0.55))(pts);
+                const best = new Array(RADAR_SECTORS).fill(null);
+                spokes.forEach(s => {
+                    if (s[key] == null) return;
+                    const a = (s.ang + 2 * Math.PI) % (2 * Math.PI);
+                    const i = Math.round(a / (2 * Math.PI / RADAR_SECTORS)) % RADAR_SECTORS;
+                    best[i] = best[i] == null ? s[key] : Math.max(best[i], s[key]);
+                });
+                if (!best.some(v => v != null)) return '';
+                const pts = best.map((v, i) => {
+                    const a = i * 2 * Math.PI / RADAR_SECTORS;
+                    const rad = v == null ? R * 0.04 : r(v);
+                    return [d.x + Math.cos(a) * rad, d.y + Math.sin(a) * rad];
+                });
+                return d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5))(pts);
             };
             return { spokes, r, inPath: shape('hear'), outPath: shape('heard') };
         }

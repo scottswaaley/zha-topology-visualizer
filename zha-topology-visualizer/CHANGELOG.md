@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.5] - 2026-11-13
+
+### Fixed
+- **Radar shapes no longer collapse into stray slivers.** The shape was a smooth curve through the neighbours in angle order; when neighbours clustered in a few directions (e.g. two opposite sides of a hallway) it became a thin sliver that could miss the device entirely. It is now an envelope over 16 fixed compass sectors: each sector takes its strongest neighbour, empty sectors pinch to the centre. The shape always surrounds the device, and gaps mean "nothing heard that way". Dots still mark each neighbour's true direction.
+
 ## [1.5.4] - 2026-11-13
 
 ### Changed
