@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-11-13
+
+### Added
+- **Coverage estimate** (legend toggle, off by default). For devices placed on the floorplan, colours every 2 ft cell by the best LQI any router or the coordinator is predicted to give there: green ≥ 65, amber 45–65, red < 45 or out of range. Each router's prediction starts from the signal-vs-distance fit of your measured links and is corrected per direction by how that router's own links in that direction compare with the fit, so a wall it can't see through darkens everything behind it. Range is capped at your longest measured link (max 60 ft) so it never extrapolates past the evidence. It uses the best router at each spot rather than a sum, so dense clusters of weak routers don't read as "strong". A summary toast gives the share of the area in each band, and warns when your links show too little drop-off with distance for the estimate to mean much. Re-toggle after moving devices. This is a model, not a measurement.
+
 ## [1.5.5] - 2026-11-13
 
 ### Fixed

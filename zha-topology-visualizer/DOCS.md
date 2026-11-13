@@ -102,6 +102,7 @@ If the `zha_routes` custom integration is installed, each refresh also reads its
 - **Purple badge**: number of devices with a live route through a router (startup-only routes are listed separately in the card). **Gold ring**: busiest router.
 - **Flags**: ↯ flapping (more than 25% of route reports show a new path), z silent (startup route only or no report in 6h), ∅ no route known.
 - **Signal radar** (on the map): click a device to draw its radar around it, each spoke pointing at a neighbour, length = LQI. Cyan = incoming (how it receives them), amber = outgoing (how they receive it), green = where both reach. The legend toggle *Signal shape on every device* draws small ones on all devices.
+- **Coverage estimate** (legend toggle): for placed devices on the floorplan, a heat map of the best predicted LQI at each spot (green good, amber fair, red weak or out of range). Built from your measured links and each router's per-direction losses; a model, not a measurement.
 - **Signal vs distance** (legend toggle): for placed devices, links coloured by how their LQI compares with what their distance predicts; red = weaker than expected, often a wall or metal in the way.
 - Counts (`reports`, `changes`) reset when Home Assistant restarts.
 - **Next hop** (device card): every source for the device's next hop, its age, and whether it agrees. ⚠ **Conflict** (dashed amber line) = two current sources disagree and the other hop isn't in recent route history. "Alternating" = normal path switching; "differs (stale)" = one side is old data.

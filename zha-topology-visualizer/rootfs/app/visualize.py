@@ -684,6 +684,12 @@ def build_legend_html(has_routes: bool) -> str:
                       '<path d="M14,4 L21,8 L17,13 L9,11 Z" fill="#B2FF59" fill-opacity="0.5"></path></svg>',
                       'Signal shape on every device', 'cyan = incoming, amber = outgoing, green = both; click a device for a big one',
                       'Draw each device&#39;s signal radar around it on the map', on=False),
+           _lg_toggle('data-toggle="coverage"',
+                      '<svg width="28" height="14" aria-hidden="true"><rect x="1" y="2" width="9" height="10" fill="#4CAF50" fill-opacity="0.4"></rect>'
+                      '<rect x="10" y="2" width="9" height="10" fill="#FFC107" fill-opacity="0.6"></rect>'
+                      '<rect x="19" y="2" width="8" height="10" fill="#F44336" fill-opacity="0.7"></rect></svg>',
+                      'Coverage estimate', 'model: best predicted LQI; red = weak or out of range',
+                      'For placed devices on the floorplan: the best signal any router is predicted to give at each spot. A model built from your measured links, not a measurement.', on=False),
            _lg_toggle('data-toggle="distance"',
                       '<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#F44336" stroke-width="2.5"></line>'
                       '<line x1="1" y1="9" x2="27" y2="9" stroke="#4FC3F7" stroke-width="2.5"></line></svg>',
@@ -880,6 +886,9 @@ LEGEND_JS = r"""
                 case 'load': document.body.classList.toggle('no-route-load', !on); break;
                 case 'enddev': showEndDevices = on; applyFilters(); break;
                 case 'radars': radarAll = on; renderRadars(); break;
+                case 'coverage':
+                    if (!setCoverageLayer(on)) setItemState(el, false);
+                    break;
                 case 'distance':
                     if (!setDistanceLayer(on)) setItemState(el, false);
                     break;
@@ -1089,10 +1098,9 @@ RADAR_JS = r"""
             return { d: Math.hypot(fa.x - fb.x, fa.y - fb.y), feet: fa.isFeet };
         }
 
-        function setDistanceLayer(on) {
-            g.selectAll('.dist-group').remove();
-            distSel = null;
-            if (!on) return true;
+        // Every neighbour-table value between two placed devices, and the fit
+        // LQI = a + b*ln(distance) over them. null when there is too little data.
+        function fitDistance() {
             const pairs = new Map();
             nodesData.forEach(n => {
                 if (!placed(n)) return;
@@ -1105,28 +1113,38 @@ RADAR_JS = r"""
                 });
             });
             const pts = [];
+            const list = [];
             pairs.forEach(p => {
                 const dist = distanceBetween(nodeMap[p.a], nodeMap[p.b]);
                 p.dist = dist.d; p.feet = dist.feet;
-                if (p.dist <= 0) return;
+                if (!(p.dist > 0)) return;
+                list.push(p);
                 Object.values(p.vals).forEach(v => pts.push([Math.log(Math.max(p.dist, 1)), v]));
             });
-            if (pts.length < 6) {
-                showToast('Signal vs distance needs at least 6 measured links between placed devices');
-                return false;
-            }
+            if (pts.length < 6) return null;
             const n = pts.length;
             const mx = pts.reduce((s, q) => s + q[0], 0) / n, my = pts.reduce((s, q) => s + q[1], 0) / n;
             const sxx = pts.reduce((s, q) => s + (q[0] - mx) ** 2, 0);
             const b = sxx ? pts.reduce((s, q) => s + (q[0] - mx) * (q[1] - my), 0) / sxx : 0;
             const a = my - b * mx;
-            const list = [];
-            pairs.forEach(p => {
-                if (!(p.dist > 0)) return;
+            return { a, b, n, pairs: list, expected: d => a + b * Math.log(Math.max(d, 1)) };
+        }
+
+        function setDistanceLayer(on) {
+            g.selectAll('.dist-group').remove();
+            distSel = null;
+            if (!on) return true;
+            const fit = fitDistance();
+            if (!fit) {
+                showToast('Signal vs distance needs at least 6 measured links between placed devices');
+                return false;
+            }
+            const { a, b, n } = fit;
+            const list = fit.pairs.map(p => {
                 const vs = Object.values(p.vals);
                 const meas = vs.reduce((s, v) => s + v, 0) / vs.length;
-                const exp = a + b * Math.log(Math.max(p.dist, 1));
-                list.push(Object.assign(p, { meas, exp, resid: meas - exp }));
+                const exp = fit.expected(p.dist);
+                return Object.assign(p, { meas, exp, resid: meas - exp });
             });
             const color = rsd => rsd <= -20 ? '#F44336' : rsd <= -8 ? '#FF9800' : rsd < 8 ? '#9aa3b5' : '#4FC3F7';
             const unit = list.length && list[0].feet ? ' ft' : ' (map units)';
@@ -1158,6 +1176,106 @@ RADAR_JS = r"""
         }
 
         simulation.on('tick.dist', updateDistLinks);
+
+        // ---------------- Coverage estimate (model) ----------------
+        // For each 2 ft cell of the floorplan: the best LQI any router or the
+        // coordinator is predicted to give there. Prediction = the distance fit,
+        // adjusted per direction by how that router's measured links in that
+        // direction compare with the fit (so walls it can't see through carry
+        // over to everything behind them). Limited to the longest measured link
+        // (max 60 ft) so it never extrapolates beyond the evidence.
+        const COVERAGE_CELL_FT = 2;
+        const COVERAGE_MAX_FT = 60;
+
+        function setCoverageLayer(on) {
+            g.selectAll('.coverage-layer').remove();
+            if (!on) return true;
+            if (!hasFloorplan || !floorplanGroup || !floorplanGroup.datum()) {
+                showToast('Coverage needs the floorplan, so distances are in feet');
+                return false;
+            }
+            const fit = fitDistance();
+            if (!fit) {
+                showToast('Coverage needs at least 6 measured links between placed devices');
+                return false;
+            }
+            const fp = floorplanGroup.datum();
+            const ftPerUnit = 1 / (UNITS_PER_FOOT * fp.scale);
+            const sources = nodesData.filter(n => placed(n) && (n.device_type === 'Router' || n.is_coordinator));
+            if (!sources.length) {
+                showToast('Coverage needs placed routers');
+                return false;
+            }
+            // Direction-dependent correction per source, from each link's weaker direction.
+            const dirs = new Map(sources.map(s => [s.id, []]));
+            fit.pairs.forEach(p => {
+                const A = nodeMap[p.a], B = nodeMap[p.b];
+                const res = Math.min(...Object.values(p.vals)) - fit.expected(p.dist);
+                if (dirs.has(A.id)) dirs.get(A.id).push({ ang: Math.atan2(B.y - A.y, B.x - A.x), res });
+                if (dirs.has(B.id)) dirs.get(B.id).push({ ang: Math.atan2(A.y - B.y, A.x - B.x), res });
+            });
+            const correction = (id, ang) => {
+                let sw = 0, sr = 0;
+                dirs.get(id).forEach(q => {
+                    const c = Math.cos(ang - q.ang);
+                    if (c > 0) { const w = c ** 4; sw += w; sr += w * q.res; }
+                });
+                return sw > 0.05 ? sr / sw : 0;   // no links that way: no correction
+            };
+            const maxFt = Math.min(COVERAGE_MAX_FT, Math.max(...fit.pairs.map(p => p.dist)));
+            const cell = COVERAGE_CELL_FT / ftPerUnit;           // cell size in map units
+            // Only the area around the placed routers (plus their range), within
+            // the floorplan; the rest of the lot isn't interesting.
+            const margin = maxFt / ftPerUnit;
+            const fx0 = fp.offsetX, fy0 = fp.offsetY;
+            const fx1 = fx0 + fp.originalWidth * fp.scale, fy1 = fy0 + fp.originalHeight * fp.scale;
+            const x0 = Math.max(fx0, Math.min(...sources.map(s => s.x)) - margin);
+            const y0 = Math.max(fy0, Math.min(...sources.map(s => s.y)) - margin);
+            const x1 = Math.min(fx1, Math.max(...sources.map(s => s.x)) + margin);
+            const y1 = Math.min(fy1, Math.max(...sources.map(s => s.y)) + margin);
+            const w = Math.max(cell, x1 - x0), h = Math.max(cell, y1 - y0);
+            const cols = Math.max(1, Math.ceil(w / cell)), rows = Math.max(1, Math.ceil(h / cell));
+            const canvas = document.createElement('canvas');
+            canvas.width = cols; canvas.height = rows;
+            const ctx = canvas.getContext('2d');
+            const img = ctx.createImageData(cols, rows);
+            const counts = { good: 0, fair: 0, weak: 0, none: 0 };
+            for (let j = 0; j < rows; j++) {
+                for (let i = 0; i < cols; i++) {
+                    const px = x0 + (i + 0.5) * cell, py = y0 + (j + 0.5) * cell;
+                    let best = null;
+                    for (const s of sources) {
+                        const dx = px - s.x, dy = py - s.y;
+                        const dft = Math.hypot(dx, dy) * ftPerUnit;
+                        if (dft > maxFt) continue;
+                        const v = fit.expected(dft) + correction(s.id, Math.atan2(dy, dx));
+                        if (best == null || v > best) best = v;
+                    }
+                    let rgba;
+                    if (best == null) { rgba = [244, 67, 54, 70]; counts.none++; }
+                    else if (best >= 65) { rgba = [76, 175, 80, 40]; counts.good++; }
+                    else if (best >= 45) { rgba = [255, 193, 7, 85]; counts.fair++; }
+                    else { rgba = [244, 67, 54, 115]; counts.weak++; }
+                    img.data.set(rgba, (j * cols + i) * 4);
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+            const layer = g.insert('g', '.sibling-links-group').attr('class', 'coverage-layer');
+            layer.append('image')
+                .attr('href', canvas.toDataURL())
+                .attr('x', x0).attr('y', y0).attr('width', w).attr('height', h)
+                .attr('preserveAspectRatio', 'none')
+                .style('pointer-events', 'none')
+                .append('title').text('Coverage estimate (model, not a measurement)');
+            const total = cols * rows;
+            const pct = k => Math.round(100 * counts[k] / total);
+            const caveat = fit.b >= -1
+                ? ' Note: your links show little drop-off with distance, so this estimate is unreliable.'
+                : '';
+            showToast(`Coverage model from ${sources.length} routers within ${Math.round(maxFt)} ft: `
+                + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak, ${pct('none')}% out of range.${caveat}`);
+            return true;
+        }
 """
 
 
