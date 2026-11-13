@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2026-11-13
+
+### Changed
+- **Coverage colours auto-calibrate by default.** With a fixed LQI scale, a well-meshed house came out green almost everywhere. The new default **Relative (auto)** scale spreads the 10 colours across the scores actually found around your placed routers (deciles over the box they span), so the weakest areas always stand out. **Absolute LQI** is still available from the Scale selector. The summary message gives the real LQI range the colours cover, and falls back to the fixed scale when scores are nearly uniform.
+- **The Combined score is capped at LQI 120** (TI's practical ceiling), so many strong routers no longer produce impossible values.
+
 ## [1.6.1] - 2026-11-13
 
 ### Changed

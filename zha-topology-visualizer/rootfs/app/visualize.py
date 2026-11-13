@@ -696,8 +696,12 @@ def build_legend_html(has_routes: bool) -> str:
            'title="Combined: chance at least one router link works. Best: strongest router. Backup: second-strongest, i.e. what is left if the best one fails.">'
            '<option value="combined" selected>Combined</option><option value="best">Best router</option>'
            '<option value="backup">Backup (2nd best)</option></select>'
+           '<div><label for="coverageScale">Scale</label>'
+           '<select id="coverageScale" onchange="setCoverageScale(this.value)" '
+           'title="Relative: colours spread across the scores found around your devices, so the weakest areas always stand out. Absolute: fixed LQI steps.">'
+           '<option value="relative" selected>Relative (auto)</option><option value="absolute">Absolute LQI</option></select></div>'
            '<div class="lg-ramp" aria-hidden="true"></div>'
-           '<div class="lg-ramp-labels"><span>weak</span><span>45</span><span>65</span><span>strong</span></div>'
+           '<div class="lg-ramp-labels" id="coverageRampLabels"><span>weakest</span><span>relative to your house</span><span>strongest</span></div>'
            '<div class="lg-ramp-none"><span></span>grey = no router in range</div>'
            '</div>',
            _lg_toggle('data-toggle="distance"',
@@ -1213,6 +1217,9 @@ RADAR_JS = r"""
             [94, [102, 187, 106]], [Infinity, [46, 125, 50]],
         ];
         var coverageMode = 'combined';
+        // 'relative': the 10 colours span the scores found around your devices
+        // (deciles), so the weakest areas always stand out. 'absolute': fixed LQI.
+        var coverageScale = 'relative';
 
         const lqiToP = v => 1 / (1 + Math.exp(-(v - COVERAGE_P_MID) / COVERAGE_P_SCALE));
         const pToLqi = p => COVERAGE_P_MID + COVERAGE_P_SCALE * Math.log(Math.max(1e-6, p) / Math.max(1e-6, 1 - p));
@@ -1229,12 +1236,26 @@ RADAR_JS = r"""
             }
             // combined: chance at least one link works, mapped back to LQI
             const miss = vals.reduce((m, v) => m * (1 - lqiToP(v)), 1);
-            return pToLqi(1 - miss);
+            // Capped at TI's practical LQI ceiling so many strong routers don't
+            // produce LQI-equivalents no link could ever show.
+            return Math.min(RADAR_MAX_LQI, pToLqi(1 - miss));
         }
 
-        function coverageColor(v) {
-            for (const [lim, rgb] of COVERAGE_STEPS) if (v < lim) return rgb;
+        function coverageColor(v, limits) {
+            for (let k = 0; k < COVERAGE_STEPS.length; k++) {
+                if (v < limits[k]) return COVERAGE_STEPS[k][1];
+            }
             return COVERAGE_STEPS[COVERAGE_STEPS.length - 1][1];
+        }
+
+        function setCoverageScale(scale) {
+            coverageScale = scale;
+            const lab = document.getElementById('coverageRampLabels');
+            if (lab) lab.innerHTML = scale === 'relative'
+                ? '<span>weakest</span><span>relative to your house</span><span>strongest</span>'
+                : '<span>weak</span><span>45</span><span>65</span><span>strong</span>';
+            const el = document.querySelector('[data-toggle="coverage"]');
+            if (el && el.classList.contains('on')) setCoverageLayer(true);
         }
 
         function setCoverageMode(mode) {
@@ -1296,6 +1317,12 @@ RADAR_JS = r"""
             const ctx = canvas.getContext('2d');
             const img = ctx.createImageData(cols, rows);
             const counts = { good: 0, fair: 0, weak: 0, none: 0 };
+            const scores = new Float32Array(cols * rows).fill(NaN);
+            // Calibration area: the box around the placed routers themselves (no
+            // range margin), i.e. the house rather than the yard around it.
+            const bx0 = Math.min(...sources.map(s => s.x)), bx1 = Math.max(...sources.map(s => s.x));
+            const by0 = Math.min(...sources.map(s => s.y)), by1 = Math.max(...sources.map(s => s.y));
+            const calib = [];
             for (let j = 0; j < rows; j++) {
                 for (let i = 0; i < cols; i++) {
                     const px = x0 + (i + 0.5) * cell, py = y0 + (j + 0.5) * cell;
@@ -1307,14 +1334,35 @@ RADAR_JS = r"""
                         vals.push(fit.expected(dft) + correction(s.id, Math.atan2(dy, dx)));
                     }
                     const score = coverageScore(vals);
-                    let rgba;
-                    if (score == null) { rgba = [120, 120, 130, 70]; counts.none++; }   // no router in range: grey = no data
-                    else {
-                        rgba = coverageColor(score).concat([score < 62 ? 120 : 85]);
-                        if (score >= 65) counts.good++; else if (score >= 45) counts.fair++; else counts.weak++;
-                    }
-                    img.data.set(rgba, (j * cols + i) * 4);
+                    if (score == null) continue;
+                    scores[j * cols + i] = score;
+                    if (px >= bx0 && px <= bx1 && py >= by0 && py <= by1) calib.push(score);
                 }
+            }
+            // Colour limits: fixed LQI steps, or deciles of the scores in the house.
+            let limits = COVERAGE_STEPS.map(sv => sv[0]);
+            let scaleNote = '';
+            if (coverageScale === 'relative' && calib.length >= 20) {
+                calib.sort((a, b) => a - b);
+                const q = f => calib[Math.min(calib.length - 1, Math.floor(f * calib.length))];
+                const lo = q(0.02), hi = q(0.98);
+                if (hi - lo >= 3) {
+                    limits = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(q).concat([Infinity]);
+                    scaleNote = ` Colours span LQI-equivalent ${Math.round(lo)}–${Math.round(hi)} across the house.`;
+                } else {
+                    scaleNote = ' Scores are nearly uniform, so the fixed LQI scale is used.';
+                }
+            }
+            const weakLimit = limits[4];   // lower half of the ramp gets more opacity
+            for (let k = 0; k < scores.length; k++) {
+                const v = scores[k];
+                let rgba;
+                if (Number.isNaN(v)) { rgba = [120, 120, 130, 70]; counts.none++; }   // no router in range: grey = no data
+                else {
+                    rgba = coverageColor(v, limits).concat([v < weakLimit ? 125 : 85]);
+                    if (v >= 65) counts.good++; else if (v >= 45) counts.fair++; else counts.weak++;
+                }
+                img.data.set(rgba, k * 4);
             }
             ctx.putImageData(img, 0, 0);
             const layer = g.insert('g', '.sibling-links-group').attr('class', 'coverage-layer');
@@ -1331,7 +1379,7 @@ RADAR_JS = r"""
                 : '';
             const modeName = { best: 'best router', backup: 'second-best router', combined: 'all routers combined' }[coverageMode];
             showToast(`Coverage (${modeName}) from ${sources.length} routers within ${Math.round(maxFt)} ft: `
-                + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak, ${pct('none')}% out of range.${caveat}`);
+                + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak (LQI 65 / 45), ${pct('none')}% out of range.${scaleNote}${caveat}`);
             return true;
         }
 """
