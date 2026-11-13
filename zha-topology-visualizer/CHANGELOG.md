@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.4] - 2026-11-13
+
+### Fixed
+- **Neighbour-table LQI of 1 or 2 is now treated as "not reported", like 0.** TI Z-Stack fills entries it hasn't heard from recently with these placeholders; the coordinator's table, for example, listed seven routers at LQI 1. Read as real measurements, they made the coordinator look nearly deaf, so the coverage map showed red around it, the distance fit was skewed, and those links drew as very weak. They now show as "?" and are left out of every calculation. Applies to existing data on the next page load; no refresh needed.
+
 ## [1.6.3] - 2026-11-13
 
 ### Fixed

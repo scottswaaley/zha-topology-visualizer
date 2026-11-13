@@ -1455,6 +1455,21 @@ def build_hierarchy(data: dict) -> dict:
     }
 
 
+# TI Z-Stack fills neighbour-table LQI with 0 or 1 for entries it hasn't heard
+# from recently (e.g. the coordinator's table lists routers at LQI 1). Those
+# are placeholders, not measurements: anything below this is "not reported".
+LQI_MIN_REPORTED = 3
+
+
+def _real_lqi(value):
+    """Neighbour-table LQI as an int, or None when missing or a placeholder."""
+    try:
+        v = int(value)
+    except (TypeError, ValueError):
+        return None
+    return v if v >= LQI_MIN_REPORTED else None
+
+
 def _weaker_lqi(a, b):
     """The weaker of two directional LQIs, ignoring unreported (None) values.
 
@@ -1775,7 +1790,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         tgt = edge.get('target')
         lqi = edge.get('lqi')
         if src and tgt:
-            directional_lqi[(src, tgt)] = lqi if lqi else None
+            directional_lqi[(src, tgt)] = _real_lqi(lqi)
 
     device_primary_link = {}
 
@@ -1819,7 +1834,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                                 n_nwk = nwk_to_int(n.get('nwk'))
                                 if n_nwk == next_hop_nwk or n.get('ieee') == next_hop_ieee:
                                     try:
-                                        lqi = int(n.get('lqi', 0) or 0)
+                                        lqi = _real_lqi(n.get('lqi')) or 0
                                     except (ValueError, TypeError):
                                         lqi = 0
                                     break
@@ -1847,7 +1862,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 parent_ieee = n.get('ieee')
                 if parent_ieee and parent_ieee in nodes:
                     try:
-                        lqi = int(n.get('lqi', 0) or 0)
+                        lqi = _real_lqi(n.get('lqi')) or 0
                     except (ValueError, TypeError):
                         lqi = 0
                     device_primary_link[ieee] = {
@@ -1879,7 +1894,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             for n in other_device.get('neighbors', []):
                 if n.get('ieee') == ieee and n.get('relationship') == 'Child':
                     try:
-                        lqi = int(n.get('lqi', 0) or 0)
+                        lqi = _real_lqi(n.get('lqi')) or 0
                     except (ValueError, TypeError):
                         lqi = 0
                     if lqi > best_lqi:
@@ -1917,7 +1932,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
             n_node = nodes.get(n_ieee)
             try:
-                lqi = int(n.get('lqi', 0) or 0)
+                lqi = _real_lqi(n.get('lqi')) or 0
             except (ValueError, TypeError):
                 lqi = 0
 
@@ -1984,7 +1999,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 'ieee': n.get('ieee', ''),
                 # 0/missing = "not reported" on TI Z-Stack, kept as None so the
                 # neighbour overlay shows "unknown" instead of a red zero.
-                'lqi': int(n.get('lqi')) if n.get('lqi') else None,
+                'lqi': _real_lqi(n.get('lqi')),
                 'relationship': n.get('relationship', 'Unknown'),
                 'device_type': n.get('device_type', 'Unknown')
             })

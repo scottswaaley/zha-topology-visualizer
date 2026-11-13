@@ -532,6 +532,9 @@ class ZHAExporter:
                     lqi = int(lqi_raw) if lqi_raw else None
                 except (ValueError, TypeError):
                     lqi = None
+                # TI also uses 1 (and 2) as "not heard recently" placeholders.
+                if lqi is not None and lqi < 3:
+                    lqi = None
                 relationship = neighbor.get("relationship", "Unknown")
 
                 if neighbor_ieee:
