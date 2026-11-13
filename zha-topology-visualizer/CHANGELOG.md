@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2026-11-13
+
+### Added
+- **Espressif ESP32-C6/H2 LQI formulas** in the conversion table, ready for DIY routers:
+  - **esp-zigbee-sdk 1.x (ZBOSS):** LQI is recomputed from RSSI, linear from −80 to −30 dBm (`esp_zb_rssi_to_lqi`, esp-zigbee-lib 1.6.8).
+  - **SDK 2.x:** reports the Zigbee R23 link quality assessment, about −101 to +8 dBm (median of the last 3 frames).
+
+  Not auto-assigned yet, because ZHA doesn't expose which SDK a device's firmware uses.
+
 ## [1.7.0] - 2026-11-13
 
 ### Changed

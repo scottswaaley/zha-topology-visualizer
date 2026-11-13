@@ -120,7 +120,11 @@ LQI (0–255) is **not standardised**: each radio chip vendor computes it its ow
 | Telink TLSR825x | Tuya LED controllers and plugs, newer GLEDOPTO | −99 + LQI × 84/255 | Telink Zigbee SDK |
 | Silicon Labs EFR32 | Inovelli Blue, SONOFF MINI-ZB2GS, IKEA | −100 + LQI / 4 | Silicon Labs knowledge base |
 | NXP JN516x | Older Aqara/Xiaomi, ERIA | (7 × LQI − 1970) / 20 (approx.) | NXP, via Contiki |
+| Espressif ESP32-C6/H2, SDK 1.x (ZBOSS) | DIY routers | −80 + LQI × 50/255 | `esp_zb_rssi_to_lqi`, esp-zigbee-lib 1.6.8 |
+| Espressif ESP32-C6/H2, SDK 2.x | DIY routers | −101 + LQI × 109/255 (Zigbee R23 LQA) | esp-zigbee-lib 2.1.0 |
 | Unknown | e.g. Aqara JN5180 switches, Third Reality (Bouffalo) | generic −100 to −20 dBm estimate | none published |
+
+Espressif devices aren't detected automatically yet: the right formula depends on which SDK generation the firmware was built with, which ZHA doesn't expose.
 
 Where it's used: the coverage estimate, the signal-vs-distance layer and the signal radar. The LQI numbers drawn on lines and badges stay raw. Each device's card shows its radio family and conversion. Caveats: the ends of each range saturate (LQI 0 or 255 only mean "at or beyond the limit"); TI and Telink average neighbour-table LQI over recent frames; LQI 0–2 are treated as "not reported".
 

@@ -1141,6 +1141,10 @@ RADAR_JS = r"""
             telink: { label: 'Telink TLSR825x', min: -99, max: -15, src: 'Telink Zigbee SDK drv_radio.h (2021+)' },
             silabs: { label: 'Silicon Labs EFR32', min: -100, max: -36, src: 'Silicon Labs knowledge base' },
             nxp_jn516x: { label: 'NXP JN516x', src: 'NXP internal docs via Contiki (approximate)' },
+            // Espressif ESP32-C6/H2: the formula depends on the firmware's SDK generation and
+            // can't be detected from ZHA data, so these are not auto-assigned yet.
+            espressif_v1: { label: 'Espressif (esp-zigbee-sdk 1.x)', min: -80, max: -30, src: 'esp_zb_rssi_to_lqi in esp-zigbee-lib 1.6.8' },
+            espressif_v2: { label: 'Espressif (esp-zigbee-sdk 2.x)', min: -101, max: 8, src: 'R23 LQA in esp-zigbee-lib 2.1.0' },
             unknown: { label: 'unknown chip', min: -100, max: -20, src: 'no published formula; generic estimate' },
         };
 
