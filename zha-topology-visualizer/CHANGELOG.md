@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-11-13
+
+### Changed
+- **New legend, grouped by the question each mark answers:** what is this device / who is its parent / how good is that hop / which way does traffic go / what needs attention. It replaces the single mixed row, and a **Legend** button collapses it (remembered per browser).
+- **The legend is the filter panel.** Square boxes show or hide a layer: each tree-line source, all stored/cached lines at once, LQI numbers, route paths, router-load badges, end devices, router-to-router links. Round boxes focus on one problem (conflict, flapping, silent, no route, offline), dimming everything else; each shows its count. The separate Routes, LQI Labels and Show End Devices buttons are gone.
+- **Line style now means one thing each.** Dashed = stored or cached source (startup route records, route tables not read this refresh). A device not heard in 24 h fades its line instead of dashing it.
+- **The parent-field colour is now teal,** so it no longer matches the router node green.
+
+### Added
+- **Flapping replay.** Focusing on Flapping draws, for each flapping device, a faint line to every hop it has recently used, and steps a highlight through its recent route history in order. Respects reduced-motion settings.
+
 ## [1.4.2] - 2026-11-11
 
 ### Changed

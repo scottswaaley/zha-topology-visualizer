@@ -40,8 +40,6 @@ ADDON_VERSION = get_addon_version()
 # script calls its hooks, which are no-ops when routesMeta is null.
 
 ROUTE_CSS = """
-        .route-only { display: none; }
-        body.routes-on .route-only { display: inline; }
         .route-seg { fill: none; stroke: #E040FB; stroke-linecap: round; pointer-events: stroke; cursor: help; }
         .route-seg.startup { stroke-dasharray: 5, 4; }
         .route-seg.route-dim { stroke-opacity: 0.08 !important; }
@@ -313,7 +311,7 @@ ROUTE_JS = r"""
 
             // Merged path segments: above the tree links, but below the tree LQI
             // labels and the click-to-show neighbour lines so they never hide them.
-            const routeGroup = g.insert('g', '.neighbor-links-group').attr('class', 'route-only route-segs-group');
+            const routeGroup = g.insert('g', '.neighbor-links-group').attr('class', 'route-segs-group');
             routeSeg = routeGroup.selectAll('path')
                 .data(routeSegments)
                 .join('path')
@@ -338,11 +336,11 @@ ROUTE_JS = r"""
             // Router load badge (bottom-left) and busiest-router ring.
             node.filter(d => topLoadIds.has(d.id))
                 .insert('circle', ':first-child')
-                .attr('class', 'route-only top-load-ring')
+                .attr('class', 'top-load-ring')
                 .attr('r', d => getNodeRadius(d) + 5);
             const badge = node.filter(d => d.route_load > 0)
                 .append('g')
-                .attr('class', 'route-only route-load-badge')
+                .attr('class', 'route-load-badge')
                 .attr('transform', d => `translate(${-getNodeRadius(d) + 2}, ${getNodeRadius(d) - 2})`);
             badge.append('circle').attr('r', 5.5).attr('fill', '#7B1FA2').attr('stroke', '#fff').attr('stroke-width', 0.8);
             badge.append('text').attr('dy', 2).text(d => d.route_load);
@@ -359,7 +357,7 @@ ROUTE_JS = r"""
             simulation.on('tick.conflicts', updateConflictLinks);
 
             const flagText = node.append('text')
-                .attr('class', 'route-only route-flags')
+                .attr('class', 'route-flags')
                 .attr('x', d => -getNodeRadius(d) + 1)
                 .attr('y', d => -getNodeRadius(d) + 3);
             flagText.each(function(d) {
@@ -574,6 +572,333 @@ TREE_LQI_JS = r"""
 """
 
 
+# --- Legend A: grouped by the question each mark answers -------------------
+# Toggle entries (square box) show/hide a layer; focus entries (round box)
+# dim everything except matching devices; plain entries are key only.
+
+def _swatch_line(color, width=3, dash=None, opacity=None, cap=None):
+    extra = ''
+    if dash:
+        extra += f' stroke-dasharray="{dash}"'
+    if opacity is not None:
+        extra += f' opacity="{opacity}"'
+    if cap:
+        extra += f' stroke-linecap="{cap}"'
+    return (f'<svg width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" '
+            f'stroke="{color}" stroke-width="{width}"{extra}></line></svg>')
+
+
+def _lg_toggle(attr, mark, label, sub='', title='', on=True):
+    small = f'<small>{sub}</small>' if sub else ''
+    state = 'on' if on else 'off'
+    return (f'<button type="button" class="lg-item lg-toggle {state}" {attr} aria-pressed="{str(on).lower()}" title="{title}">'
+            f'<span class="lg-box"></span><span class="lg-mark">{mark}</span><span class="lg-text">{label}{small}</span></button>')
+
+
+def _lg_focus(key, mark, label, sub='', title=''):
+    small = f'<small>{sub}</small>' if sub else ''
+    return (f'<button type="button" class="lg-item lg-focus" data-focus="{key}" aria-pressed="false" title="{title}">'
+            f'<span class="lg-box"></span><span class="lg-mark">{mark}</span>'
+            f'<span class="lg-text">{label} <span class="lg-count" data-count="{key}"></span>{small}</span></button>')
+
+
+def _lg_key(mark, label, sub='', title=''):
+    small = f'<small>{sub}</small>' if sub else ''
+    return (f'<div class="lg-item lg-key" title="{title}"><span class="lg-box-empty"></span>'
+            f'<span class="lg-mark">{mark}</span><span class="lg-text">{label}{small}</span></div>')
+
+
+def _node_svg(fill, r=6, stroke=None, text=None):
+    s = f' stroke="{stroke}" stroke-width="2"' if stroke else ''
+    t = (f'<text x="14" y="10.5" font-size="7" fill="#1a1a2e" text-anchor="middle" font-weight="700">{text}</text>'
+         if text else '')
+    return f'<svg width="28" height="16" aria-hidden="true"><circle cx="14" cy="8" r="{r}" fill="{fill}"{s}></circle>{t}</svg>'
+
+
+def _glyph(ch, color):
+    return f'<span style="color:{color};font-weight:700;font-size:13px">{ch}</span>'
+
+
+def build_legend_html(has_routes: bool) -> str:
+    cols = []
+
+    col = ['<div class="lg-col"><div class="lg-q">What is this device?</div><div class="lg-qs">Fill = type</div>',
+           _lg_key(_node_svg('#00d4ff', 7), 'Coordinator'),
+           _lg_key(_node_svg('#8BC34A', 6), 'Router', 'relays traffic'),
+           _lg_toggle('data-toggle="enddev"', _node_svg('#FFC107', 5), 'End device', 'usually battery, sleeps',
+                      'Show or hide end devices'),
+           _lg_key(_node_svg('#8BC34A', 7, text='83'), 'Badge = last-hop LQI',
+                   'measured at the coordinator on the final hop in'),
+           _lg_key(_node_svg('#8BC34A', 6, stroke='#F44336'), 'Red ring = offline'),
+           '</div>']
+    cols.append(''.join(col))
+
+    col = ['<div class="lg-col"><div class="lg-q">Who is its parent?</div>'
+           '<div class="lg-qs">Tree line colour = where the answer came from, best first</div>']
+    if has_routes:
+        col.append(_lg_toggle('data-link-type="zroute"', _swatch_line('#CE93D8'), 'Route record, live',
+                              'actual traffic', 'First hop of the device&#39;s latest live route record'))
+    col.append(_lg_toggle('data-link-type="route"', _swatch_line('#00d4ff'), 'Route table',
+                          "the router's own next hop", 'Next hop from the router&#39;s own route table'))
+    col.append(_lg_toggle('data-link-type="parent"', _swatch_line('#26A69A'), 'Parent field',
+                          'set when the device joined', 'Parent/child relationship from neighbour tables'))
+    if has_routes:
+        col.append(_lg_toggle('data-link-type="zroute_startup"', _swatch_line('#CE93D8', 2.5, '5 3'),
+                              'Route record, stored', 'age unknown', 'Route record stored at startup'))
+    col.append(_lg_toggle('data-toggle="stale"', _swatch_line('#cfd3dc', 2.5, '5 3'), 'All stored / cached lines',
+                          'dashed = not confirmed this refresh', 'Show or hide every dashed (stored or cached) tree line'))
+    col.append(_lg_toggle('data-link-type="inferred"', _swatch_line('#FF9800', 2, '2 3'), 'Guess',
+                          'strongest neighbour', 'No source names a parent; strongest signal used'))
+    col.append(_lg_toggle('data-link-type="fallback"', _swatch_line('#6b7280', 2, '1 4', cap='round'), 'Unknown',
+                          'placed at the coordinator for layout', 'No information at all'))
+    col.append('</div>')
+    cols.append(''.join(col))
+
+    chips = ('<div class="lg-chips">'
+             '<span style="background:#4CAF50">90+</span><span style="background:#8BC34A">65+</span>'
+             '<span style="background:#FFC107">45+</span><span style="background:#F44336">&lt;45</span>'
+             '<span class="lg-chip-unk">? not reported</span></div>')
+    col = ['<div class="lg-col"><div class="lg-q">How good is that hop?</div>'
+           '<div class="lg-qs">Neighbour tables; each end measures what it receives</div>',
+           _lg_toggle('data-toggle="lqi"',
+                      '<svg width="28" height="12" aria-hidden="true"><text x="0" y="9" font-size="8" fill="#8BC34A" font-weight="700">82</text>'
+                      '<text x="13" y="9" font-size="8" fill="#4CAF50" font-weight="700">108</text></svg>',
+                      'LQI numbers on tree lines', 'hover one for its direction', 'Show or hide the LQI numbers'),
+           _lg_key('<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#cfd3dc" stroke-width="1.2"></line>'
+                   '<line x1="1" y1="9" x2="27" y2="9" stroke="#cfd3dc" stroke-width="3"></line></svg>',
+                   'Line width = weaker direction'),
+           chips,
+           _lg_toggle('data-link-type="sibling"', _swatch_line('#888888', 1.5, '4 4'), 'Router-to-router links',
+                      'neighbour, not parent', 'Routers that hear each other', on=False),
+           '</div>']
+    cols.append(''.join(col))
+
+    if has_routes:
+        arrow = ('<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="6" x2="20" y2="6" stroke="#E040FB" stroke-width="3"></line>'
+                 '<path d="M19,1 L27,6 L19,11 z" fill="#E040FB"></path></svg>')
+        col = ['<div class="lg-col"><div class="lg-q">Which way does traffic go?</div>'
+               '<div class="lg-qs">From route records</div>',
+               _lg_toggle('data-toggle="paths"', arrow, 'Path to the coordinator', 'thicker = more devices share it',
+                          'Show or hide the route paths'),
+               _lg_key(_swatch_line('#E040FB', 2.5, '4 3', 0.6), 'Stored path only', 'no live report yet'),
+               _lg_toggle('data-toggle="load"',
+                          '<svg width="28" height="16" aria-hidden="true"><circle cx="14" cy="8" r="7" fill="#7B1FA2" stroke="#fff" stroke-width="1"></circle>'
+                          '<text x="14" y="10.5" font-size="7" fill="#fff" text-anchor="middle" font-weight="700">15</text></svg>',
+                          'Devices routed through', 'live paths; gold ring = busiest', 'Show or hide router load badges'),
+               '</div>']
+        cols.append(''.join(col))
+
+    col = ['<div class="lg-col"><div class="lg-q">What needs attention?</div>'
+           '<div class="lg-qs">Click one to highlight just those devices</div>']
+    if has_routes:
+        col.append(_lg_focus('conflict', _glyph('&#9888;', '#FFB300'), 'Conflict',
+                             'sources name different parents',
+                             'Two current sources disagree on the next hop'))
+        col.append(_lg_focus('flapping', _glyph('&#8623;', '#FF9800'), 'Flapping',
+                             'replays recent paths', 'Route changes faster than the threshold; shows the hops it switches between'))
+        col.append(_lg_focus('silent', _glyph('z', '#9E9E9E'), 'Silent', 'no route report recently'))
+        col.append(_lg_focus('noroute', _glyph('&#8709;', '#F44336'), 'No route known'))
+    col.append(_lg_focus('offline', _node_svg('#8BC34A', 6, stroke='#F44336'), 'Offline'))
+    col.append(_lg_key(_swatch_line('#cfd3dc', 3, opacity=0.3), 'Faded line', 'device not heard in 24 h'))
+    col.append('</div>')
+    cols.append(''.join(col))
+
+    return '<div class="legend-a" id="legendPanel">' + ''.join(cols) + '</div>'
+
+
+LEGEND_CSS = """
+        .legend-a { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 18px;
+                    margin: 8px auto 0; max-width: 1400px; text-align: left; }
+        .legend-a[hidden] { display: none; }
+        .lg-col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+        .lg-q { font-size: 11.5px; font-weight: 700; color: #fff; }
+        .lg-qs { font-size: 10px; color: #8a93a8; margin-bottom: 3px; line-height: 1.3; }
+        .lg-item { display: grid; grid-template-columns: 12px 30px 1fr; align-items: center; gap: 6px;
+                   font: inherit; font-size: 11px; color: #e6e8ef; background: none; border: 1px solid transparent;
+                   border-radius: 4px; padding: 2px 4px; text-align: left; width: 100%; line-height: 1.25; }
+        .lg-text { min-width: 0; }
+        .lg-text small { display: block; color: #8a93a8; font-size: 9.5px; }
+        .lg-mark { display: flex; justify-content: center; align-items: center; }
+        .lg-toggle, .lg-focus { cursor: pointer; }
+        .lg-toggle:hover, .lg-focus:hover { background: rgba(255,255,255,0.06); }
+        .lg-toggle:focus-visible, .lg-focus:focus-visible { outline: 2px solid #00d4ff; outline-offset: 1px; }
+        .lg-box { width: 11px; height: 11px; border: 1.5px solid #8a93a8; border-radius: 2px; box-sizing: border-box; }
+        .lg-toggle.on .lg-box { background: #00d4ff; border-color: #00d4ff; box-shadow: inset 0 0 0 2px #1a1a2e; }
+        .lg-toggle.off { opacity: 0.5; }
+        .lg-toggle.off .lg-text { text-decoration: line-through; }
+        .lg-focus .lg-box { border-radius: 50%; }
+        .lg-focus.on { border-color: #FFB300; background: rgba(255,179,0,0.10); }
+        .lg-focus.on .lg-box { background: #FFB300; border-color: #FFB300; box-shadow: inset 0 0 0 2px #1a1a2e; }
+        .lg-focus:disabled { opacity: 0.4; cursor: default; }
+        .lg-focus:disabled:hover { background: none; }
+        .lg-count { color: #8a93a8; font-variant-numeric: tabular-nums; }
+        .lg-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 3px 22px; font-size: 10px; }
+        .lg-chips span { padding: 1px 5px; border-radius: 3px; color: #10151f; }
+        .lg-chips .lg-chip-unk { background: #3a3f52; color: #cfd3dc; }
+        .node.focus-dim { opacity: 0.12; }
+        .link.focus-dim, .route-seg.focus-dim, .conflict-link.focus-dim { opacity: 0.06 !important; }
+        .tree-lqi.focus-dim { opacity: 0.1; }
+        .link.primary.stale-src { stroke-dasharray: 5, 3; }
+        body.no-paths .route-segs-group { display: none; }
+        body.no-route-load .route-load-badge, body.no-route-load .top-load-ring { display: none; }
+        .flap-alt { fill: none; stroke: #FF9800; stroke-width: 1.5px; stroke-dasharray: 3, 3; stroke-opacity: 0.45; pointer-events: none; }
+        .flap-alt.flap-now { stroke-width: 4px; stroke-dasharray: none; stroke-opacity: 1;
+                             filter: drop-shadow(0 0 4px #FF9800); }
+        @media (prefers-reduced-motion: reduce) { .flap-alt { stroke-opacity: 0.8; } }
+"""
+
+LEGEND_JS = r"""
+        // ---------------- Legend A interactivity ----------------
+        var showStale = true;
+        var focusKey = null;
+        var flapTimer = null;
+        var flapSel = null;
+
+        function legendItems(sel) { return document.querySelectorAll(sel); }
+
+        function setItemState(el, on) {
+            el.classList.toggle('on', on);
+            el.classList.toggle('off', !on);
+            el.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+
+        function focusMatch(key, n) {
+            if (n.is_coordinator) return false;
+            if (key === 'offline') return n.available === false;
+            const f = (typeof routeFlags === 'function') ? routeFlags(n) : {};
+            return !!({ conflict: f.conflict, flapping: f.flapping, silent: f.silent, noroute: f.noRoute }[key]);
+        }
+
+        function updateFocusCounts() {
+            legendItems('.lg-focus').forEach(el => {
+                const key = el.dataset.focus;
+                const c = nodesData.filter(n => focusMatch(key, n)).length;
+                const span = el.querySelector('.lg-count');
+                if (span) span.textContent = '(' + c + ')';
+                // Nothing to highlight: disable rather than dim the whole map.
+                el.disabled = c === 0;
+            });
+        }
+
+        function applyFocus() {
+            const on = !!focusKey;
+            const match = n => on && focusMatch(focusKey, n);
+            node.classed('focus-dim', n => on && !match(n));
+            link.classed('focus-dim', l => on && !match(l.target));
+            if (typeof routeSeg !== 'undefined' && routeSeg) {
+                routeSeg.classed('focus-dim', s => on && !s.devices.some(id => nodeMap[id] && match(nodeMap[id])));
+            }
+            if (typeof conflictSel !== 'undefined' && conflictSel) {
+                conflictSel.classed('focus-dim', l => on && !(nodeMap[l.target] && match(nodeMap[l.target])));
+            }
+            if (treeLabel) treeLabel.classed('focus-dim', e => on && !match(e.link.target));
+            stopFlapReplay();
+            if (focusKey === 'flapping') startFlapReplay();
+        }
+
+        // Flapping replay: for each flapping device, a faint line to every hop it
+        // has recently used as its first hop, and a highlight that steps through
+        // its recent route history in order, so the switching is visible.
+        function startFlapReplay() {
+            const seqs = [];
+            nodesData.forEach(n => {
+                if (!focusMatch('flapping', n) || !n.route || !n.route.history) return;
+                const firsts = n.route.history.slice(-16).map(h => h.first).filter(x => x && nodeMap[x]);
+                if (firsts.length < 2) return;
+                seqs.push({ id: n.id, steps: firsts, i: 0 });
+            });
+            const lines = [];
+            seqs.forEach(s => [...new Set(s.steps)].forEach(h => lines.push({ dev: s.id, hop: h })));
+            const grp = g.select('.flap-group').empty()
+                ? g.insert('g', '.neighbor-links-group').attr('class', 'flap-group')
+                : g.select('.flap-group');
+            flapSel = grp.selectAll('path').data(lines).join('path').attr('class', 'flap-alt');
+            updateFlapLines();
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const paint = () => {
+                const now = {};
+                seqs.forEach(s => { now[s.id] = s.steps[s.i % s.steps.length]; s.i++; });
+                flapSel.classed('flap-now', l => now[l.dev] === l.hop);
+            };
+            paint();
+            if (!reduce) flapTimer = setInterval(paint, 700);
+        }
+
+        function updateFlapLines() {
+            if (!flapSel) return;
+            flapSel.attr('d', l => {
+                const a = nodeMap[l.dev], b = nodeMap[l.hop];
+                if (!a || !b || a.x == null || b.x == null) return '';
+                return `M${a.x},${a.y} L${b.x},${b.y}`;
+            });
+        }
+
+        function stopFlapReplay() {
+            if (flapTimer) { clearInterval(flapTimer); flapTimer = null; }
+            if (flapSel) { flapSel.remove(); flapSel = null; }
+        }
+
+        function legendToggle(el) {
+            const on = !el.classList.contains('on');
+            const lt = el.dataset.linkType;
+            if (lt) { toggleLinkType(lt); return; }
+            setItemState(el, on);
+            switch (el.dataset.toggle) {
+                case 'stale': showStale = on; updateLinkVisibility(); break;
+                case 'lqi': document.body.classList.toggle('no-tree-lqi', !on); hideLqiDirection(); break;
+                case 'paths':
+                    routesOn = on;
+                    document.body.classList.toggle('no-paths', !on);
+                    if (!on) clearRouteHighlight();
+                    break;
+                case 'load': document.body.classList.toggle('no-route-load', !on); break;
+                case 'enddev': showEndDevices = on; applyFilters(); break;
+            }
+        }
+
+        function legendFocus(el) {
+            const key = el.dataset.focus;
+            focusKey = (focusKey === key) ? null : key;
+            legendItems('.lg-focus').forEach(x => setItemState(x, x.dataset.focus === focusKey));
+            legendItems('.lg-focus').forEach(x => x.classList.remove('off'));
+            applyFocus();
+        }
+
+        function toggleLegendPanel(btn) {
+            const panel = document.getElementById('legendPanel');
+            if (!panel) return;
+            panel.hidden = !panel.hidden;
+            btn.classList.toggle('active', !panel.hidden);
+            try { localStorage.setItem('zha_legend_hidden', panel.hidden ? '1' : '0'); } catch (e) {}
+            refitGraph();
+        }
+
+        function refitGraph() {
+            const before = container.offsetTop;
+            fitGraphTop();
+            if (container.offsetTop !== before) {
+                width = container.clientWidth;
+                height = container.clientHeight;
+                svg.attr('viewBox', [0, 0, width, height]);
+            }
+        }
+
+        (function initLegend() {
+            const panel = document.getElementById('legendPanel');
+            if (panel) {
+                panel.addEventListener('click', ev => {
+                    const el = ev.target.closest('.lg-toggle, .lg-focus');
+                    if (!el) return;
+                    if (el.classList.contains('lg-focus')) legendFocus(el); else legendToggle(el);
+                });
+            }
+            legendItems('.lg-focus').forEach(x => x.classList.remove('on', 'off'));
+            updateFocusCounts();
+            simulation.on('tick.flap', updateFlapLines);
+        })();
+"""
+
+
 def load_topology(json_file: str) -> dict:
     """Load topology data from JSON export file."""
     with open(json_file, 'r') as f:
@@ -707,6 +1032,10 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
                     firsts.add(fh)
             history.append({
                 't': h.get('t'),
+                # IEEE of the first hop in this entry (coordinator when direct),
+                # used by the flapping replay.
+                'first': (None if not isinstance(hr, list)
+                          else (coordinator_id if not hr else resolve(hr[0]))),
                 'names': None if hr is None else [label(resolve(r), r) for r in hr],
             })
 
@@ -793,6 +1122,9 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
                 if severity[c['status']] > severity[verdict]:
                     verdict = c['status']
             parent = chosen['hop']
+            # Dashed in the UI: the chosen source is stored or cached. Route
+            # tables only count as cached when scan freshness is known.
+            stale_source = not chosen['current'] and (chosen['kind'] != 'table' or evidence.get('scan_known', True))
             if chosen['kind'] == 'record':
                 source_type = 'zroute' if chosen['current'] else 'zroute_startup'
             else:
@@ -808,6 +1140,7 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
             if not fallback:
                 continue
             parent, source_type = fallback['target'], fallback['source_type']
+            stale_source = False
             next_hop[ieee] = {'verdict': 'none', 'sources': [], 'fallback': source_type}
 
         lqi_fwd = directional_lqi.get((parent, ieee))
@@ -820,6 +1153,7 @@ def build_route_data(routes, devices, nodes, coordinator_id, nwk_to_ieee,
             'lqi_reverse': lqi_rev,
             'type': 'primary',
             'source_type': source_type,
+            'stale_source': stale_source,
             'source_last_seen': devices.get(ieee, {}).get('last_seen'),
         })
 
@@ -943,6 +1277,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             directional_lqi[(src, tgt)] = lqi if lqi else None
 
     device_primary_link = {}
+
+    # Which routers answered this refresh's active scan (route tables fresh).
+    # Exports from before v1.4.1 have no 'scan' key: freshness unknown, so
+    # nothing is marked as cached in that case.
+    _scan = data.get('scan') if isinstance(data.get('scan'), dict) else None
+    scan_known = _scan is not None
+    fresh_scan = set((_scan or {}).get('responded') or [])
 
     nwk_to_int = _parse_nwk
 
@@ -1216,6 +1557,8 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'lqi_reverse': lqi_rev,
             'type': 'primary',
             'source_type': link_info['source_type'],
+            # Dashed in the UI: a route table not read during this refresh.
+            'stale_source': bool(scan_known and link_info['source_type'] == 'route' and ieee not in fresh_scan),
             'source_last_seen': reporting_device.get('last_seen')
         })
 
@@ -1308,11 +1651,11 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             child = n.get('ieee')
             if n.get('relationship') == 'Child' and child in nodes and child not in parent_rel:
                 parent_rel[child] = (other_ieee, other_ieee)
-    scan_info = data.get('scan') if isinstance(data.get('scan'), dict) else {}
     evidence = {
         'table_hop': table_hop,
         'parent_rel': parent_rel,
-        'fresh': set(scan_info.get('responded') or []),
+        'fresh': fresh_scan,
+        'scan_known': scan_known,
     }
 
     # Optional source-route layer (zha_routes). None -> page identical to v1.3.1.
@@ -1364,41 +1707,16 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     # Escape CSS for embedding
     floorplan_css_escaped = floorplan_css if floorplan_css else ''
 
+    legend_html = build_legend_html(has_routes)
     if has_routes:
-        route_legend_html = (
-            '<div class="legend-item clickable" data-link-type="zroute" title="Tree parent = first relay in the device&#39;s latest live route record (zha_routes)">'
-            '<div class="legend-line" style="width:20px;height:3px;background:#CE93D8;margin-right:5px"></div> Route record</div>'
-            '<div class="legend-item clickable" data-link-type="zroute_startup" title="Tree parent from a route record stored at startup (age unknown)">'
-            '<div class="legend-line" style="width:20px;border-top:2px dashed #CE93D8;margin-right:5px"></div> Route record (startup)</div>'
-            '<div class="legend-item" title="Two current sources disagree on the next hop; dashed amber line points at the other one">'
-            '<div class="legend-line" style="width:20px;border-top:2px dashed #FFB300;margin-right:5px"></div> Conflicting next hop</div>'
-            '<span class="legend-group" style="margin-left:12px">Routes:</span>'
-            '<div class="legend-item" title="Actual path traffic takes to the coordinator; thicker = more devices share it">'
-            '<div class="legend-line" style="width:20px;height:3px;background:#E040FB;margin-right:5px"></div> Path (thicker = more devices)</div>'
-            '<div class="legend-item" title="Only startup (database) routes - age unknown">'
-            '<div class="legend-line" style="width:20px;border-top:2px dashed #E040FB;margin-right:5px;opacity:0.6"></div> Startup only</div>'
-            '<div class="legend-item" title="Number of device paths through this router; gold ring = busiest router">'
-            '<div class="legend-color" style="background:#7B1FA2;border-radius:50%"></div> Router load</div>'
-            '<div class="legend-item" title="Route changed more often than the flapping threshold since listening started">'
-            '<span style="color:#FF9800;font-weight:bold">&#8623;</span> Flapping</div>'
-            '<div class="legend-item" title="Only a startup route, or no route report within the silent threshold">'
-            '<span style="color:#9E9E9E;font-weight:bold">z</span> Silent</div>'
-            '<div class="legend-item" title="No route known for this device">'
-            '<span style="color:#F44336;font-weight:bold">&#8709;</span> No route</div>'
-            '<div class="legend-item" title="Route record and route table / parent disagree, and neither is stale">'
-            '<span style="color:#FFB300;font-weight:bold">&#9888;</span> Conflict</div>'
-        )
         route_controls_html = (
             '<div class="filter-group">'
-            '<button onclick="toggleRoutes(this)" class="active" id="toggleRoutesBtn" '
-            'title="Show the actual source routes reported to the coordinator (zha_routes)">Routes</button>'
             '<button onclick="toggleHierarchy(this)" id="hierarchyBtn" '
             'title="Best evidence: each device hangs from its most trusted next hop (live route record &gt; fresh route table &gt; startup record &gt; cached table &gt; parent). Neighbour tables: the v1.3 method.">Tree: Best evidence</button>'
             '<span id="routeSummary" style="font-size:11px;color:#CE93D8"></span>'
             '</div>'
         )
     else:
-        route_legend_html = ''
         route_controls_html = ''
 
     html = f'''<!DOCTYPE html>
@@ -1871,6 +2189,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             display: none !important;
         }}
 {TREE_LQI_CSS}
+{LEGEND_CSS}
 {ROUTE_CSS if has_routes else ''}
     </style>
 </head>
@@ -1888,26 +2207,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <span id="oldestSeen" style="color:#888" title="Oldest device last_seen - the stalest data in this view"></span>
             <span id="healthSummary" style="color:#FFC107" title="Network health: weak / offline / unknown-attachment devices"></span>
         </div>
-        <div class="legend">
-            <span class="legend-group">Device:</span>
-            <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div> Coordinator</div>
-            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> Router</div>
-            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> End Device</div>
-            <span class="legend-group" style="margin-left:12px">Signal <span style="color:#666;font-weight:normal">(TI LQI; badge &amp; links = last hop to coordinator)</span>:</span>
-            <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div> 90+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#8BC34A"></div> 65+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#FFC107"></div> 45+</div>
-            <div class="legend-item"><div class="legend-color" style="background:#F44336"></div> &lt;45</div>
-            <div class="legend-item"><div class="legend-color" style="background:#888"></div> not reported</div>
-            <span class="legend-group" style="margin-left:12px">Connection:</span>
-            <div class="legend-item clickable" data-link-type="route" title="Next hop from the router's own route table (read by the zha-toolkit scan)"><div class="legend-line" style="width:20px;height:3px;background:#00d4ff;margin-right:5px"></div> Route table</div>
-            <div class="legend-item clickable" data-link-type="parent" title="Parent from a reported Parent/Child relationship"><div class="legend-line" style="width:20px;height:3px;background:#8BC34A;margin-right:5px"></div> Parent (confirmed)</div>
-            <div class="legend-item clickable" data-link-type="inferred" title="Best guess from signal strength - no reported relationship"><div class="legend-line" style="width:20px;border-top:2px dashed #FF9800;margin-right:5px"></div> Estimated</div>
-            <div class="legend-item clickable" data-link-type="fallback" title="Attachment unknown - shown at the coordinator for layout only"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px"></div> Unknown</div>
-            <div class="legend-item clickable disabled" data-link-type="sibling"><div class="legend-line" style="width:20px;border-top:2px dashed #888;margin-right:5px"></div> Sibling</div>
-            <div class="legend-item"><div class="legend-line" style="width:20px;border-top:2px dashed #666;margin-right:5px;opacity:0.5"></div> Stale (&gt;24h)</div>
-            {route_legend_html}
-        </div>
+        {legend_html}
         <div class="controls">
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Search devices, entities, nwk..." oninput="handleSearch(this.value)">
@@ -1919,8 +2219,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             <button onclick="regenerateUI()" id="regenBtn" title="Regenerate UI from cached data (fast)">Regenerate UI</button>
             <button onclick="resetPositions()">Reset Layout</button>
             <button onclick="savePositions()">Save Positions</button>
-            <button onclick="toggleEndDevices(this)" class="active" id="toggleEndBtn">Show End Devices</button>
-            <button onclick="toggleTreeLqi(this)" class="active" id="toggleTreeLqiBtn" title="Show both LQI directions on each tree line; hover a number to see which direction it measures">LQI Labels</button>
+            <button onclick="toggleLegendPanel(this)" class="active" id="legendBtn" title="Show or hide the legend">Legend</button>
             {'<button onclick="toggleFloorplan(this)" class="active" id="toggleFloorplanBtn">Show Floorplan</button>' if has_floorplan else ''}
             {'<button onclick="toggleGrid(this)" id="toggleGridBtn">Show Grid</button>' if has_floorplan else ''}
             <div class="filter-group">
@@ -1984,17 +2283,28 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         function toggleLinkType(linkType) {{
             linkTypeVisibility[linkType] = !linkTypeVisibility[linkType];
 
-            const legendItem = document.querySelector(`.legend-item[data-link-type="${{linkType}}"]`);
+            const legendItem = document.querySelector(`[data-link-type="${{linkType}}"]`);
             if (legendItem) {{
-                legendItem.classList.toggle('disabled', !linkTypeVisibility[linkType]);
+                const on = linkTypeVisibility[linkType];
+                legendItem.classList.toggle('on', on);
+                legendItem.classList.toggle('off', !on);
+                legendItem.setAttribute('aria-pressed', on ? 'true' : 'false');
             }}
 
             updateLinkVisibility();
         }}
 
+        // A tree line shows when its source type is on and, if the "stored /
+        // cached" toggle is off, it isn't from stored or cached data.
+        function linkVisible(d) {{
+            if (!linkTypeVisibility[d.source_type]) return false;
+            if (showStale === false && (d.stale_source || d.source_type === 'zroute_startup')) return false;
+            return true;
+        }}
+
         function updateLinkVisibility() {{
             d3.selectAll('.primary-links-group path')
-                .style('display', d => linkTypeVisibility[d.source_type] ? null : 'none');
+                .style('display', d => linkVisible(d) ? null : 'none');
 
             d3.selectAll('.sibling-links-group path')
                 .style('display', d => linkTypeVisibility.sibling ? null : 'none');
@@ -2103,12 +2413,21 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         // The header can wrap to more lines (e.g. with route controls); start the
         // graph and the pinned card just below it instead of at a fixed 140px.
         function fitGraphTop() {{
-            if (!routesMeta) return;  // keep the v1.3 layout untouched without routes
-            const h =document.querySelector('.header').offsetHeight;
+            const h = document.querySelector('.header').offsetHeight;
             container.style.top = h + 'px';
             const card = document.getElementById('tooltip');
             if (card) card.style.top = window.innerWidth > 600 ? (h + 8) + 'px' : '';
         }}
+        (function restoreLegend() {{
+            try {{
+                if (localStorage.getItem('zha_legend_hidden') === '1') {{
+                    const p = document.getElementById('legendPanel');
+                    const b = document.getElementById('legendBtn');
+                    if (p) p.hidden = true;
+                    if (b) b.classList.remove('active');
+                }}
+            }} catch (e) {{}}
+        }})();
         fitGraphTop();
         let width = container.clientWidth;
         let height = container.clientHeight;
@@ -2573,7 +2892,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         function getSourceTypeColor(sourceType) {{
             switch(sourceType) {{
                 case 'route': return '#00d4ff';
-                case 'parent': return '#8BC34A';
+                case 'parent': return '#26A69A';
                 case 'neighbor': return '#FFC107';
                 case 'inferred': return '#FF9800';
                 case 'fallback': return '#666';
@@ -2601,7 +2920,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
           link = primaryLinksGroup.selectAll('path')
             .data(primaryLinks)
             .join('path')
-            .attr('class', d => `link primary ${{d.source_type}}`)
+            .attr('class', d => `link primary ${{d.source_type}}${{d.stale_source ? ' stale-src' : ''}}`)
             .attr('stroke', d => getSourceTypeColor(d.source_type))
             .attr('stroke-width', d => {{
                 if (d.lqi == null) return 1.5;  // unknown quality - de-emphasized
@@ -2610,20 +2929,15 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 if (d.lqi >= 45) return 2;
                 return 1.5;
             }})
-            .attr('stroke-dasharray', d => {{
-                // Stale links (>24h) shown dashed
-                if (!d.source_last_seen) return '6, 3';
-                const hoursSince = (exportTime - new Date(d.source_last_seen)) / 3600000;
-                if (hoursSince > 24) return '6, 3';
-                return null;
-            }})
+            // Dashes mean "stored or cached source" (CSS classes); a device not
+            // heard in 24 h fades its line instead.
             .attr('stroke-opacity', d => {{
-                if (!d.source_last_seen) return 0.35;
+                if (!d.source_last_seen) return 0.3;
                 const hoursSince = (exportTime - new Date(d.source_last_seen)) / 3600000;
-                if (hoursSince > 24) return 0.35;
+                if (hoursSince > 24) return 0.3;
                 return 0.6;
             }})
-            .style('display', d => linkTypeVisibility[d.source_type] ? null : 'none');
+            .style('display', d => linkVisible(d) ? null : 'none');
           link.selectAll('title').remove();
           link.append('title').text(d => treeLinkTitle(d));
           renderTreeLabels();
@@ -2795,7 +3109,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             }};
             const sourceTypeColors = {{
                 'route': '#00d4ff',
-                'parent': '#8BC34A',
+                'parent': '#26A69A',
                 'neighbor': '#FFC107',
                 'inferred': '#FF9800',
                 'fallback': '#666',
@@ -3352,6 +3666,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 {ROUTE_JS}
 {TREE_LQI_JS}
+{LEGEND_JS}
     </script>
 </body>
 </html>

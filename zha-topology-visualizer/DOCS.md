@@ -89,11 +89,9 @@ Connections are grouped by how confident we are in them:
 - **Scan Network**: Ask ZHA to rebuild its own topology cache. Usually unnecessary now that Refresh scans actively.
 - **Reset Layout**: Reset node positions to auto-layout
 - **Save Positions**: Save current node arrangement
-- **Show/Hide End Devices**: Toggle visibility of end devices
+- **Legend**: show or hide the legend panel. In the legend, square boxes toggle a layer (tree-line sources, stored/cached lines, LQI numbers, route paths, router load, end devices) and round boxes focus on one problem (conflict, flapping, silent, no route, offline). Focusing on Flapping replays each flapping device's recent hops
 - **Time Filter**: Show only devices seen recently
 - **Zoom Controls**: Zoom in/out and reset view
-- **LQI Labels**: Show/hide the two LQI numbers on each tree line. Hover a number to see which direction it measures; "?" = not reported
-- **Routes** *(only with `zha_routes`)*: Show/hide the source-route layer
 - **Tree: Best evidence / Neighbour tables** *(only with `zha_routes`)*: Hang each device from its most trusted next hop (live route record > fresh route table > startup record > cached table > parent), or use the v1.3 neighbour-table method
 
 ### Source routes (optional)
