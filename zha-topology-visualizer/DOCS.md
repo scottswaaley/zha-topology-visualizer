@@ -109,6 +109,21 @@ If the `zha_routes` custom integration is installed, each refresh also reads its
 
 Without `zha_routes` nothing changes; the add-on logs one line and carries on.
 
+### How signal is compared across devices (LQI → dBm)
+
+LQI (0–255) is **not standardised**: each radio chip vendor computes it its own way, so a reading of 90 from one device and 90 from another can mean very different signals. Most stacks compute LQI as a clamped straight line from the packet's received signal strength (RSSI, in dBm). The add-on converts each device's neighbour-table readings back to dBm using that device's chip formula before any model uses them:
+
+| Chip family | Typical devices | LQI → dBm | Source |
+|---|---|---|---|
+| TI CC26xx/CC13xx | Coordinator dongles, TI router firmware | −90 + LQI × 70/255 | TI SimpleLink SDK ≥ 5.30 |
+| TI CC2530 | SONOFF S31 Lite zb, older TI devices | −87 + LQI × 97/255 | TI Z-Stack 3.0.2 |
+| Telink TLSR825x | Tuya LED controllers and plugs, newer GLEDOPTO | −99 + LQI × 84/255 | Telink Zigbee SDK |
+| Silicon Labs EFR32 | Inovelli Blue, SONOFF MINI-ZB2GS, IKEA | −100 + LQI / 4 | Silicon Labs knowledge base |
+| NXP JN516x | Older Aqara/Xiaomi, ERIA | (7 × LQI − 1970) / 20 (approx.) | NXP, via Contiki |
+| Unknown | e.g. Aqara JN5180 switches, Third Reality (Bouffalo) | generic −100 to −20 dBm estimate | none published |
+
+Where it's used: the coverage estimate, the signal-vs-distance layer and the signal radar. The LQI numbers drawn on lines and badges stay raw. Each device's card shows its radio family and conversion. Caveats: the ends of each range saturate (LQI 0 or 255 only mean "at or beyond the limit"); TI and Telink average neighbour-table LQI over recent frames; LQI 0–2 are treated as "not reported".
+
 ### Interacting with Nodes
 
 - **Hover**: View device details (name, LQI, manufacturer, model)

@@ -688,7 +688,7 @@ def build_legend_html(has_routes: bool) -> str:
                       '<svg width="28" height="14" aria-hidden="true"><rect x="1" y="2" width="9" height="10" fill="#4CAF50" fill-opacity="0.4"></rect>'
                       '<rect x="10" y="2" width="9" height="10" fill="#FFC107" fill-opacity="0.6"></rect>'
                       '<rect x="19" y="2" width="8" height="10" fill="#F44336" fill-opacity="0.7"></rect></svg>',
-                      'Coverage estimate', 'model: predicted signal at each spot; pick the measure below',
+                      'Coverage estimate', 'model: predicted signal (dBm, converted per chip); pick the measure below',
                       'For placed devices on the floorplan: the signal predicted at each spot. A model built from your measured links, not a measurement.', on=False),
            '<div class="lg-cov">'
            '<label for="coverageMode">Measure</label>'
@@ -985,7 +985,16 @@ RADAR_JS = r"""
         // neighbour. Filled cyan = incoming (how this device receives each
         // neighbour, from its own table); dashed amber = outgoing (how each
         // neighbour receives this device, from their tables).
-        const RADAR_MAX_LQI = 120;   // TI LQI rarely exceeds ~110
+        // Radar works in dBm (each reading converted with the reporting device's
+        // chip formula), so incoming and outgoing are on one scale.
+        const RADAR_MIN_DBM = -100, RADAR_MAX_DBM = -30;
+        function dbmColor(v) {
+            if (v == null) return '#888';
+            if (v >= -65) return '#4CAF50';
+            if (v >= -75) return '#8BC34A';
+            if (v >= -85) return '#FFC107';
+            return '#F44336';
+        }
         const RADAR_SEL_R = 90;      // selected device, in map units
         const RADAR_ALL_R = 28;      // "on every device" mode
         const RADAR_SECTORS = 16;    // compass sectors for the shape (22.5° each)
@@ -1001,14 +1010,16 @@ RADAR_JS = r"""
                 const dx = o.x - d.x, dy = o.y - d.y;
                 if (!dx && !dy) return;
                 const back = (o.neighbors || []).find(z => z.ieee === d.id);
-                out.push({ o, ang: Math.atan2(dy, dx), hear: nb.lqi, heard: back ? back.lqi : null });
+                out.push({ o, ang: Math.atan2(dy, dx),
+                           hear: nb.lqi != null ? lqiToDbm(d, nb.lqi) : null,
+                           heard: back && back.lqi != null ? lqiToDbm(o, back.lqi) : null });
             });
             return out;
         }
 
         function radarGeometry(d, R) {
             const spokes = radarSpokes(d);
-            const r = v => Math.max(R * 0.06, Math.min(1, v / RADAR_MAX_LQI) * R);
+            const r = v => Math.max(R * 0.06, Math.min(1, Math.max(0, (v - RADAR_MIN_DBM) / (RADAR_MAX_DBM - RADAR_MIN_DBM))) * R);
             // Envelope over fixed compass sectors: each sector takes its strongest
             // neighbour; empty sectors pinch to the centre. Joining raw neighbour
             // angles instead collapses into slivers when neighbours cluster in a
@@ -1070,7 +1081,7 @@ RADAR_JS = r"""
                 sel.select('clipPath path').attr('d', geo.outPath);
                 sel.select('.radar-both').attr('d', geo.inPath && geo.outPath ? geo.inPath : '');
                 if (!it.sel) return;
-                sel.select('.radar-rings').selectAll('circle').data([45, 65, 90]).join('circle')
+                sel.select('.radar-rings').selectAll('circle').data([-85, -75, -65]).join('circle')
                     .attr('class', 'radar-ring').attr('cx', n.x).attr('cy', n.y).attr('r', v => geo.r(v));
                 const dots = [];
                 geo.spokes.forEach(s => {
@@ -1081,8 +1092,8 @@ RADAR_JS = r"""
                 sel.select('.radar-dots').selectAll('circle').data(dots).join('circle')
                     .attr('class', q => 'radar-dot-' + q.kind)
                     .attr('cx', q => q.x).attr('cy', q => q.y).attr('r', 2.6)
-                    .attr('fill', q => q.kind === 'in' ? getLqiColor(q.v) : 'none')
-                    .attr('stroke', q => q.kind === 'out' ? getLqiColor(q.v) : 'none');
+                    .attr('fill', q => q.kind === 'in' ? dbmColor(q.v) : 'none')
+                    .attr('stroke', q => q.kind === 'out' ? dbmColor(q.v) : 'none');
             });
         }
 
@@ -1120,25 +1131,29 @@ RADAR_JS = r"""
             return { d: Math.hypot(fa.x - fb.x, fa.y - fb.y), feet: fa.isFeet };
         }
 
-        // LQI scales differ by chip vendor: some radios report up to 255, TI
-        // tops out near 110. For the models only (displayed numbers stay raw),
-        // scale down each device whose readings run clearly above 100, judged
-        // by its own 90th percentile. Never scale up, so weak devices stay weak.
-        const LQI_MODEL_CEILING = 100;
-        const LQI_SCALE_MIN_VALUES = 5;
-        let lqiScaleCache = null;
+        // LQI is vendor-specific. Most stacks compute it as a clamped straight
+        // line from the packet's RSSI, so each device's readings convert back to
+        // dBm with its own chip's constants (from vendor SDK source / docs).
+        // Models use dBm; displayed LQI numbers stay raw.
+        const CHIP_LQI = {
+            ti_cc26xx: { label: 'TI CC26xx/CC13xx', min: -90, max: -20, src: 'TI SimpleLink SDK ≥ 5.30 mac_radio_defs.h' },
+            ti_cc2530: { label: 'TI CC2530', min: -87, max: 10, src: 'TI Z-Stack 3.0.2 mac_radio_defs.h' },
+            telink: { label: 'Telink TLSR825x', min: -99, max: -15, src: 'Telink Zigbee SDK drv_radio.h (2021+)' },
+            silabs: { label: 'Silicon Labs EFR32', min: -100, max: -36, src: 'Silicon Labs knowledge base' },
+            nxp_jn516x: { label: 'NXP JN516x', src: 'NXP internal docs via Contiki (approximate)' },
+            unknown: { label: 'unknown chip', min: -100, max: -20, src: 'no published formula; generic estimate' },
+        };
 
-        function lqiScale(id) {
-            if (!lqiScaleCache) {
-                lqiScaleCache = {};
-                nodesData.forEach(n => {
-                    const vals = (n.neighbors || []).map(nb => nb.lqi).filter(v => v != null).sort((a, b) => a - b);
-                    if (vals.length < LQI_SCALE_MIN_VALUES) return;
-                    const p90 = vals[Math.floor(0.9 * (vals.length - 1))];
-                    if (p90 > LQI_MODEL_CEILING) lqiScaleCache[n.id] = LQI_MODEL_CEILING / p90;
-                });
-            }
-            return lqiScaleCache[id] || 1;
+        function lqiToDbm(node, lqi) {
+            const c = CHIP_LQI[node && node.chip] || CHIP_LQI.unknown;
+            if (node && node.chip === 'nxp_jn516x') return (7 * lqi - 1970) / 20;
+            return c.min + lqi * (c.max - c.min) / 255;
+        }
+
+        function chipLine(d) {
+            const c = CHIP_LQI[d.chip] || CHIP_LQI.unknown;
+            const win = d.chip === 'nxp_jn516x' ? 'about −98…−9 dBm' : `${c.min}…${c.max} dBm`;
+            return `<div>Radio: <span>${c.label}</span> <span style="color:#666;font-size:9px">(LQI 0–255 ≈ ${win}; ${c.src})</span></div>`;
         }
 
         // Every neighbour-table value between two placed devices, and the fit
@@ -1152,7 +1167,8 @@ RADAR_JS = r"""
                     if (!placed(o) || o.id === n.id || nb.lqi == null) return;
                     const key = [n.id, o.id].sort().join('|');
                     if (!pairs.has(key)) pairs.set(key, { a: n.id, b: o.id, vals: {} });
-                    pairs.get(key).vals[n.id] = nb.lqi * lqiScale(n.id);   // how n hears o, on a common scale
+                    pairs.get(key).vals[n.id] = lqiToDbm(n, nb.lqi);   // how n hears o, in dBm
+                    (pairs.get(key).raw = pairs.get(key).raw || {})[n.id] = nb.lqi;
                 });
             });
             const pts = [];
@@ -1189,7 +1205,7 @@ RADAR_JS = r"""
                 const exp = fit.expected(p.dist);
                 return Object.assign(p, { meas, exp, resid: meas - exp });
             });
-            const color = rsd => rsd <= -20 ? '#F44336' : rsd <= -8 ? '#FF9800' : rsd < 8 ? '#9aa3b5' : '#4FC3F7';
+            const color = rsd => rsd <= -8 ? '#F44336' : rsd <= -4 ? '#FF9800' : rsd < 4 ? '#9aa3b5' : '#4FC3F7';   // dB
             const unit = list.length && list[0].feet ? ' ft' : ' (map units)';
             distSel = g.insert('g', '.neighbor-links-group').attr('class', 'dist-group')
                 .selectAll('path').data(list).join('path')
@@ -1199,7 +1215,7 @@ RADAR_JS = r"""
                 const A = nodeMap[p.a], B = nodeMap[p.b];
                 const an = A.user_given_name || A.name, bn = B.user_given_name || B.name;
                 const parts = [];
-                const shown = id => `${Math.round(p.vals[id])}${lqiScale(id) < 1 ? ' (rescaled from ' + Math.round(p.vals[id] / lqiScale(id)) + ')' : ''}`;
+                const shown = id => `${Math.round(p.vals[id])} dBm (LQI ${p.raw[id]}, ${(CHIP_LQI[nodeMap[id].chip] || CHIP_LQI.unknown).label})`;
                 if (p.vals[p.a] != null) parts.push(`${an} hears ${bn}: ${shown(p.a)}`);
                 if (p.vals[p.b] != null) parts.push(`${bn} hears ${an}: ${shown(p.b)}`);
                 const dir = p.resid < 0 ? 'weaker' : 'stronger';
@@ -1207,7 +1223,7 @@ RADAR_JS = r"""
                     + `Expected at this distance ≈ ${Math.round(p.exp)}; ${Math.abs(Math.round(p.resid))} ${dir} than expected`;
             });
             updateDistLinks();
-            showToast(`Fitted over ${n} measurements: LQI ≈ ${Math.round(a)} ${b < 0 ? '−' : '+'} ${Math.abs(b).toFixed(1)}·ln(distance)`);
+            showToast(`Fitted over ${n} measurements: signal ≈ ${Math.round(a)} ${b < 0 ? '−' : '+'} ${Math.abs(b).toFixed(1)}·ln(distance) dBm (each device's LQI converted with its chip's formula)`);
             return true;
         }
 
@@ -1231,16 +1247,20 @@ RADAR_JS = r"""
         const COVERAGE_CELL_FT = 2;
         const COVERAGE_MAX_FT = 60;
         // LQI -> rough delivery chance (logistic): 50 -> 50%, 70 -> ~92%, 35 -> ~13%.
-        const COVERAGE_P_MID = 50, COVERAGE_P_SCALE = 8;
+        // Signal (dBm) -> rough delivery chance: 50% at -88 dBm, ~92% at -82, ~13% at -93.
+        // Zigbee radios' sensitivity sits around -95 to -100 dBm.
+        const COVERAGE_P_MID = -88, COVERAGE_P_SCALE = 2.5;
+        const COVERAGE_MAX_DBM = -20;      // display cap
+        const COVERAGE_GOOD_DBM = -75, COVERAGE_FAIR_DBM = -85;   // summary bands (rule of thumb)
         // Combined counts only the strongest few routers in range: the realistic
         // set of parents a device could fall back to. Dozens of distant routers
         // shouldn't make a spot look perfect.
         const COVERAGE_COMBINE_TOP = 3;
         // 10-step ramp, deep red (weak) to deep green (strong); thresholds in LQI.
         const COVERAGE_STEPS = [
-            [30, [183, 28, 28]], [38, [211, 47, 47]], [46, [244, 67, 54]], [54, [255, 112, 67]],
-            [62, [255, 167, 38]], [70, [255, 202, 40]], [78, [212, 225, 87]], [86, [156, 204, 101]],
-            [94, [102, 187, 106]], [Infinity, [46, 125, 50]],
+            [-92, [183, 28, 28]], [-89, [211, 47, 47]], [-86, [244, 67, 54]], [-83, [255, 112, 67]],
+            [-80, [255, 167, 38]], [-77, [255, 202, 40]], [-74, [212, 225, 87]], [-70, [156, 204, 101]],
+            [-65, [102, 187, 106]], [Infinity, [46, 125, 50]],
         ];
         var coverageMode = 'combined';
         // 'relative': the 10 colours span the scores found around your devices
@@ -1256,7 +1276,7 @@ RADAR_JS = r"""
             if (!vals.length) return null;
             if (coverageMode === 'best') return Math.max(...vals);
             if (coverageMode === 'backup') {
-                if (vals.length < 2) return 0;                   // no second router at all
+                if (vals.length < 2) return -110;                // no second router at all
                 const s2 = vals.slice().sort((a, b) => b - a);
                 return s2[1];
             }
@@ -1287,7 +1307,7 @@ RADAR_JS = r"""
             const lab = document.getElementById('coverageRampLabels');
             if (lab) lab.innerHTML = scale === 'relative'
                 ? '<span>weakest</span><span>relative to your house</span><span>strongest</span>'
-                : '<span>weak</span><span>45</span><span>65</span><span>strong</span>';
+                : '<span>−92 dBm</span><span>−85</span><span>−75</span><span>−65</span>';
             const el = document.querySelector('[data-toggle="coverage"]');
             if (el && el.classList.contains('on')) setCoverageLayer(true);
         }
@@ -1382,8 +1402,8 @@ RADAR_JS = r"""
                 const lo = q(0.02), hi = q(0.98);
                 if (hi - lo >= 3) {
                     limits = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(q).concat([Infinity]);
-                    const fmt = v => v > RADAR_MAX_LQI ? `${RADAR_MAX_LQI}+` : `${Math.round(v)}`;
-                    scaleNote = ` Colours span LQI-equivalent ${fmt(lo)}–${fmt(hi)} across the house.`;
+                    const fmt = v => v > COVERAGE_MAX_DBM ? `${COVERAGE_MAX_DBM}+` : `${Math.round(v)}`;
+                    scaleNote = ` Colours span ${fmt(lo)} to ${fmt(hi)} dBm across the house.`;
                 } else {
                     scaleNote = ' Scores are nearly uniform, so the fixed LQI scale is used.';
                 }
@@ -1394,10 +1414,10 @@ RADAR_JS = r"""
                 let rgba;
                 if (Number.isNaN(v)) { rgba = [120, 120, 130, 70]; counts.none++; }   // no router in range: grey = no data
                 else {
-                    const shown = Math.min(RADAR_MAX_LQI, v);
+                    const shown = Math.min(COVERAGE_MAX_DBM, v);
                     const cv = coverageScale === 'relative' ? v : shown;
                     rgba = coverageColor(cv, limits).concat([cv < weakLimit ? 125 : 85]);
-                    if (shown >= 65) counts.good++; else if (shown >= 45) counts.fair++; else counts.weak++;
+                    if (shown >= COVERAGE_GOOD_DBM) counts.good++; else if (shown >= COVERAGE_FAIR_DBM) counts.fair++; else counts.weak++;
                 }
                 img.data.set(rgba, k * 4);
             }
@@ -1411,12 +1431,12 @@ RADAR_JS = r"""
                 .append('title').text('Coverage estimate (model, not a measurement)');
             const total = cols * rows;
             const pct = k => Math.round(100 * counts[k] / total);
-            const caveat = fit.b >= -1
+            const caveat = fit.b >= -2
                 ? ' Note: your links show little drop-off with distance, so this estimate is unreliable.'
                 : '';
             const modeName = { best: 'best router', backup: 'second-best router', combined: 'all routers combined' }[coverageMode];
             showToast(`Coverage (${modeName}) from ${sources.length} routers within ${Math.round(maxFt)} ft: `
-                + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak (LQI 65 / 45), ${pct('none')}% out of range.${scaleNote}${caveat}`);
+                + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak (−75 / −85 dBm), ${pct('none')}% out of range.${scaleNote}${caveat}`);
             return true;
         }
 """
@@ -1490,6 +1510,31 @@ def _real_lqi(value):
     except (TypeError, ValueError):
         return None
     return v if v >= LQI_MIN_REPORTED else None
+
+
+# Radio chip family per device, used to convert each device's LQI readings to
+# dBm with its own vendor's formula (LQI scales are vendor-specific). Rules are
+# ordered; IEEE OUI prefixes identify the chip vendor for most devices.
+_SILABS_OUIS = ('cc:86:ec', '8c:8b:48', '70:d0:7e', '00:0d:6f')
+
+
+def classify_chip(device: dict) -> str:
+    ieee = (device.get('ieee') or '').lower()
+    model = device.get('model') or ''
+    mfr = device.get('manufacturer') or ''
+    if 'S31 Lite' in model:
+        return 'ti_cc2530'
+    if ieee.startswith('00:12:4b'):
+        return 'ti_cc26xx'
+    if ieee.startswith('a4:c1:38') or device.get('manufacturer_code') == 0x1141:
+        return 'telink'
+    if mfr.startswith('_TZ3000_') and model == 'TS011F':
+        return 'telink'          # probable: sibling TS011F plugs are TLSR8258
+    if ieee[:8] in _SILABS_OUIS:
+        return 'silabs'
+    if ieee.startswith('00:15:8d'):
+        return 'nxp_jn516x'
+    return 'unknown'
 
 
 def _weaker_lqi(a, b):
@@ -2060,6 +2105,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             'id': node_id,
             'name': node.get('name', node_id),
             'user_given_name': device.get('user_given_name', ''),
+            'chip': classify_chip(device) if device else 'unknown',
             'device_type': node.get('device_type', 'Unknown'),
             'manufacturer': node.get('manufacturer', ''),
             'model': node.get('model', ''),
@@ -3726,6 +3772,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 <div><strong style="color:#00d4ff">${{d.user_given_name || d.name}}</strong></div>
                 ${{d.user_given_name ? `<div style="color:#888;font-size:10px">${{d.name}}</div>` : ''}}
                 <div>Type: <span>${{d.device_type}}</span>${{d.nwk ? ` <span style="color:#666;font-size:10px">(NWK: ${{d.nwk}})</span>` : ''}}</div>
+                ${{chipLine(d)}}
                 <div>Power: <span>${{d.power_source || 'Unknown'}}</span>${{d.available === false ? ' <span style="color:#F44336">• Offline</span>' : ''}}</div>
                 <div>Device LQI <span style="color:#555;font-size:9px">(signal of last hop to coordinator, not this device's own link)</span>: <span style="color:${{getLqiColor(d.lqi)}}">${{d.lqi != null ? d.lqi : 'not reported'}}</span> | Hops (est.): <span>${{depthDisplay}}</span></div>
                 <div>Position: <span style="color:#888">${{positionDisplay}}</span></div>

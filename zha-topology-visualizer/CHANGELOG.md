@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-11-13
+
+### Changed
+- **LQI is converted to dBm per radio chip, using each vendor's real formula.** LQI is not standardised: each chip vendor computes it differently, so raw values aren't comparable across devices. Most stacks compute it as a clamped straight line from the packet's RSSI, so each device's readings now convert back to dBm with its own chip's constants. This replaces the 1.6.5 rescaling heuristic. The coverage estimate, signal-vs-distance layer and signal radar now work in dBm. LQI numbers on lines, badges and the neighbour overlay stay raw.
+
+  | Chip family | LQI → dBm | Source |
+  |---|---|---|
+  | TI CC26xx/CC13xx (SDK ≥ 5.30) | −90 + LQI × 70/255 | TI SimpleLink SDK `mac_radio_defs.h` |
+  | TI CC2530 | −87 + LQI × 97/255 | TI Z-Stack 3.0.2 `mac_radio_defs.h` |
+  | Telink TLSR825x (SDK 2021+) | −99 + LQI × 84/255 | Telink Zigbee SDK `drv_radio.h` |
+  | Silicon Labs EFR32 | −100 + LQI / 4 | Silicon Labs knowledge base |
+  | NXP JN516x | (7 × LQI − 1970) / 20 (approximate) | NXP internal docs, via Contiki |
+  | Unknown (NXP JN518x, Bouffalo BL702, others) | −100 + LQI × 80/255 (generic estimate) | none published |
+
+  The chip is identified from the IEEE address prefix (OUI), with model-specific overrides (e.g. SONOFF S31 Lite zb = CC2530). The device card shows each device's radio family and conversion. On this network, converting cut the median disagreement between the two directions of a link from about 7 dB (raw LQI) to 4.8 dB over 65 links measured from both ends.
+- **Coverage** thresholds are now in dBm: the 10-step absolute scale runs from −92 to −65 dBm, the summary bands are good ≥ −75 and fair ≥ −85 dBm, and Combined treats −88 dBm as a 50% delivery chance.
+- **Signal radar** rings are at −85 / −75 / −65 dBm.
+
 ## [1.6.5] - 2026-11-13
 
 ### Fixed
