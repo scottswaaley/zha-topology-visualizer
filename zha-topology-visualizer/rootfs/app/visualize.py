@@ -688,8 +688,18 @@ def build_legend_html(has_routes: bool) -> str:
                       '<svg width="28" height="14" aria-hidden="true"><rect x="1" y="2" width="9" height="10" fill="#4CAF50" fill-opacity="0.4"></rect>'
                       '<rect x="10" y="2" width="9" height="10" fill="#FFC107" fill-opacity="0.6"></rect>'
                       '<rect x="19" y="2" width="8" height="10" fill="#F44336" fill-opacity="0.7"></rect></svg>',
-                      'Coverage estimate', 'model: best predicted LQI; red = weak or out of range',
-                      'For placed devices on the floorplan: the best signal any router is predicted to give at each spot. A model built from your measured links, not a measurement.', on=False),
+                      'Coverage estimate', 'model: predicted signal at each spot; pick the measure below',
+                      'For placed devices on the floorplan: the signal predicted at each spot. A model built from your measured links, not a measurement.', on=False),
+           '<div class="lg-cov">'
+           '<label for="coverageMode">Measure</label>'
+           '<select id="coverageMode" onchange="setCoverageMode(this.value)" '
+           'title="Combined: chance at least one router link works. Best: strongest router. Backup: second-strongest, i.e. what is left if the best one fails.">'
+           '<option value="combined" selected>Combined</option><option value="best">Best router</option>'
+           '<option value="backup">Backup (2nd best)</option></select>'
+           '<div class="lg-ramp" aria-hidden="true"></div>'
+           '<div class="lg-ramp-labels"><span>weak</span><span>45</span><span>65</span><span>strong</span></div>'
+           '<div class="lg-ramp-none"><span></span>grey = no router in range</div>'
+           '</div>',
            _lg_toggle('data-toggle="distance"',
                       '<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#F44336" stroke-width="2.5"></line>'
                       '<line x1="1" y1="9" x2="27" y2="9" stroke="#4FC3F7" stroke-width="2.5"></line></svg>',
@@ -767,6 +777,14 @@ LEGEND_CSS = """
         .lg-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 3px 22px; font-size: 10px; }
         .lg-chips span { padding: 1px 5px; border-radius: 3px; color: #10151f; }
         .lg-chips .lg-chip-unk { background: #3a3f52; color: #cfd3dc; }
+        .lg-cov { margin: 0 0 3px 52px; font-size: 10px; color: #8a93a8; display: grid; gap: 3px; }
+        .lg-cov label { display: inline; margin-right: 4px; }
+        .lg-cov select { background: #2a2a3e; color: #e6e8ef; border: 1px solid #555; border-radius: 3px; font-size: 10px; padding: 1px 3px; width: max-content; }
+        .lg-ramp { height: 7px; border-radius: 2px; width: 150px;
+                   background: linear-gradient(90deg, #B71C1C, #D32F2F, #F44336, #FF7043, #FFA726, #FFCA28, #D4E157, #9CCC65, #66BB6A, #2E7D32); }
+        .lg-ramp-labels { display: flex; justify-content: space-between; width: 150px; font-size: 9px; }
+        .lg-ramp-none { display: flex; align-items: center; gap: 4px; font-size: 9px; }
+        .lg-ramp-none span { width: 10px; height: 7px; background: rgba(120,120,130,0.6); border-radius: 2px; }
         .node.focus-dim { opacity: 0.12; }
         .link.focus-dim, .route-seg.focus-dim, .conflict-link.focus-dim { opacity: 0.06 !important; }
         .tree-lqi.focus-dim { opacity: 0.1; }
@@ -1186,6 +1204,44 @@ RADAR_JS = r"""
         // (max 60 ft) so it never extrapolates beyond the evidence.
         const COVERAGE_CELL_FT = 2;
         const COVERAGE_MAX_FT = 60;
+        // LQI -> rough delivery chance (logistic): 50 -> 50%, 70 -> ~92%, 35 -> ~13%.
+        const COVERAGE_P_MID = 50, COVERAGE_P_SCALE = 8;
+        // 10-step ramp, deep red (weak) to deep green (strong); thresholds in LQI.
+        const COVERAGE_STEPS = [
+            [30, [183, 28, 28]], [38, [211, 47, 47]], [46, [244, 67, 54]], [54, [255, 112, 67]],
+            [62, [255, 167, 38]], [70, [255, 202, 40]], [78, [212, 225, 87]], [86, [156, 204, 101]],
+            [94, [102, 187, 106]], [Infinity, [46, 125, 50]],
+        ];
+        var coverageMode = 'combined';
+
+        const lqiToP = v => 1 / (1 + Math.exp(-(v - COVERAGE_P_MID) / COVERAGE_P_SCALE));
+        const pToLqi = p => COVERAGE_P_MID + COVERAGE_P_SCALE * Math.log(Math.max(1e-6, p) / Math.max(1e-6, 1 - p));
+
+        // Combine the predicted LQIs of every router in range into one score,
+        // on the LQI scale so all modes share a colour ramp.
+        function coverageScore(vals) {
+            if (!vals.length) return null;
+            if (coverageMode === 'best') return Math.max(...vals);
+            if (coverageMode === 'backup') {
+                if (vals.length < 2) return 0;                   // no second router at all
+                const s2 = vals.slice().sort((a, b) => b - a);
+                return s2[1];
+            }
+            // combined: chance at least one link works, mapped back to LQI
+            const miss = vals.reduce((m, v) => m * (1 - lqiToP(v)), 1);
+            return pToLqi(1 - miss);
+        }
+
+        function coverageColor(v) {
+            for (const [lim, rgb] of COVERAGE_STEPS) if (v < lim) return rgb;
+            return COVERAGE_STEPS[COVERAGE_STEPS.length - 1][1];
+        }
+
+        function setCoverageMode(mode) {
+            coverageMode = mode;
+            const el = document.querySelector('[data-toggle="coverage"]');
+            if (el && el.classList.contains('on')) setCoverageLayer(true);
+        }
 
         function setCoverageLayer(on) {
             g.selectAll('.coverage-layer').remove();
@@ -1243,19 +1299,20 @@ RADAR_JS = r"""
             for (let j = 0; j < rows; j++) {
                 for (let i = 0; i < cols; i++) {
                     const px = x0 + (i + 0.5) * cell, py = y0 + (j + 0.5) * cell;
-                    let best = null;
+                    const vals = [];
                     for (const s of sources) {
                         const dx = px - s.x, dy = py - s.y;
                         const dft = Math.hypot(dx, dy) * ftPerUnit;
                         if (dft > maxFt) continue;
-                        const v = fit.expected(dft) + correction(s.id, Math.atan2(dy, dx));
-                        if (best == null || v > best) best = v;
+                        vals.push(fit.expected(dft) + correction(s.id, Math.atan2(dy, dx)));
                     }
+                    const score = coverageScore(vals);
                     let rgba;
-                    if (best == null) { rgba = [244, 67, 54, 70]; counts.none++; }
-                    else if (best >= 65) { rgba = [76, 175, 80, 40]; counts.good++; }
-                    else if (best >= 45) { rgba = [255, 193, 7, 85]; counts.fair++; }
-                    else { rgba = [244, 67, 54, 115]; counts.weak++; }
+                    if (score == null) { rgba = [120, 120, 130, 70]; counts.none++; }   // no router in range: grey = no data
+                    else {
+                        rgba = coverageColor(score).concat([score < 62 ? 120 : 85]);
+                        if (score >= 65) counts.good++; else if (score >= 45) counts.fair++; else counts.weak++;
+                    }
                     img.data.set(rgba, (j * cols + i) * 4);
                 }
             }
@@ -1272,7 +1329,8 @@ RADAR_JS = r"""
             const caveat = fit.b >= -1
                 ? ' Note: your links show little drop-off with distance, so this estimate is unreliable.'
                 : '';
-            showToast(`Coverage model from ${sources.length} routers within ${Math.round(maxFt)} ft: `
+            const modeName = { best: 'best router', backup: 'second-best router', combined: 'all routers combined' }[coverageMode];
+            showToast(`Coverage (${modeName}) from ${sources.length} routers within ${Math.round(maxFt)} ft: `
                 + `${pct('good')}% good, ${pct('fair')}% fair, ${pct('weak')}% weak, ${pct('none')}% out of range.${caveat}`);
             return true;
         }

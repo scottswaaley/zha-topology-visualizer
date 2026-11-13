@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2026-11-13
+
+### Changed
+- **Coverage measure selector.** Under the Coverage toggle, choose how routers in range combine at each spot:
+  - **Combined** (default): the chance at least one router link works, shown on the LQI scale. Each router's predicted LQI becomes a rough delivery chance (50 ≈ 50%, 70 ≈ 92%, 35 ≈ 13%), so two decent routers beat one, but many weak ones don't add up to a strong one.
+  - **Best router:** the strongest single router, which is what Zigbee would pick as the parent.
+  - **Backup (2nd best):** what's left if that router fails.
+- **10-step colour ramp** (deep red to deep green, with a gradient key in the legend) instead of three bands. Spots with no router in range are grey, since that means "no data", not "weak".
+
 ## [1.6.0] - 2026-11-13
 
 ### Added
