@@ -59,7 +59,11 @@ ROUTE_CSS = """
 ROUTE_JS = r"""
         // ---------------- Source-route layer (zha_routes) ----------------
         // Thresholds for the per-device flags. Tune here.
-        const FLAP_CHANGES_PER_HOUR = 5;   // flapping: route changes/hour since listening started
+        // Flapping: share of a device's route reports that showed a different
+        // path. Measured per report, so chatty devices aren't penalised for
+        // reporting often.
+        const FLAP_CHANGE_SHARE = 0.25;    // more than 25% of reports changed the path
+        const FLAP_MIN_REPORTS = 10;       // ignore devices with too few reports to judge
         const SILENT_HOURS = 6;            // silent: no route report for this long (or startup route only)
 
         let routesOn = !!routesMeta;
@@ -88,7 +92,7 @@ ROUTE_JS = r"""
             if (r.relays === null) flags.noRoute = true;
             if (d.next_hop && d.next_hop.verdict === 'conflict') flags.conflict = true;
             const hrs = routeListenHours();
-            if (hrs && r.changes / Math.max(hrs, 1) > FLAP_CHANGES_PER_HOUR) flags.flapping = true;
+            if (r.reports >= FLAP_MIN_REPORTS && r.changes / r.reports > FLAP_CHANGE_SHARE) flags.flapping = true;
             const reportAgeH = r.last_report ? (exportTime - new Date(r.last_report)) / 3600000 : Infinity;
             if (r.source === 'database' || !(reportAgeH <= SILENT_HOURS)) flags.silent = true;
             return flags;
@@ -167,7 +171,7 @@ ROUTE_JS = r"""
             const name = d.user_given_name || d.name;
             const flags = routeFlags(d);
             const hrs = routeListenHours();
-            const rate = hrs ? (r.changes / Math.max(hrs, 1)).toFixed(1) : '?';
+            const share = r.reports ? Math.round(100 * r.changes / r.reports) + '% of reports' : 'no reports';
             const flagText = [
                 flags.flapping ? '<span style="color:#FF9800">&#8623; flapping</span>' : '',
                 flags.silent ? '<span style="color:#9E9E9E">z silent</span>' : '',
@@ -183,7 +187,7 @@ ROUTE_JS = r"""
             }
             html += `<div>Hops: <span>${r.hops !== null ? r.hops : 'n/a'}</span> | Source: ${sourceText}</div>`;
             html += `<div>Last route report: <span>${fmtAgo(r.last_report)}</span>${r.last_change ? ` | changed ${fmtAgo(r.last_change)}` : ''}</div>`;
-            html += `<div>Changes: <span>${r.changes}</span> since listening started <span style="color:#666">(${rate}/h, ${r.reports} reports)</span></div>`;
+            html += `<div>Path changes: <span>${r.changes}</span> of ${r.reports} reports <span style="color:#666">(${share})</span></div>`;
             if (flagText) html += `<div>Flags: ${flagText}</div>`;
             if (r.history && r.history.length) {
                 const recent = r.history.slice(-8).reverse();
@@ -213,7 +217,7 @@ ROUTE_JS = r"""
                 text: `Listening since ${since}${hrsText} · ${routesMeta.live_reports ?? '?'} live reports`
                     + ` · ↯${flap} flapping · z${silent} silent · ∅${none} no route · ⚠${conflict} conflict`,
                 title: `zha_routes: ${routesMeta.hooked_devices ?? '?'} hooked devices. Counts reset when Home Assistant restarts.\n`
-                    + `Flapping = more than ${FLAP_CHANGES_PER_HOUR} route changes/hour; silent = startup route only or no report for ${SILENT_HOURS}h.`
+                    + `Flapping = more than ${Math.round(FLAP_CHANGE_SHARE * 100)}% of route reports show a new path (min ${FLAP_MIN_REPORTS} reports); silent = startup route only or no report for ${SILENT_HOURS}h.`
             };
         }
 
@@ -670,6 +674,11 @@ def build_legend_html(has_routes: bool) -> str:
            chips,
            _lg_toggle('data-link-type="sibling"', _swatch_line('#888888', 1.5, '4 4'), 'Router-to-router links',
                       'neighbour, not parent', 'Routers that hear each other', on=False),
+           _lg_toggle('data-toggle="distance"',
+                      '<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#F44336" stroke-width="2.5"></line>'
+                      '<line x1="1" y1="9" x2="27" y2="9" stroke="#4FC3F7" stroke-width="2.5"></line></svg>',
+                      'Signal vs distance', 'red = weaker than distance predicts',
+                      'For placed devices: each link coloured by how its LQI compares with what its distance predicts', on=False),
            '</div>']
     cols.append(''.join(col))
 
@@ -695,7 +704,7 @@ def build_legend_html(has_routes: bool) -> str:
                              'sources name different parents',
                              'Two current sources disagree on the next hop'))
         col.append(_lg_focus('flapping', _glyph('&#8623;', '#FF9800'), 'Flapping',
-                             'replays recent paths', 'Route changes faster than the threshold; shows the hops it switches between'))
+                             'replays recent paths', 'More than 25% of its route reports show a new path; shows the hops it switches between'))
         col.append(_lg_focus('silent', _glyph('z', '#9E9E9E'), 'Silent', 'no route report recently'))
         col.append(_lg_focus('noroute', _glyph('&#8709;', '#F44336'), 'No route known'))
     col.append(_lg_focus('offline', _node_svg('#8BC34A', 6, stroke='#F44336'), 'Offline'))
@@ -853,6 +862,9 @@ LEGEND_JS = r"""
                     break;
                 case 'load': document.body.classList.toggle('no-route-load', !on); break;
                 case 'enddev': showEndDevices = on; applyFilters(); break;
+                case 'distance':
+                    if (!setDistanceLayer(on)) setItemState(el, false);
+                    break;
             }
         }
 
@@ -896,6 +908,142 @@ LEGEND_JS = r"""
             updateFocusCounts();
             simulation.on('tick.flap', updateFlapLines);
         })();
+"""
+
+
+# --- Per-node radar and signal-vs-distance layer ------------------------------
+# Directions come from where devices sit on the map; LQI from neighbour tables.
+# Only devices the user has placed (fixed positions) are used for distance, since
+# auto-laid-out positions say nothing about the real house.
+
+RADAR_CSS = """
+        .radar-wrap { margin-top: 6px; border-top: 1px solid #333; padding-top: 5px; }
+        .radar-wrap svg { display: block; margin: 2px auto 0; }
+        .dist-link { fill: none; stroke-width: 2.2px; stroke-opacity: 0.85; stroke-linecap: round; cursor: help; }
+"""
+
+RADAR_JS = r"""
+        // ---------------- Radar (device card) ----------------
+        const RADAR_MAX_LQI = 120;   // TI LQI rarely exceeds ~110
+
+        function radarHtml(d) {
+            if (!d.neighbors || !d.neighbors.length || d.x == null) return '';
+            const R = 78, C = 100;
+            const r = v => Math.max(4, Math.min(1, v / RADAR_MAX_LQI) * R);
+            const spokes = [];
+            d.neighbors.forEach(nb => {
+                const o = nodeMap[nb.ieee];
+                if (!o || o.x == null || o.id === d.id) return;
+                const dx = o.x - d.x, dy = o.y - d.y;
+                if (!dx && !dy) return;
+                const back = (o.neighbors || []).find(z => z.ieee === d.id);
+                spokes.push({ o, ang: Math.atan2(dy, dx), hear: nb.lqi, heard: back ? back.lqi : null });
+            });
+            if (!spokes.length) return '';
+            let svgParts = [];
+            [45, 65, 90].forEach(v => svgParts.push(
+                `<circle cx="${C}" cy="${C}" r="${r(v)}" fill="none" stroke="#3a3f52" stroke-dasharray="2 3"></circle>`
+                + `<text x="${C + 2}" y="${C - r(v) - 1}" font-size="7" fill="#6b7280">${v}</text>`));
+            spokes.forEach(s => {
+                const ux = Math.cos(s.ang), uy = Math.sin(s.ang);
+                const reach = Math.max(s.hear || 0, s.heard || 0);
+                const name = escHtml(s.o.user_given_name || s.o.name);
+                const title = `${name}: this device hears it ${s.hear != null ? s.hear : '?'}, it hears this device ${s.heard != null ? s.heard : '?'}`;
+                let spoke = `<g><title>${title}</title>`;
+                spoke += `<line x1="${C}" y1="${C}" x2="${C + ux * (reach ? r(reach) : R)}" y2="${C + uy * (reach ? r(reach) : R)}" stroke="${reach ? '#5b6475' : '#3a3f52'}" stroke-width="1" ${reach ? '' : 'stroke-dasharray="1 3"'}></line>`;
+                if (s.hear != null) spoke += `<circle cx="${C + ux * r(s.hear)}" cy="${C + uy * r(s.hear)}" r="3.6" fill="${getLqiColor(s.hear)}"></circle>`;
+                if (s.heard != null) spoke += `<circle cx="${C + ux * r(s.heard)}" cy="${C + uy * r(s.heard)}" r="3.6" fill="none" stroke="${getLqiColor(s.heard)}" stroke-width="1.6"></circle>`;
+                spoke += '</g>';
+                svgParts.push(spoke);
+            });
+            svgParts.push(`<circle cx="${C}" cy="${C}" r="4" fill="${getNodeColor(d)}"></circle>`);
+            return `<div class="radar-wrap"><div>Signal around this device <span style="color:#666;font-size:9px">(direction = map position; up = top of map; ● it hears them, ○ they hear it; dotted = not reported)</span></div>`
+                + `<svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Neighbour signal by direction">${svgParts.join('')}</svg></div>`;
+        }
+
+        // ---------------- Signal vs distance layer ----------------
+        // Fits LQI = a + b*ln(distance) over every neighbour-table value between
+        // two placed devices, then colours each link by measured minus expected.
+        // Much weaker than expected for its distance usually means something in
+        // the way: walls, metal, appliances.
+        let distSel = null;
+
+        function placed(n) { return n && n.fx != null && n.fy != null; }
+
+        function distanceBetween(a, b) {
+            const fa = screenToFeet(a.x, a.y), fb = screenToFeet(b.x, b.y);
+            return { d: Math.hypot(fa.x - fb.x, fa.y - fb.y), feet: fa.isFeet };
+        }
+
+        function setDistanceLayer(on) {
+            g.selectAll('.dist-group').remove();
+            distSel = null;
+            if (!on) return true;
+            const pairs = new Map();
+            nodesData.forEach(n => {
+                if (!placed(n)) return;
+                (n.neighbors || []).forEach(nb => {
+                    const o = nodeMap[nb.ieee];
+                    if (!placed(o) || o.id === n.id || nb.lqi == null) return;
+                    const key = [n.id, o.id].sort().join('|');
+                    if (!pairs.has(key)) pairs.set(key, { a: n.id, b: o.id, vals: {} });
+                    pairs.get(key).vals[n.id] = nb.lqi;   // how n hears o
+                });
+            });
+            const pts = [];
+            pairs.forEach(p => {
+                const dist = distanceBetween(nodeMap[p.a], nodeMap[p.b]);
+                p.dist = dist.d; p.feet = dist.feet;
+                if (p.dist <= 0) return;
+                Object.values(p.vals).forEach(v => pts.push([Math.log(Math.max(p.dist, 1)), v]));
+            });
+            if (pts.length < 6) {
+                showToast('Signal vs distance needs at least 6 measured links between placed devices');
+                return false;
+            }
+            const n = pts.length;
+            const mx = pts.reduce((s, q) => s + q[0], 0) / n, my = pts.reduce((s, q) => s + q[1], 0) / n;
+            const sxx = pts.reduce((s, q) => s + (q[0] - mx) ** 2, 0);
+            const b = sxx ? pts.reduce((s, q) => s + (q[0] - mx) * (q[1] - my), 0) / sxx : 0;
+            const a = my - b * mx;
+            const list = [];
+            pairs.forEach(p => {
+                if (!(p.dist > 0)) return;
+                const vs = Object.values(p.vals);
+                const meas = vs.reduce((s, v) => s + v, 0) / vs.length;
+                const exp = a + b * Math.log(Math.max(p.dist, 1));
+                list.push(Object.assign(p, { meas, exp, resid: meas - exp }));
+            });
+            const color = rsd => rsd <= -20 ? '#F44336' : rsd <= -8 ? '#FF9800' : rsd < 8 ? '#9aa3b5' : '#4FC3F7';
+            const unit = list.length && list[0].feet ? ' ft' : ' (map units)';
+            distSel = g.insert('g', '.neighbor-links-group').attr('class', 'dist-group')
+                .selectAll('path').data(list).join('path')
+                .attr('class', 'dist-link')
+                .attr('stroke', p => color(p.resid));
+            distSel.append('title').text(p => {
+                const A = nodeMap[p.a], B = nodeMap[p.b];
+                const an = A.user_given_name || A.name, bn = B.user_given_name || B.name;
+                const parts = [];
+                if (p.vals[p.a] != null) parts.push(`${an} hears ${bn}: ${p.vals[p.a]}`);
+                if (p.vals[p.b] != null) parts.push(`${bn} hears ${an}: ${p.vals[p.b]}`);
+                const dir = p.resid < 0 ? 'weaker' : 'stronger';
+                return `${an} ↔ ${bn}: ${p.dist.toFixed(1)}${unit}\n${parts.join('\n')}\n`
+                    + `Expected at this distance ≈ ${Math.round(p.exp)}; ${Math.abs(Math.round(p.resid))} ${dir} than expected`;
+            });
+            updateDistLinks();
+            showToast(`Fitted over ${n} measurements: LQI ≈ ${Math.round(a)} ${b < 0 ? '−' : '+'} ${Math.abs(b).toFixed(1)}·ln(distance)`);
+            return true;
+        }
+
+        function updateDistLinks() {
+            if (!distSel) return;
+            distSel.attr('d', p => {
+                const A = nodeMap[p.a], B = nodeMap[p.b];
+                return (A.x == null || B.x == null) ? '' : `M${A.x},${A.y} L${B.x},${B.y}`;
+            });
+        }
+
+        simulation.on('tick.dist', updateDistLinks);
 """
 
 
@@ -2190,6 +2338,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
         }}
 {TREE_LQI_CSS}
 {LEGEND_CSS}
+{RADAR_CSS}
 {ROUTE_CSS if has_routes else ''}
     </style>
 </head>
@@ -3193,6 +3342,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
                 ${{entitiesHtml}}
                 <div>Last seen: <span>${{formatLastSeen(d.last_seen)}}</span></div>
                 ${{d.neighbors && d.neighbors.length > 0 ? `<div>Neighbors: <span>${{d.neighbors.length}} (click to show)</span></div>` : ''}}
+                ${{radarHtml(d)}}
                 ${{haDeviceUrl ? `<div style="margin-top:5px"><a href="${{haDeviceUrl}}" target="_blank" style="color:#00d4ff;text-decoration:none;">Open in Home Assistant &rarr;</a></div>` : ''}}
                 ${{(d.device_type === 'Router' || d.is_coordinator) ? `<div style="margin-top:6px"><button onclick="rescanRouter('${{d.id}}')" style="background:#00d4ff;color:#000;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">Rescan this router</button></div>` : ''}}
                 <div style="color:#666;margin-top:5px;font-size:10px">Drag to move | Click to select</div>
@@ -3667,6 +3817,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 {ROUTE_JS}
 {TREE_LQI_JS}
 {LEGEND_JS}
+{RADAR_JS}
     </script>
 </body>
 </html>

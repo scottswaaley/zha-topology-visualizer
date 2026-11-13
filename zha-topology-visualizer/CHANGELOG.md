@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Flapping replay.** Focusing on Flapping draws, for each flapping device, a faint line to every hop it has recently used, and steps a highlight through its recent route history in order. Respects reduced-motion settings.
+- **Signal radar in the device card.** One spoke per neighbour, pointing where that neighbour sits on the map, with its length set by LQI: ● how this device hears it, ○ how it hears this device; dotted = not reported. Weak or missing directions (walls, metal boxes) stand out.
+- **Signal vs distance layer** (legend toggle, off by default). For devices you have placed on the map, fits LQI against distance across every measured link (LQI ≈ a + b·ln distance) and colours each link by how it compares: red/orange = weaker than its distance predicts (likely an obstruction), grey = as expected, blue = stronger. Hover a link for the distance, both LQIs and the expected value.
+
+### Changed (flapping)
+- **Flapping is now measured per report:** a device is flapping when more than 25% of its route reports show a new path (minimum 10 reports). The old changes-per-hour rule penalised devices that simply report often. The card shows "Path changes: N of M reports (X%)".
 
 ## [1.4.2] - 2026-11-11
 
