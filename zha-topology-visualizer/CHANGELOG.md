@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3] - 2026-11-13
+
+### Changed
+- **The signal radar is drawn on the map, around the device itself,** so each spoke points at the real neighbour. Clicking a device draws a large one with scale rings at LQI 45 / 65 / 90 and a dot per neighbour. A new legend toggle, **Signal shape on every device**, draws a small one around every device at once for comparing coverage. Filled cyan = incoming (how the device receives each neighbour); dashed amber = outgoing (how each neighbour receives it). The card no longer draws its own copy.
+
 ## [1.5.2] - 2026-11-13
 
 ### Changed

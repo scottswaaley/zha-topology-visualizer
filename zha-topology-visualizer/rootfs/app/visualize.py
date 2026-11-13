@@ -678,6 +678,11 @@ def build_legend_html(has_routes: bool) -> str:
            chips,
            _lg_toggle('data-link-type="sibling"', _swatch_line('#888888', 1.5, '4 4'), 'Router-to-router links',
                       'neighbour, not parent', 'Routers that hear each other', on=False),
+           _lg_toggle('data-toggle="radars"',
+                      '<svg width="28" height="16" aria-hidden="true"><path d="M14,2 L24,8 L18,14 L8,13 L4,6 Z" fill="#00d4ff" fill-opacity="0.2" stroke="#00d4ff" stroke-width="1"></path>'
+                      '<path d="M14,4 L21,8 L16,12 L9,11 L6,7 Z" fill="none" stroke="#FFB300" stroke-width="1" stroke-dasharray="2 1"></path></svg>',
+                      'Signal shape on every device', 'filled = incoming, dashed = outgoing; click a device for a big one',
+                      'Draw each device&#39;s signal radar around it on the map', on=False),
            _lg_toggle('data-toggle="distance"',
                       '<svg width="28" height="12" aria-hidden="true"><line x1="1" y1="3" x2="27" y2="3" stroke="#F44336" stroke-width="2.5"></line>'
                       '<line x1="1" y1="9" x2="27" y2="9" stroke="#4FC3F7" stroke-width="2.5"></line></svg>',
@@ -873,6 +878,7 @@ LEGEND_JS = r"""
                     break;
                 case 'load': document.body.classList.toggle('no-route-load', !on); break;
                 case 'enddev': showEndDevices = on; applyFilters(); break;
+                case 'radars': radarAll = on; renderRadars(); break;
                 case 'distance':
                     if (!setDistanceLayer(on)) setItemState(el, false);
                     break;
@@ -928,65 +934,119 @@ LEGEND_JS = r"""
 # auto-laid-out positions say nothing about the real house.
 
 RADAR_CSS = """
-        .radar-wrap { margin-top: 6px; border-top: 1px solid #333; padding-top: 5px; }
-        .radar-wrap svg { display: block; margin: 2px auto 0; }
+        .radar-in { fill: #00d4ff; fill-opacity: 0.16; stroke: #00d4ff; stroke-width: 1.3px; stroke-opacity: 0.85; pointer-events: none; }
+        .radar-out { fill: none; stroke: #FFB300; stroke-width: 1.3px; stroke-dasharray: 4, 2; stroke-opacity: 0.9; pointer-events: none; }
+        .radar:not(.sel) .radar-in { fill-opacity: 0.10; stroke-width: 0.8px; }
+        .radar:not(.sel) .radar-out { stroke-width: 0.8px; }
+        .radar-ring { fill: none; stroke: #8a93a8; stroke-dasharray: 2, 3; stroke-opacity: 0.45; pointer-events: none; }
+        .radar-dots circle { stroke-width: 1.3px; pointer-events: none; }
         .dist-link { fill: none; stroke-width: 2.2px; stroke-opacity: 0.85; stroke-linecap: round; cursor: help; }
 """
 
 RADAR_JS = r"""
-        // ---------------- Radar (device card) ----------------
+        // ---------------- Radar on the map ----------------
+        // Drawn around the device itself, so each spoke points at the real
+        // neighbour. Filled cyan = incoming (how this device receives each
+        // neighbour, from its own table); dashed amber = outgoing (how each
+        // neighbour receives this device, from their tables).
         const RADAR_MAX_LQI = 120;   // TI LQI rarely exceeds ~110
+        const RADAR_SEL_R = 90;      // selected device, in map units
+        const RADAR_ALL_R = 28;      // "on every device" mode
+        var radarSel = null;
+        var radarAll = false;
+        var radarG = null;
 
-        function radarHtml(d) {
-            if (!d.neighbors || !d.neighbors.length || d.x == null) return '';
-            const R = 78, C = 100;
-            const r = v => Math.max(4, Math.min(1, v / RADAR_MAX_LQI) * R);
-            const spokes = [];
-            d.neighbors.forEach(nb => {
+        function radarSpokes(d) {
+            const out = [];
+            (d.neighbors || []).forEach(nb => {
                 const o = nodeMap[nb.ieee];
                 if (!o || o.x == null || o.id === d.id) return;
                 const dx = o.x - d.x, dy = o.y - d.y;
                 if (!dx && !dy) return;
                 const back = (o.neighbors || []).find(z => z.ieee === d.id);
-                spokes.push({ o, ang: Math.atan2(dy, dx), hear: nb.lqi, heard: back ? back.lqi : null });
+                out.push({ o, ang: Math.atan2(dy, dx), hear: nb.lqi, heard: back ? back.lqi : null });
             });
-            if (!spokes.length) return '';
-            let svgParts = [];
-            [45, 65, 90].forEach(v => svgParts.push(
-                `<circle cx="${C}" cy="${C}" r="${r(v)}" fill="none" stroke="#3a3f52" stroke-dasharray="2 3"></circle>`
-                + `<text x="${C + 2}" y="${C - r(v) - 1}" font-size="7" fill="#6b7280">${v}</text>`));
-            spokes.forEach(s => {
-                const ux = Math.cos(s.ang), uy = Math.sin(s.ang);
-                const reach = Math.max(s.hear || 0, s.heard || 0);
-                const name = escHtml(s.o.user_given_name || s.o.name);
-                const title = `${name}: this device hears it ${s.hear != null ? s.hear : '?'}, it hears this device ${s.heard != null ? s.heard : '?'}`;
-                let spoke = `<g><title>${title}</title>`;
-                spoke += `<line x1="${C}" y1="${C}" x2="${C + ux * (reach ? r(reach) : R)}" y2="${C + uy * (reach ? r(reach) : R)}" stroke="${reach ? '#5b6475' : '#3a3f52'}" stroke-width="1" ${reach ? '' : 'stroke-dasharray="1 3"'}></line>`;
-                if (s.hear != null) spoke += `<circle cx="${C + ux * r(s.hear)}" cy="${C + uy * r(s.hear)}" r="3.6" fill="${getLqiColor(s.hear)}"></circle>`;
-                if (s.heard != null) spoke += `<circle cx="${C + ux * r(s.heard)}" cy="${C + uy * r(s.heard)}" r="3.6" fill="none" stroke="${getLqiColor(s.heard)}" stroke-width="1.6"></circle>`;
-                spoke += '</g>';
-                svgParts.push(spoke);
-            });
-            // Continuous shapes: a smooth closed curve through each direction's
-            // values, in angle order. Filled = how this device hears its
-            // neighbours; outline = how they hear it. Needs 3+ known points.
-            const shape = key => {
-                const pts = spokes.filter(s => s[key] != null)
-                    .sort((a, b) => a.ang - b.ang)
-                    .map(s => [C + Math.cos(s.ang) * r(s[key]), C + Math.sin(s.ang) * r(s[key])]);
-                if (pts.length < 3) return '';
-                return d3.line().curve(d3.curveCardinalClosed.tension(0.55))(pts);
-            };
-            const hearPath = shape('hear'), heardPath = shape('heard');
-            const shapes = []
-            if (hearPath) shapes.push(`<path d="${hearPath}" fill="#00d4ff" fill-opacity="0.18" stroke="#00d4ff" stroke-width="1.4" stroke-opacity="0.8"></path>`);
-            if (heardPath) shapes.push(`<path d="${heardPath}" fill="none" stroke="#FFB300" stroke-width="1.4" stroke-dasharray="4 2" stroke-opacity="0.9"></path>`);
-            // Shapes sit under the spokes and dots (rings stay first).
-            svgParts.splice(3, 0, ...shapes);
-            svgParts.push(`<circle cx="${C}" cy="${C}" r="4" fill="${getNodeColor(d)}"></circle>`);
-            return `<div class="radar-wrap"><div>Signal around this device <span style="color:#666;font-size:9px">(direction = map position, up = top of map; <span style="color:#00d4ff">filled</span> = how it hears them, <span style="color:#FFB300">dashed outline</span> = how they hear it; dotted spoke = not reported)</span></div>`
-                + `<svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Neighbour signal by direction">${svgParts.join('')}</svg></div>`;
+            return out;
         }
+
+        function radarGeometry(d, R) {
+            const spokes = radarSpokes(d);
+            const r = v => Math.max(R * 0.06, Math.min(1, v / RADAR_MAX_LQI) * R);
+            const shape = key => {
+                const pts = spokes.filter(s => s[key] != null).sort((a, b) => a.ang - b.ang)
+                    .map(s => [d.x + Math.cos(s.ang) * r(s[key]), d.y + Math.sin(s.ang) * r(s[key])]);
+                return pts.length < 3 ? '' : d3.line().curve(d3.curveCardinalClosed.tension(0.55))(pts);
+            };
+            return { spokes, r, inPath: shape('hear'), outPath: shape('heard') };
+        }
+
+        function radarGroup() {
+            if (!radarG) radarG = g.insert('g', '.neighbor-links-group').attr('class', 'radar-group');
+            return radarG;
+        }
+
+        function renderRadars() {
+            const items = [];
+            if (radarAll) nodesData.forEach(n => { if (n.visible !== false && n !== radarSel) items.push({ n, R: RADAR_ALL_R, sel: false }); });
+            if (radarSel) items.push({ n: radarSel, R: RADAR_SEL_R, sel: true });
+            radarGroup().selectAll('g.radar')
+                .data(items, it => it.n.id + (it.sel ? ':sel' : ''))
+                .join(enter => {
+                    const e = enter.append('g').attr('class', it => 'radar' + (it.sel ? ' sel' : ''));
+                    e.append('g').attr('class', 'radar-rings');
+                    e.append('path').attr('class', 'radar-in');
+                    e.append('path').attr('class', 'radar-out');
+                    e.append('g').attr('class', 'radar-dots');
+                    return e;
+                });
+            updateRadars();
+        }
+
+        function updateRadars() {
+            if (!radarG) return;
+            radarG.selectAll('g.radar').each(function(it) {
+                const n = it.n;
+                const sel = d3.select(this);
+                if (n.x == null) return;
+                const geo = radarGeometry(n, it.R);
+                sel.select('.radar-in').attr('d', geo.inPath);
+                sel.select('.radar-out').attr('d', geo.outPath);
+                if (!it.sel) return;
+                sel.select('.radar-rings').selectAll('circle').data([45, 65, 90]).join('circle')
+                    .attr('class', 'radar-ring').attr('cx', n.x).attr('cy', n.y).attr('r', v => geo.r(v));
+                const dots = [];
+                geo.spokes.forEach(s => {
+                    const ux = Math.cos(s.ang), uy = Math.sin(s.ang);
+                    if (s.hear != null) dots.push({ x: n.x + ux * geo.r(s.hear), y: n.y + uy * geo.r(s.hear), v: s.hear, kind: 'in' });
+                    if (s.heard != null) dots.push({ x: n.x + ux * geo.r(s.heard), y: n.y + uy * geo.r(s.heard), v: s.heard, kind: 'out' });
+                });
+                sel.select('.radar-dots').selectAll('circle').data(dots).join('circle')
+                    .attr('class', q => 'radar-dot-' + q.kind)
+                    .attr('cx', q => q.x).attr('cy', q => q.y).attr('r', 2.6)
+                    .attr('fill', q => q.kind === 'in' ? getLqiColor(q.v) : 'none')
+                    .attr('stroke', q => q.kind === 'out' ? getLqiColor(q.v) : 'none');
+            });
+        }
+
+        function drawSelectedRadar(d) {
+            radarSel = (d && d.neighbors && d.neighbors.length) ? d : null;
+            renderRadars();
+        }
+
+        function clearSelectedRadar() {
+            if (!radarSel) return;
+            radarSel = null;
+            renderRadars();
+        }
+
+        // The card points to the map instead of drawing its own copy.
+        function radarHtml(d) {
+            if (!d.neighbors || !d.neighbors.length) return '';
+            return '<div style="margin-top:4px;color:#888;font-size:10px">Signal shape: drawn around this device on the map when selected '
+                + '(<span style="color:#00d4ff">filled</span> = incoming, <span style="color:#FFB300">dashed</span> = outgoing)</div>';
+        }
+
+        simulation.on('tick.radar', updateRadars);
 
         // ---------------- Signal vs distance layer ----------------
         // Fits LQI = a + b*ln(distance) over every neighbour-table value between
@@ -3246,6 +3306,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
         function clearSelection() {{
             clearRouteHighlight();
+            clearSelectedRadar();
             selectedNode = null;
             node.classed('selected', false);
             node.classed('dimmed', false);
@@ -3394,6 +3455,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
             if (!wasSelected) {{
                 if (d.neighbors && d.neighbors.length > 0) showNeighborLinks(d);
                 highlightRoute(d);
+                drawSelectedRadar(d);
             }}
         }});
 
@@ -3572,6 +3634,7 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
 
             applyRouteFilters();
             syncTreeLabels();
+            if (radarAll) renderRadars();
             document.getElementById('visibleCount').textContent = `(Showing: ${{visibleCount}})`;
 
             // Update search count
