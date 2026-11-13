@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.3] - 2026-11-13
+
+### Fixed
+- **Combined coverage no longer turns the whole house green.** With many strong routers nearly every spot scored "certain" and hit the cap, so the relative scale could not tell spots apart. Three changes:
+  - Combined now counts only the **3 strongest routers in range** (the realistic set of fallback parents).
+  - It is computed in log space, so very likely spots no longer round to exactly certain and tie.
+  - The relative scale ranks the uncapped scores.
+
+  The cap at LQI 120 now applies only to the Absolute scale and to the numbers shown.
+
 ## [1.6.2] - 2026-11-13
 
 ### Changed

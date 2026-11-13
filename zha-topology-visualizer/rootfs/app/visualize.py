@@ -1210,6 +1210,10 @@ RADAR_JS = r"""
         const COVERAGE_MAX_FT = 60;
         // LQI -> rough delivery chance (logistic): 50 -> 50%, 70 -> ~92%, 35 -> ~13%.
         const COVERAGE_P_MID = 50, COVERAGE_P_SCALE = 8;
+        // Combined counts only the strongest few routers in range: the realistic
+        // set of parents a device could fall back to. Dozens of distant routers
+        // shouldn't make a spot look perfect.
+        const COVERAGE_COMBINE_TOP = 3;
         // 10-step ramp, deep red (weak) to deep green (strong); thresholds in LQI.
         const COVERAGE_STEPS = [
             [30, [183, 28, 28]], [38, [211, 47, 47]], [46, [244, 67, 54]], [54, [255, 112, 67]],
@@ -1234,11 +1238,19 @@ RADAR_JS = r"""
                 const s2 = vals.slice().sort((a, b) => b - a);
                 return s2[1];
             }
-            // combined: chance at least one link works, mapped back to LQI
-            const miss = vals.reduce((m, v) => m * (1 - lqiToP(v)), 1);
-            // Capped at TI's practical LQI ceiling so many strong routers don't
-            // produce LQI-equivalents no link could ever show.
-            return Math.min(RADAR_MAX_LQI, pToLqi(1 - miss));
+            // combined: chance at least one of the top few links works, mapped
+            // back to the LQI scale. Left uncapped here so the relative scale can
+            // still rank "very likely" spots; the absolute scale and the numbers
+            // shown cap it at TI's practical ceiling.
+            // Computed in log space: L = -ln(chance every link fails) = sum of
+            // softplus(z) over the links, and the score is the logit of
+            // "at least one works" = L + ln(1 - e^-L). Plain probabilities round
+            // to exactly 1 for strong spots, which made them all tie.
+            const top = vals.slice().sort((a, b) => b - a).slice(0, COVERAGE_COMBINE_TOP);
+            const softplus = z => z > 30 ? z : Math.log1p(Math.exp(z));
+            const L = top.reduce((acc, v) => acc + softplus((v - COVERAGE_P_MID) / COVERAGE_P_SCALE), 0);
+            const logit = L + Math.log(-Math.expm1(-L));
+            return COVERAGE_P_MID + COVERAGE_P_SCALE * logit;
         }
 
         function coverageColor(v, limits) {
@@ -1348,7 +1360,8 @@ RADAR_JS = r"""
                 const lo = q(0.02), hi = q(0.98);
                 if (hi - lo >= 3) {
                     limits = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(q).concat([Infinity]);
-                    scaleNote = ` Colours span LQI-equivalent ${Math.round(lo)}–${Math.round(hi)} across the house.`;
+                    const fmt = v => v > RADAR_MAX_LQI ? `${RADAR_MAX_LQI}+` : `${Math.round(v)}`;
+                    scaleNote = ` Colours span LQI-equivalent ${fmt(lo)}–${fmt(hi)} across the house.`;
                 } else {
                     scaleNote = ' Scores are nearly uniform, so the fixed LQI scale is used.';
                 }
@@ -1359,8 +1372,10 @@ RADAR_JS = r"""
                 let rgba;
                 if (Number.isNaN(v)) { rgba = [120, 120, 130, 70]; counts.none++; }   // no router in range: grey = no data
                 else {
-                    rgba = coverageColor(v, limits).concat([v < weakLimit ? 125 : 85]);
-                    if (v >= 65) counts.good++; else if (v >= 45) counts.fair++; else counts.weak++;
+                    const shown = Math.min(RADAR_MAX_LQI, v);
+                    const cv = coverageScale === 'relative' ? v : shown;
+                    rgba = coverageColor(cv, limits).concat([cv < weakLimit ? 125 : 85]);
+                    if (shown >= 65) counts.good++; else if (shown >= 45) counts.fair++; else counts.weak++;
                 }
                 img.data.set(rgba, k * 4);
             }
