@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2] - 2026-11-11
+
+### Changed
+- **Bigger arrowhead on the LQI hover arrow** (9 → 16 px), with its tip ending at the edge of the receiving node so the direction reads at a glance.
+
+### Fixed
+- **Arrowheads were missing whenever the floorplan was loaded.** Both the route-layer arrows (since 1.4.0) and the LQI hover arrow (1.4.1) put their markers into the floorplan SVG's own `<defs>`, where they never render. They now use a dedicated `<defs>` on the graph.
+
 ## [1.4.1] - 2026-11-11
 
 ### Added

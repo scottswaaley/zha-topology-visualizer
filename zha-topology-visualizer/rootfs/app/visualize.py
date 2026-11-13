@@ -67,9 +67,10 @@ ROUTE_JS = r"""
         let routesOn = !!routesMeta;
 
         function routeDefs() {
-            let defs = svg.select('defs');
-            if (defs.empty()) defs = svg.append('defs');
-            return defs;
+            // Our own <defs> as a direct child of the graph SVG. A bare
+            // svg.select('defs') would find the floorplan's <defs> (inside its
+            // foreignObject), where markers never render.
+            return topoDefs();
         }
         let routeSelectedId = null;
         let routeSeg = null;
@@ -413,6 +414,14 @@ TREE_LQI_JS = r"""
         // `var` on purpose: renderPrimaryLinks() runs before this block, and must
         // see these as undefined (not in the temporal dead zone).
         var treeLabelsReady = false;
+
+        // Marker definitions live in our own top-level <defs>, never the
+        // floorplan's (markers inside its foreignObject don't render).
+        function topoDefs() {
+            let defs = svg.select(':scope > defs.topo-defs');
+            if (defs.empty()) defs = svg.insert('defs', ':first-child').attr('class', 'topo-defs');
+            return defs;
+        }
         var treeLabelGroup = null, treeDirGroup = null, treeLabel = null;
         var LQI_ARROW_COLORS = ['#4CAF50', '#8BC34A', '#FFC107', '#F44336', '#888'];
 
@@ -523,7 +532,7 @@ TREE_LQI_JS = r"""
             const [snd, rcv] = e.dir === 'fwd' ? [c, p] : [p, c];
             const pts = trimPolyline(
                 [[snd.x, snd.y], [snd.x, midY], [rcv.x, midY], [rcv.x, rcv.y]],
-                getNodeRadius(snd) + 1, getNodeRadius(rcv) + 3);
+                getNodeRadius(snd) + 1, getNodeRadius(rcv) + 2);  // arrow tip stops at the node edge
             if (pts.length < 2) return;
             const color = e.v != null ? getLqiColor(e.v) : '#888';
             treeDirGroup.append('path')
@@ -546,13 +555,12 @@ TREE_LQI_JS = r"""
         }
 
         (function initTreeLabels() {
-            let defs = svg.select('defs');
-            if (defs.empty()) defs = svg.append('defs');
+            const defs = topoDefs();
             LQI_ARROW_COLORS.forEach(col => {
                 defs.append('marker')
                     .attr('id', 'lqi-arrow-' + col.slice(1))
-                    .attr('viewBox', '0 0 10 10').attr('refX', 7).attr('refY', 5)
-                    .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 9).attr('markerHeight', 9)
+                    .attr('viewBox', '0 0 10 10').attr('refX', 10).attr('refY', 5)
+                    .attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 16).attr('markerHeight', 16)
                     .attr('orient', 'auto')
                     .append('path').attr('d', 'M0,0 L10,5 L0,10 z').attr('fill', col);
             });
