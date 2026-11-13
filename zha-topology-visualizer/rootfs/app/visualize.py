@@ -290,11 +290,15 @@ ROUTE_JS = r"""
             if (!routesOn) clearRouteHighlight();
         }
 
-        function toggleHierarchy(btn) {
-            hierarchyMode = hierarchyMode === 'routes' ? 'neighbor' : 'routes';
-            btn.textContent = hierarchyMode === 'routes' ? 'Tree: Best evidence' : 'Tree: Neighbour tables';
+        function setHierarchy(mode) {
+            if (mode === hierarchyMode) return;
+            hierarchyMode = mode;
+            document.querySelectorAll('.seg-btn[data-tree]').forEach(b => {
+                const on = b.dataset.tree === mode;
+                b.classList.toggle('on', on);
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
             document.body.classList.toggle('tree-neighbour', hierarchyMode !== 'routes');
-            btn.classList.toggle('active', hierarchyMode === 'routes');
             clearSelection();
             primaryLinks = hierarchyMode === 'routes' ? routePrimaryLinks : neighborPrimaryLinks;
             // forceLink resolves string ids to node objects before we render.
@@ -306,8 +310,8 @@ ROUTE_JS = r"""
 
         if (routesMeta) {
             document.body.classList.add('routes-on');
-            const hb = document.getElementById('hierarchyBtn');
-            if (hb) hb.classList.toggle('active', hierarchyMode === 'routes');
+            document.querySelectorAll('.seg-btn[data-tree]').forEach(b =>
+                b.addEventListener('click', () => setHierarchy(b.dataset.tree)));
 
             // Busiest router(s) by live paths, computed from per-device relays (not names).
             const maxLoad = Math.max(0, ...nodesData.map(n => n.route_load || 0));
@@ -719,6 +723,13 @@ LEGEND_CSS = """
         .legend-a { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 18px;
                     margin: 8px auto 0; max-width: 1400px; text-align: left; }
         .legend-a[hidden] { display: none; }
+        .seg-label { font-size: 11px; color: #888; }
+        .controls .seg { display: inline-flex; border: 1px solid #555; border-radius: 4px; overflow: hidden; }
+        .controls .seg .seg-btn { background: #2a2a3e; color: #bbb; border: 0; border-radius: 0; padding: 5px 11px; font-size: 11px; cursor: pointer; }
+        .controls .seg .seg-btn + .seg-btn { border-left: 1px solid #555; }
+        .controls .seg .seg-btn:hover { background: #3a3a52; color: #fff; }
+        .controls .seg .seg-btn.on { background: #00d4ff; color: #000; font-weight: 600; cursor: default; }
+        .controls .seg .seg-btn:focus-visible { outline: 2px solid #00d4ff; outline-offset: -2px; }
         .lg-col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
         .lg-q { font-size: 11.5px; font-weight: 700; color: #fff; }
         .lg-qs { font-size: 10px; color: #8a93a8; margin-bottom: 3px; line-height: 1.3; }
@@ -1875,8 +1886,13 @@ def generate_html(hierarchy: dict, data: dict, output_file: str):
     if has_routes:
         route_controls_html = (
             '<div class="filter-group">'
-            '<button onclick="toggleHierarchy(this)" id="hierarchyBtn" '
-            'title="Best evidence: each device hangs from its most trusted next hop (live route record &gt; fresh route table &gt; startup record &gt; cached table &gt; parent). Neighbour tables: the v1.3 method.">Tree: Best evidence</button>'
+            '<span class="seg-label" id="treeLabel">Tree from:</span>'
+            '<div class="seg" role="group" aria-labelledby="treeLabel">'
+            '<button type="button" class="seg-btn on" data-tree="routes" aria-pressed="true" '
+            'title="Each device hangs from its most trusted next hop: live route record &gt; fresh route table &gt; startup record &gt; cached table &gt; parent">Best evidence</button>'
+            '<button type="button" class="seg-btn" data-tree="neighbor" aria-pressed="false" '
+            'title="The v1.3 method: route tables, then parent/child, then strongest neighbour">Neighbour tables</button>'
+            '</div>'
             '<span id="routeSummary" style="font-size:11px;color:#CE93D8"></span>'
             '</div>'
         )

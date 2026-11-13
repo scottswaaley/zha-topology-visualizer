@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.2] - 2026-11-13
+
+### Changed
+- **The tree choice is a segmented control,** "Tree from: [Best evidence | Neighbour tables]", instead of a single button whose label flipped. The highlighted side is the one in use; clicking it again does nothing.
+
 ## [1.5.1] - 2026-11-13
 
 ### Changed

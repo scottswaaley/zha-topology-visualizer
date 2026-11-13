@@ -92,7 +92,7 @@ Connections are grouped by how confident we are in them:
 - **Legend**: show or hide the legend panel. In the legend, square boxes toggle a layer (tree-line sources, stored/cached lines, LQI numbers, route paths, router load, end devices) and round boxes focus on one problem (conflict, flapping, silent, no route, offline). Focusing on Flapping replays each flapping device's recent hops
 - **Time Filter**: Show only devices seen recently
 - **Zoom Controls**: Zoom in/out and reset view
-- **Tree: Best evidence / Neighbour tables** *(only with `zha_routes`)*: Hang each device from its most trusted next hop (live route record > fresh route table > startup record > cached table > parent), or use the v1.3 neighbour-table method
+- **Tree from: Best evidence | Neighbour tables** *(only with `zha_routes`)*: Hang each device from its most trusted next hop (live route record > fresh route table > startup record > cached table > parent), or use the v1.3 neighbour-table method
 
 ### Source routes (optional)
 
